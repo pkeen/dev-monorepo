@@ -1,9 +1,9 @@
-import { password as authPassword } from "@/lib/auth/utils";
-import { findUserByEmail, insertUserAndReturnIt } from "@/lib/auth/db/queries";
-import { validate } from "@/lib/auth/actions/signup/validate";
-import { token } from "@/lib/auth/utils";
-import { AuthResponse } from "@/lib/auth/utils";
-import { generateCsrf } from "@/lib/auth/utils/csrf";
+// import { password as authPassword } from "@/lib/auth/utils";
+import { findUserByEmail, insertUserAndReturnIt } from "@db/queries";
+import { utils, AuthResponse } from "@main";
+import { validate } from "@actions/signup/validate";
+// import { token } from "@/lib/auth/utils";
+// import { generateCsrf } from "@/lib/auth/utils/csrf";
 
 export async function POST(req: Request) {
 	try {
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 		}
 
 		// Step 3: Hash the password
-		const hashedPassword = await authPassword.hash(password);
+		const hashedPassword = await utils.password.hash(password);
 
 		// Step 4: Insert the new user
 		let user;
@@ -33,19 +33,19 @@ export async function POST(req: Request) {
 		}
 
 		// Step 4: Sign Refresh Token
-		const refreshToken = await token.sign("refresh", {
+		const refreshToken = await utils.token.sign("refresh", {
 			id: user.id,
 			email: user.email,
 		});
 
 		// Step 4: Sign Access Token
-		const accessToken = await token.sign("access", {
+		const accessToken = await utils.token.sign("access", {
 			id: user.id,
 			email: user.email,
 		});
 
 		// Step 6: create a csrf token
-		const csrf = generateCsrf();
+		const csrf = utils.csrf.generate();
 
 		// Step 7: Create an AuthResponse with a cookie and csrf
 		const res = AuthResponse.withJson(

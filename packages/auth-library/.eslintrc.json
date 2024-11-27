@@ -1,0 +1,18 @@
+{
+	"settings": {
+		"import/resolver": {
+			"alias": {
+				"map": [
+					["@main", "./src/index.ts"],
+					["@utils", "./src/utils"],
+					["@components", "./src/components"],
+					["@context", "./src/context"],
+					["@api", "./src/api"],
+					["@db", "./src/db"],
+					["@client", "./src/client"]
+				],
+				"extensions": [".ts", ".tsx", ".js", ".jsx"]
+			}
+		}
+	}
+}

@@ -1,9 +1,6 @@
-import { password as authPassword } from "@/lib/auth/utils";
-import { validate } from "@/lib/auth/actions/signin/validate";
-import { findUserByEmail } from "@/lib/auth/db/queries";
-import { AuthResponse } from "@/lib/auth/utils";
-import { generateCsrf } from "@/lib/auth/utils/csrf";
-import { token } from "@/lib/auth/utils";
+import { utils, AuthResponse } from "@main";
+import { validate } from "@actions/signin/validate";
+import { findUserByEmail } from "@db/queries";
 
 export async function POST(req: Request) {
 	try {
@@ -20,7 +17,7 @@ export async function POST(req: Request) {
 		if (!user.password) {
 			throw new Error("User password is missing");
 		}
-		const isAuthenticated = await authPassword.verify(
+		const isAuthenticated = await utils.password.verify(
 			password,
 			user.password
 		);
@@ -33,19 +30,19 @@ export async function POST(req: Request) {
 		}
 
 		// Step 4: Sign Refresh Token
-		const refreshToken = await token.sign("refresh", {
+		const refreshToken = await utils.token.sign("refresh", {
 			id: user.id,
 			email: user.email,
 		});
 
 		// Step 4: Sign Access Token
-		const accessToken = await token.sign("access", {
+		const accessToken = await utils.token.sign("access", {
 			id: user.id,
 			email: user.email,
 		});
 
 		// Step 5: create a csrf token
-		const csrf = generateCsrf();
+		const csrf = utils.csrf.generate();
 
 		// Step 6: Create an AuthResponse with a cookie and csrf
 		const res = AuthResponse.withJson(

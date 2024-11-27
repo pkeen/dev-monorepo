@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"baseUrl": "./src",
+		"paths": {
+			"@main": ["index.ts"],
+			"@actions/*": ["actions/*"],
+			"@utils/*": ["utils/*"],
+			"@context/*": ["context/*"],
+			"@api/*": ["api/*"],
+			"@db/*": ["db/*"],
+			"@client/*": ["client/*"]
+		},
+		"jsx": "preserve"
+	},
+	"include": ["src/**/*"]
+}

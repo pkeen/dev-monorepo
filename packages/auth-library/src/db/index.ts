@@ -1,9 +1,13 @@
 import { drizzle } from "drizzle-orm/neon-http";
-import { env } from "@/utils/env";
+import { getAuthConfig } from "initAuth";
 
 // Have option for application to import its own db instance
+const authConfig = getAuthConfig();
 
-const db = drizzle(env.DATABASE_URL, { logger: true, casing: "snake_case" });
+const db = drizzle(authConfig.databaseUrl, {
+	logger: true,
+	casing: "snake_case",
+});
 
 export type db = typeof db;
 

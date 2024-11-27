@@ -1,4 +1,4 @@
-import { AuthResponse } from "@/lib/auth/utils";
+import { AuthResponse } from "@main";
 
 export async function POST() {
 	try {

@@ -15,6 +15,20 @@ export default {
 			sourcemap: true,
 		},
 	],
-	plugins: [nodeResolve(), typescript()],
+	plugins: [
+		alias({
+			entries: [
+				{ find: "@main", replacement: "./src/index.ts" },
+				{ find: "@utils", replacement: "./src/utils" },
+				{ find: "@components", replacement: "./src/components" },
+				{ find: "@context", replacement: "./src/context" },
+				{ find: "@api", replacement: "./src/api" },
+				{ find: "@db", replacement: "./src/db" },
+				{ find: "client", replacement: "./src/client" },
+			],
+		}),
+		nodeResolve(),
+		typescript(),
+	],
 	external: ["react", "next"],
 };

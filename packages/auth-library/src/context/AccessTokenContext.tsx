@@ -6,7 +6,7 @@ import React, {
 	useEffect,
 	useLayoutEffect,
 } from "react";
-import { authClient, publicClient } from "@/lib/auth/utils";
+import { authClient, publicClient } from "../client";
 import { useCsrfToken } from "./CsrfTokenContext";
 
 const AccessTokenContext = createContext<{

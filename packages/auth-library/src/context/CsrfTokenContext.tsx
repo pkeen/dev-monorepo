@@ -10,7 +10,7 @@ import React, {
 	useLayoutEffect,
 } from "react";
 
-import { publicClient } from "@/lib/auth/utils";
+import { publicClient } from "@client/publicClient";
 
 interface CsrfTokenContextType {
 	csrfToken: string | null;

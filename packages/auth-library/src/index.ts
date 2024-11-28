@@ -1,4 +1,4 @@
-export { defaultConfig } from "./config";
+export { defaultConfig, AuthConfig } from "./config";
 export { initAuth, getAuthConfig } from "./config";
 export * as utils from "./utils";
 export * as components from "./components";

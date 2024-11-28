@@ -8,6 +8,28 @@
 	"files": [
 		"dist"
 	],
+	"exports": {
+		".": {
+			"import": "./dist/index.esm.js",
+			"require": "./dist/index.cjs.js",
+			"types": "./dist/index.d.ts"
+		},
+		"./routes": {
+			"import": "./dist/routes/index.esm.js",
+			"require": "./dist/routes/index.cjs.js",
+			"types": "./dist/routes/index.d.ts"
+		},
+		"./utils": {
+			"import": "./dist/utils/index.esm.js",
+			"require": "./dist/utils/index.cjs.js",
+			"types": "./dist/utils/index.d.ts"
+		},
+		"./components": {
+			"import": "./dist/components/index.esm.js",
+			"require": "./dist/components/index.cjs.js",
+			"types": "./dist/components/index.d.ts"
+		}
+	},
 	"scripts": {
 		"build": "rollup -c",
 		"dev": "rollup -c -w"

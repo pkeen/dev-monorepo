@@ -5,6 +5,7 @@ import {
 	CsrfText,
 	AccessTokenText,
 } from "@/lib/auth/components/testing";
+// import { auth } from "@/auth";
 
 const page = () => {
 	return (
@@ -15,6 +16,7 @@ const page = () => {
 			<CsrfText />
 			<CsrfRequiredButton />
 			<AccessTokenText />
+			{/* <p>{auth.databaseUrl}</p> */}
 		</div>
 	);
 };

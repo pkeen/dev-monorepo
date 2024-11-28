@@ -5,6 +5,7 @@ import AuthConfig from "./lib/auth/config";
 
 // for testing wo middle ware
 export function middleware(request: NextRequest) {
+	console.log("Middleware running on:", request.nextUrl.pathname);
 	return NextResponse.next();
 }
 
@@ -51,12 +52,12 @@ export function middleware(request: NextRequest) {
 // 	// 	});
 // }
 
-// export const config = {
-// 	matcher: ["/dashboard"], // Match specific routes
-// 	/*
-// 	 * Match all routes by default, except the following:
-// 	 * - Public pages: `/signin`
-// 	 * - API routes: `/api/public/:path*`
-// 	 */
-// 	// matcher: ["/((?!_next|static|api/auth|signup|public).*)"], // Protect all except these patterns
-// };
+export const config = {
+	matcher: ["/dashboard"], // Match specific routes
+	/*
+	 * Match all routes by default, except the following:
+	 * - Public pages: `/signin`
+	 * - API routes: `/api/public/:path*`
+	 */
+	// matcher: ["/((?!_next|static|api/auth|signup|public).*)"], // Protect all except these patterns
+};

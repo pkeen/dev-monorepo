@@ -4,12 +4,16 @@
 			"alias": {
 				"map": [
 					["@main", "./src/index.ts"],
-					["@utils", "./src/utils"],
+					["@utils", "./src/utils/index.ts"],
+					["@utils/", "./src/utils/"],
 					["@components", "./src/components"],
 					["@context", "./src/context"],
 					["@api", "./src/api"],
 					["@db", "./src/db"],
-					["@client", "./src/client"]
+					["@client", "./src/client"],
+					["@config", "./src/config/index.ts"],
+					["@config", "./src/config/index.ts"],
+					["@config/", "./src/config/"]
 				],
 				"extensions": [".ts", ".tsx", ".js", ".jsx"]
 			}

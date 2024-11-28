@@ -1,12 +1,11 @@
-// import { generateCsrf } from "@/lib/auth/utils/csrf";
-import { utils } from "@main";
-import { AuthResponse } from "@main";
+import { csrf as Csrf } from "@utils";
+import { AuthResponse } from "@utils";
 import { NextRequest } from "next/server";
-import { AuthConfig } from "@main";
+import { getAuthConfig } from "@config";
 
 export async function GET() {
 	// const csrf = utils.generateCsrf();
-	const csrf = utils.csrf.generate();
+	const csrf = Csrf.generate();
 
 	const res = AuthResponse.withJson({ csrf });
 
@@ -16,6 +15,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+	const AuthConfig = getAuthConfig();
 	try {
 		// Client-sent token from headers
 		const clientToken = req.headers.get("csrf-token");

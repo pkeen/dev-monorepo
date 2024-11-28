@@ -4,11 +4,14 @@
 		"paths": {
 			"@main": ["index.ts"],
 			"@actions/*": ["actions/*"],
+			"@utils": ["utils/index.ts"],
 			"@utils/*": ["utils/*"],
 			"@context/*": ["context/*"],
 			"@api/*": ["api/*"],
 			"@db/*": ["db/*"],
-			"@client/*": ["client/*"]
+			"@client/*": ["client/*"],
+			"@config": ["config/index.ts"],
+			"@config/*": ["config/*"]
 		},
 		"jsx": "react-jsx",
 		"esModuleInterop": true

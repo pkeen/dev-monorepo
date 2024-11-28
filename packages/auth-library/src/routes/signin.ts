@@ -1,4 +1,6 @@
-import { utils, AuthResponse } from "@main";
+// import { utils, AuthResponse } from "@main";
+import { AuthResponse } from "@utils";
+import * as utils from "@utils";
 import { validate } from "@actions/signin/validate";
 import { findUserByEmail } from "@db/queries";
 

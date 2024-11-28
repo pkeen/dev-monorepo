@@ -5,7 +5,7 @@
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"north:dev": "pnpm --filter @myorg/auth-library dev",
+		"north:dev": "pnpm --filter @pete_keen/north dev",
 		"starter:dev": "pnpm --filter nextjs-starter dev"
 	},
 	"keywords": [],

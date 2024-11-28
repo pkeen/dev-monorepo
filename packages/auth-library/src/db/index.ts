@@ -1,5 +1,5 @@
 import { drizzle } from "drizzle-orm/neon-http";
-import { getAuthConfig } from "initAuth";
+import { getAuthConfig } from "@config";
 
 // Have option for application to import its own db instance
 const authConfig = getAuthConfig();

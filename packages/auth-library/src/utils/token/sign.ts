@@ -1,6 +1,6 @@
 // function to sign an access token
 import { signToken } from "./jwt";
-import config from "../../config";
+import { getAuthConfig } from "config";
 
 /**
  * Sign a new access token
@@ -20,6 +20,7 @@ export const sign = (
 	type: TokenType,
 	payload: Record<string, unknown>
 ): Promise<string> => {
+	const config = getAuthConfig();
 	const options =
 		type === "access"
 			? config.jwtOptions.access

@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AuthResponse, AuthConfig, utils } from "@main";
+import { AuthResponse } from "@utils";
+import { getAuthConfig } from "config";
+import { token } from "@utils";
+
+// import { AuthResponse, AuthConfig, utils } from "@main";
 // check refresh token
 // returns new access token
 
 export async function POST(request: NextRequest) {
 	try {
+		// Step 0: Get AuthConfig
+		const AuthConfig = getAuthConfig();
 		// Step 1: csrf protection
 		// Step 1a: Get CSRF token
 		const clientCsrf = request.headers.get("csrf-token");
@@ -28,7 +34,7 @@ export async function POST(request: NextRequest) {
 		}
 
 		// Step 3: Verify Refresh Token
-		const payload = await utils.token.verify(refreshToken);
+		const payload = await token.verify(refreshToken);
 		console.log(payload);
 		if (!payload) {
 			throw new Error("Payload is missing");
@@ -39,10 +45,10 @@ export async function POST(request: NextRequest) {
 		// create a payload creator function that takes in either an old payload or a user object from db
 		const newPayload = { id: payload.id, email: payload.email };
 		// 4b Create the new access token
-		const accessToken = await utils.token.sign("access", newPayload);
+		const accessToken = await token.sign("access", newPayload);
 
 		// Step 4: Create new refresh token
-		const newRefreshToken = await utils.token.sign("refresh", newPayload);
+		const newRefreshToken = await token.sign("refresh", newPayload);
 
 		// Step 6: Create an AuthResponse with a access token and refresh token in cookie
 		const res = AuthResponse.withJson(

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import config from "../../config";
+import { getAuthConfig } from "config";
 
 interface CookieOptions {
 	httpOnly?: boolean;
@@ -12,20 +12,33 @@ interface CookieOptions {
 export function ResponseWithCsrf(
 	csrf: string,
 	data: any,
-	cookieKey: string = `${config.cookies.namePrefix}-token`,
+	cookieKey?: string, // Optional, fallback to config-based key
 	cookieOptions: CookieOptions = {},
 	init: ResponseInit = { status: 200 }
 ): NextResponse {
-	const response = NextResponse.json(data, init);
+	// Get the centralized auth config
+	const config = getAuthConfig();
+
+	// Default cookie key and options from config
+	const defaultCookieKey = `${config.cookies.namePrefix}-csrf-token`;
 	const cookieOptionsWithDefaults: CookieOptions = {
 		httpOnly: true,
 		secure: process.env.NODE_ENV === "production",
 		path: "/",
 		maxAge: 3600,
 		sameSite: "lax",
-		...cookieOptions,
+		...cookieOptions, // Allow overrides
 	};
 
-	response.cookies.set(cookieKey, csrf, cookieOptionsWithDefaults);
+	// Create the response
+	const response = NextResponse.json(data, init);
+
+	// Set the cookie with the CSRF token
+	response.cookies.set(
+		cookieKey || defaultCookieKey,
+		csrf,
+		cookieOptionsWithDefaults
+	);
+
 	return response;
 }

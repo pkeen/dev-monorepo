@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import config from "../../config";
+import { getAuthConfig } from "config";
 
 interface CookieOptions {
 	httpOnly?: boolean;
@@ -10,15 +10,16 @@ interface CookieOptions {
 }
 
 export class AuthResponse extends NextResponse {
-	/**
-	 * Sets a token as an HTTP-only cookie.
-	 * @param token - The token to set.
-	 * @param key? - Optional. The name of the cookie.
-	 * @param options? - Optional Cookie options.
-	 */
+	private config: ReturnType<typeof getAuthConfig>; // Store the config
+
+	constructor(init?: ResponseInit) {
+		super();
+		this.config = getAuthConfig(); // Initialize config once
+	}
+
 	setCookie(
 		token: string,
-		key: string = `${config.cookies.namePrefix}-token`,
+		key: string = `${this.config.cookies.namePrefix}-token`,
 		options: CookieOptions = {}
 	): void {
 		const cookieOptions: CookieOptions = {
@@ -32,19 +33,15 @@ export class AuthResponse extends NextResponse {
 		this.cookies.set(key, token, cookieOptions);
 	}
 
-	destroyCookie(key: string = `${config.cookies.namePrefix}-token`): void {
+	destroyCookie(
+		key: string = `${this.config.cookies.namePrefix}-token`
+	): void {
 		this.cookies.set(key, "", { maxAge: 0 });
 	}
 
-	/**
-	 * Sets a csrf token as an HTTP-only cookie.
-	 * @param csrf - The token to set.
-	 * @param key? - Optional. The name of the cookie.
-	 * @param options? - Optional Cookie options.
-	 */
 	setCsrf(
 		csrf: string,
-		key: string = `${config.cookies.namePrefix}-csrf`,
+		key: string = `${this.config.cookies.namePrefix}-csrf`,
 		options: CookieOptions = {}
 	): void {
 		const cookieOptions: CookieOptions = {
@@ -58,18 +55,12 @@ export class AuthResponse extends NextResponse {
 		this.cookies.set(key, csrf, cookieOptions);
 	}
 
-	destroyCsrf(key: string = `${config.cookies.namePrefix}-csrf`): void {
+	destroyCsrf(key: string = `${this.config.cookies.namePrefix}-csrf`): void {
 		this.cookies.set(key, "", { maxAge: 0 });
 	}
 
-	/**
-	 * Creates a new ExtendedResponse with JSON data and sets a cookie.
-	 * @param options - The options for creating the response.
-	 * @returns An AuthResponse instance.
-	 */
 	static withCookie({
 		cookie,
-		json,
 		cookieKey,
 		status = 200,
 		cookieOptions,
@@ -78,53 +69,33 @@ export class AuthResponse extends NextResponse {
 		json?: Record<string, any>;
 		cookieKey?: string;
 		status?: number;
-		cookieOptions?: {
-			httpOnly?: boolean;
-			secure?: boolean;
-			path?: string;
-			maxAge?: number;
-		};
+		cookieOptions?: CookieOptions;
 	}): AuthResponse {
-		const response = new AuthResponse(JSON.stringify(json), { status });
+		const response = new AuthResponse({ status });
 		response.setCookie(cookie, cookieKey, cookieOptions);
 		return response;
 	}
-	/**
-	 * Creates an instance of NextResponse.next() as AuthResponse.
-	 * @returns An AuthResponse instance.
-	 */
+
 	static next(): AuthResponse {
-		const response = NextResponse.next(); // Get the original `NextResponse.next()`
-		return Object.assign(new AuthResponse(), response); // Merge with `AuthResponse`
+		const response = NextResponse.next();
+		return Object.assign(new AuthResponse(), response);
 	}
 
-	/**
-	 * Create a JSON response with the AuthResponse type.
-	 * @param body - The body of the JSON response.
-	 * @param init - Optional initialization options for the response.
-	 * @returns An instance of AuthResponse with the JSON body.
-	 */
 	static withJson<JsonBody>(
 		body: JsonBody,
 		init?: ResponseInit
 	): AuthResponse {
-		const response = NextResponse.json(body, init); // Create a NextResponse
-		Object.setPrototypeOf(response, AuthResponse.prototype); // Set the prototype
-		return response as AuthResponse; // Explicitly cast the type
+		const response = NextResponse.json(body, init);
+		Object.setPrototypeOf(response, AuthResponse.prototype);
+		return response as AuthResponse;
 	}
 
-	/**
-	 * Create an error response with the AuthResponse type.
-	 * @param body - The body of the error response.
-	 * @param init - Optional initialization options for the response.
-	 * @returns An instance of AuthResponse with the JSON body.
-	 */
 	static withError<JsonBody>(body: JsonBody, init?: ResponseInit) {
 		const response = new NextResponse(JSON.stringify(body), {
 			status: 400,
 			...init,
 		});
-		Object.setPrototypeOf(response, AuthResponse.prototype); // Set the prototype
-		return response as AuthResponse; // Explicitly cast the type
+		Object.setPrototypeOf(response, AuthResponse.prototype);
+		return response as AuthResponse;
 	}
 }

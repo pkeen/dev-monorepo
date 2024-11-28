@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import config from "../../config";
+import { getAuthConfig } from "config";
 
 /*
  * Sets a Csrf token as an HTTP-only cookie.
@@ -20,7 +20,7 @@ interface CookieOptions {
 export function addCsrf(
 	response: NextResponse,
 	csrf: string,
-	cookieKey: string = `${config.cookies.namePrefix}-token`,
+	cookieKey?: string | undefined,
 	cookieOptions: CookieOptions = {}
 ): NextResponse {
 	// const response = NextResponse.json(data, init);
@@ -33,7 +33,7 @@ export function addCsrf(
 		sameSite: "lax",
 		...cookieOptions,
 	};
-
-	response.cookies.set(cookieKey, csrf, cookieOptionsWithDefaults);
+	(cookieKey = cookieKey || `${getAuthConfig().cookies.namePrefix}-csrf`),
+		response.cookies.set(cookieKey, csrf, cookieOptionsWithDefaults);
 	return response;
 }

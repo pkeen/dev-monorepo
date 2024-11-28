@@ -1,9 +1,8 @@
 // import { password as authPassword } from "@/lib/auth/utils";
 import { findUserByEmail, insertUserAndReturnIt } from "@db/queries";
-import { utils, AuthResponse } from "@main";
+import { AuthResponse } from "@utils";
+import * as utils from "@utils";
 import { validate } from "@actions/signup/validate";
-// import { token } from "@/lib/auth/utils";
-// import { generateCsrf } from "@/lib/auth/utils/csrf";
 
 export async function POST(req: Request) {
 	try {

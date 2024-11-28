@@ -1,4 +1,4 @@
-import { AuthResponse } from "@main";
+import { AuthResponse } from "@utils";
 
 export async function POST() {
 	try {

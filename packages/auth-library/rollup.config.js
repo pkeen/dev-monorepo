@@ -33,7 +33,14 @@ export default {
 				},
 				{
 					find: "@utils",
-					replacement: path.resolve(__dirname, "./src/utils"),
+					replacement: path.resolve(
+						__dirname,
+						"./src/utils/index.ts"
+					),
+				},
+				{
+					find: "@utils/",
+					replacement: path.resolve(__dirname, "./src/utils/"),
 				},
 				{
 					find: "@components",
@@ -54,6 +61,20 @@ export default {
 				{
 					find: "@client",
 					replacement: path.resolve(__dirname, "./src/client"),
+				},
+				{
+					find: "@config",
+					replacement: path.resolve(
+						__dirname,
+						"./src/config/index.ts"
+					),
+				},
+				{
+					find: "@config/",
+					replacement: path.resolve(
+						__dirname,
+						"./src/config/"
+					),
 				},
 			],
 		}),

@@ -10,7 +10,7 @@ enum Roles {
 
 // add enum for jwt algorithms
 
-const defaultConfig = {
+export const defaultConfig = {
 	jwtOptions: {
 		access: {
 			algorithm: "HS256",
@@ -48,4 +48,4 @@ export const AuthConfigSchema = z.object({
 });
 
 export type AuthConfig = z.infer<typeof AuthConfigSchema>;
-export default defaultConfig;
+

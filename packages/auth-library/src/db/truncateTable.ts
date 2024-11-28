@@ -1,5 +1,5 @@
 import { Table, getTableName, sql } from "drizzle-orm";
-import type { db } from "@/lib/auth/db";
+import type { db } from "@db/index";
 
 // Reset tables
 async function truncateTable(db: db, table: Table) {

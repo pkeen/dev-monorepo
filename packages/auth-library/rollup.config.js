@@ -1,5 +1,14 @@
 import typescript from "@rollup/plugin-typescript";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
+import alias from "@rollup/plugin-alias";
+import path from "path";
+import { fileURLToPath } from "url";
+import commonjs from "@rollup/plugin-commonjs";
+import react from "@vitejs/plugin-react";
+import json from "@rollup/plugin-json";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default {
 	input: "src/index.ts",
@@ -18,17 +27,43 @@ export default {
 	plugins: [
 		alias({
 			entries: [
-				{ find: "@main", replacement: "./src/index.ts" },
-				{ find: "@utils", replacement: "./src/utils" },
-				{ find: "@components", replacement: "./src/components" },
-				{ find: "@context", replacement: "./src/context" },
-				{ find: "@api", replacement: "./src/api" },
-				{ find: "@db", replacement: "./src/db" },
-				{ find: "client", replacement: "./src/client" },
+				{
+					find: "@main",
+					replacement: path.resolve(__dirname, "src/index.ts"),
+				},
+				{
+					find: "@utils",
+					replacement: path.resolve(__dirname, "./src/utils"),
+				},
+				{
+					find: "@components",
+					replacement: path.resolve(__dirname, "./src/components"),
+				},
+				{
+					find: "@context",
+					replacement: path.resolve(__dirname, "./src/context"),
+				},
+				{
+					find: "@api",
+					replacement: path.resolve(__dirname, "./src/api"),
+				},
+				{
+					find: "@db",
+					replacement: path.resolve(__dirname, "./src/db"),
+				},
+				{
+					find: "@client",
+					replacement: path.resolve(__dirname, "./src/client"),
+				},
 			],
 		}),
 		nodeResolve(),
-		typescript(),
+		typescript({
+			tsconfig: "./tsconfig.json", // Specify your tsconfig.json
+		}),
+		commonjs(),
+		react(),
+		json(),
 	],
-	external: ["react", "next"],
+	external: ["react", "next", "tslib"],
 };

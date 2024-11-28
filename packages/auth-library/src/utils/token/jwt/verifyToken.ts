@@ -1,4 +1,3 @@
-import jwt from "jsonwebtoken";
 import { jwtVerify } from "jose";
 import { secret } from "./key";
 import { JWTVerifyResult } from "jose";
@@ -11,7 +10,7 @@ import { JWTVerifyResult } from "jose";
  */
 export const verifyToken = async (
 	token: string,
-	options: { algorithms?: jwt.Algorithm[] } = {}
+	options: { algorithms?: string[] } = {}
 ): Promise<JWTVerifyResult> => {
 	const payload = await jwtVerify(token, secret, options);
 	return payload;

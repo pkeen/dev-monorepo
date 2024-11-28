@@ -6,7 +6,7 @@ import { AuthConfig } from "@main";
 
 export async function GET() {
 	// const csrf = utils.generateCsrf();
-	const csrf = utils.csrf.generateCsrf();
+	const csrf = utils.csrf.generate();
 
 	const res = AuthResponse.withJson({ csrf });
 

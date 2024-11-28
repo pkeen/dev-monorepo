@@ -10,7 +10,8 @@
 			"@db/*": ["db/*"],
 			"@client/*": ["client/*"]
 		},
-		"jsx": "preserve"
+		"jsx": "react-jsx",
+		"esModuleInterop": true
 	},
 	"include": ["src/**/*"]
 }

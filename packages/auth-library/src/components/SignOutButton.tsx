@@ -1,9 +1,9 @@
 "use client";
 import React from "react";
 import { useRouter } from "next/navigation";
-import { useCsrfToken } from "@/lib/auth/context/AuthContext/CsrfTokenContext";
-import { authClient } from "../utils";
-import { useAccessToken } from "@/lib/auth/context/AuthContext/AccessTokenContext";
+import { useCsrfToken } from "@context/CsrfTokenContext";
+import { authClient } from "@client/authClient";
+import { useAccessToken } from "@context/AccessTokenContext";
 
 export default function SignOutButton() {
 	const router = useRouter();

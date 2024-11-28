@@ -1,5 +1,5 @@
 "use client";
-import { useCsrfToken } from "@/lib/auth/context/AuthContext/CsrfTokenContext";
+import { useCsrfToken } from "@context/CsrfTokenContext";
 
 type Props = {};
 

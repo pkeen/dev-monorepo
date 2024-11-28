@@ -1,4 +1,3 @@
-import jwt from "jsonwebtoken";
 import { secret } from "./key";
 import { SignJWT } from "jose";
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import config from "../../config";
+import { getAuthConfig } from "../../config";
 
 interface CookieOptions {
 	httpOnly?: boolean;
@@ -12,7 +12,7 @@ interface CookieOptions {
 export function ResponseWithCsrf(
 	csrf: string,
 	data: any,
-	cookieKey: string = `${config.cookies.namePrefix}-token`,
+	cookieKey?: string,
 	cookieOptions: CookieOptions = {},
 	init: ResponseInit = { status: 200 }
 ): NextResponse {
@@ -25,7 +25,7 @@ export function ResponseWithCsrf(
 		sameSite: "lax",
 		...cookieOptions,
 	};
-
+	cookieKey = cookieKey || `${getAuthConfig().cookies.namePrefix}-csrf`;
 	response.cookies.set(cookieKey, csrf, cookieOptionsWithDefaults);
 	return response;
 }

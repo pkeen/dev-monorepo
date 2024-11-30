@@ -17,6 +17,12 @@ export class AuthResponse extends NextResponse {
 		this.config = getAuthConfig(); // Initialize config once
 	}
 
+	/**
+	 * Sets a token as an HTTP-only cookie.
+	 * @param token - The token to set.
+	 * @param key? - Optional. The name of the cookie.
+	 * @param options? - Optional Cookie options.
+	 */
 	setCookie(
 		token: string,
 		key: string = `${this.config.cookies.namePrefix}-token`,
@@ -32,6 +38,15 @@ export class AuthResponse extends NextResponse {
 		};
 		this.cookies.set(key, token, cookieOptions);
 	}
+	setRefresh(token: string) {
+		// this.setCookie(token, `${getAuthConfig().cookies.namePrefix}-refresh`);
+		this.setCookie(token, this.config.cookies.namePrefix + "-refresh");
+	}
+
+	setAccess(token: string) {
+		// this.setCookie(token, `${getAuthConfig().cookies.namePrefix}-access`);
+		this.setCookie(token, this.config.cookies.namePrefix + "-access");
+	}
 
 	destroyCookie(
 		key: string = `${this.config.cookies.namePrefix}-token`
@@ -39,6 +54,22 @@ export class AuthResponse extends NextResponse {
 		this.cookies.set(key, "", { maxAge: 0 });
 	}
 
+	destroyRefresh(key?: string): void {
+		key = key || `${this.config.cookies.namePrefix}-refresh`;
+		this.destroyCookie(key);
+	}
+
+	destroyAccess(key?: string): void {
+		key = key || `${this.config.cookies.namePrefix}-access`;
+		this.destroyCookie(key);
+	}
+
+	/**
+	 * Sets a csrf token as an HTTP-only cookie.
+	 * @param csrf - The token to set.
+	 * @param key? - Optional. The name of the cookie.
+	 * @param options? - Optional Cookie options.
+	 */
 	setCsrf(
 		csrf: string,
 		key: string = `${this.config.cookies.namePrefix}-csrf`,
@@ -55,10 +86,17 @@ export class AuthResponse extends NextResponse {
 		this.cookies.set(key, csrf, cookieOptions);
 	}
 
-	destroyCsrf(key: string = `${this.config.cookies.namePrefix}-csrf`): void {
+	destroyCsrf(key?: string): void {
+		key = key || `${getAuthConfig().cookies.namePrefix}-csrf`;
+		console.log("Destroying csrf with key = ", key);
 		this.cookies.set(key, "", { maxAge: 0 });
 	}
 
+	/**
+	 * Creates a new ExtendedResponse with JSON data and sets a cookie.
+	 * @param options - The options for creating the response.
+	 * @returns An AuthResponse instance.
+	 */
 	static withCookie({
 		cookie,
 		cookieKey,

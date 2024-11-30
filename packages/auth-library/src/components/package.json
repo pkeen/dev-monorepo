@@ -1,0 +1,5 @@
+{
+	"sideEffects": true,
+	"type": "module",
+	"use client": true
+}

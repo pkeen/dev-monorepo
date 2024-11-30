@@ -14,7 +14,16 @@
 		"@pete_keen/north": "workspace:*",
 		"next": "15.0.3",
 		"react": "19.0.0-rc-66855b96-20241106",
-		"react-dom": "19.0.0-rc-66855b96-20241106"
+		"react-dom": "19.0.0-rc-66855b96-20241106",
+		"zod": "^3.23.8",
+		"@neondatabase/serverless": "^0.10.3",
+		"axios": "^1.7.7",
+		"bcryptjs": "^2.4.3",
+		"cookie": "^1.0.2",
+		"dotenv": "^16.4.5",
+		"drizzle-orm": "^0.36.3",
+		"jose": "^5.9.6",
+		"tslib": "^2.8.1"
 	},
 	"devDependencies": {
 		"@faker-js/faker": "^9.2.0",

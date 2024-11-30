@@ -56,6 +56,7 @@ export default function SignInForm() {
 			// setMessage(data.message);
 			setIsPending(false);
 			setAccessToken(response.data.accessToken);
+			setCsrfToken(response.data.csrf);
 			router.push("/dashboard"); // redirect to dashboard
 		} catch (error) {
 			console.error(error);

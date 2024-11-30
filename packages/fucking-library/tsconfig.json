@@ -1,0 +1,29 @@
+{
+	"compilerOptions": {
+		"rootDir": "./src",
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleResolution": "Node",
+		"jsx": "react-jsx",
+		"strict": true,
+		"esModuleInterop": true,
+		"declaration": true,
+		"declarationMap": true,
+		"outDir": "./dist/types", // Optional, but ensures declaration files match output
+		"baseUrl": "./src",
+		"paths": {
+			"@main": ["index.ts"],
+			"@actions/*": ["actions/*"],
+			"@utils": ["utils/index.ts"],
+			"@utils/*": ["utils/*"],
+			"@context/*": ["context/*"],
+			"@api/*": ["api/*"],
+			"@db/*": ["db/*"],
+			"@client/*": ["client/*"],
+			"@config": ["config/index.ts"],
+			"@config/*": ["config/*"]
+		}
+	},
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "dist"]
+}

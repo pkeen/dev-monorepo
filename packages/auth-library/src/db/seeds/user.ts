@@ -1,10 +1,11 @@
 // import type { db } from "@/lib/auth/db";
-import { db } from "@db/index";
+// import { db } from "@db/index";
 import * as schema from "@db/schema";
 import { faker } from "@faker-js/faker";
 import { utils } from "@main";
+import { DrizzleDB } from "@db/types";
 
-const seedUsers = async (db: db) => {
+const seedUsers = async (db: DrizzleDB) => {
 	const spoofUserArray = [];
 
 	for (let i = 0; i < 10; i++) {

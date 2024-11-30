@@ -1,5 +1,6 @@
 "use client";
-import { useAccessToken } from "@/lib/auth/context/AuthContext/AccessTokenContext";
+// import { useAccessToken } from "@/lib/auth/context/AuthContext/AccessTokenContext";
+import { useAccessToken } from "../../context/AuthContext/AuthProvider";
 
 import React from "react";
 

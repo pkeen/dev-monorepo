@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import config from "../../config";
+import { getAuthConfig } from "../../config";
 
 export function ResponseWithCookie(
 	data: Record<string, any>,
 	token: string,
-	cookieKey: string = `${config.cookies.namePrefix}-token`,
+	cookieKey: string,
 	cookieOptions: {
 		httpOnly?: boolean;
 		secure?: boolean;
@@ -21,6 +21,7 @@ export function ResponseWithCookie(
 		maxAge: 3600,
 		...cookieOptions,
 	};
+	cookieKey = cookieKey || `${getAuthConfig().cookies.namePrefix}-csrf`;
 
 	response.cookies.set(cookieKey, token, cookieOptionsWithDefaults);
 	return response;

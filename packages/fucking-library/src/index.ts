@@ -1,0 +1,13 @@
+// export { defaultConfig } from "./config";
+export { initAuth, getAuthConfig } from "./config";
+export type { AuthConfig } from "./config";
+export * as utils from "./utils";
+export * as components from "./components";
+export * as routes from "./handlers";
+export { AuthResponse } from "./utils";
+export * as context from "./context";
+export * as client from "./client";
+export { AuthProvider } from "./context/AuthProvider";
+export { SignInForm } from "./components/SignInForm";
+export { TesterComponent } from "./test/TesterComponent";
+// export { initAuth } from "./config";

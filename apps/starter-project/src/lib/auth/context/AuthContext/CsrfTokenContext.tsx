@@ -32,6 +32,8 @@ export const useCsrfToken = () => {
 	return context;
 };
 
+
+
 export const CsrfTokenProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {

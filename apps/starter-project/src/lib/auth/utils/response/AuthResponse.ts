@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import config from "../../config";
+import { getAuthConfig } from "../../config";
 
 interface CookieOptions {
 	httpOnly?: boolean;
@@ -16,11 +16,7 @@ export class AuthResponse extends NextResponse {
 	 * @param key? - Optional. The name of the cookie.
 	 * @param options? - Optional Cookie options.
 	 */
-	setCookie(
-		token: string,
-		key: string = `${config.cookies.namePrefix}-token`,
-		options: CookieOptions = {}
-	): void {
+	setCookie(token: string, key?: string, options: CookieOptions = {}): void {
 		const cookieOptions: CookieOptions = {
 			httpOnly: true,
 			secure: process.env.NODE_ENV === "production",
@@ -29,11 +25,34 @@ export class AuthResponse extends NextResponse {
 			sameSite: "lax",
 			...options,
 		};
+		key = key || `${getAuthConfig().cookies.namePrefix}-token`;
+
 		this.cookies.set(key, token, cookieOptions);
 	}
 
-	destroyCookie(key: string = `${config.cookies.namePrefix}-token`): void {
+	setRefresh(token: string) {
+		// this.setCookie(token, `${getAuthConfig().cookies.namePrefix}-refresh`);
+		this.setCookie(token, "pk-auth-refresh");
+	}
+
+	setAccess(token: string) {
+		// this.setCookie(token, `${getAuthConfig().cookies.namePrefix}-access`);
+		this.setCookie(token, "pk-auth-access");
+	}
+
+	destroyCookie(key: string): void {
+		console.log("Destroying cookie with key = ", key);
 		this.cookies.set(key, "", { maxAge: 0 });
+	}
+
+	destroyRefresh(key?: string): void {
+		key = key || `${getAuthConfig().cookies.namePrefix}-refresh`;
+		this.destroyCookie(key);
+	}
+
+	destroyAccess(key?: string): void {
+		key = key || `${getAuthConfig().cookies.namePrefix}-access`;
+		this.destroyCookie(key);
 	}
 
 	/**
@@ -42,11 +61,7 @@ export class AuthResponse extends NextResponse {
 	 * @param key? - Optional. The name of the cookie.
 	 * @param options? - Optional Cookie options.
 	 */
-	setCsrf(
-		csrf: string,
-		key: string = `${config.cookies.namePrefix}-csrf`,
-		options: CookieOptions = {}
-	): void {
+	setCsrf(csrf: string, key?: string, options: CookieOptions = {}): void {
 		const cookieOptions: CookieOptions = {
 			httpOnly: true,
 			secure: process.env.NODE_ENV === "production",
@@ -55,10 +70,17 @@ export class AuthResponse extends NextResponse {
 			sameSite: "lax",
 			...options,
 		};
+		key = key || `${getAuthConfig().cookies.namePrefix}-csrf`;
+		console.log(
+			"Setting CSRF token name = ",
+			getAuthConfig().cookies.namePrefix
+		);
 		this.cookies.set(key, csrf, cookieOptions);
 	}
 
-	destroyCsrf(key: string = `${config.cookies.namePrefix}-csrf`): void {
+	destroyCsrf(key?: string): void {
+		key = key || `${getAuthConfig().cookies.namePrefix}-csrf`;
+		console.log("Destroying csrf with key = ", key);
 		this.cookies.set(key, "", { maxAge: 0 });
 	}
 

@@ -9,6 +9,7 @@ import React from "react";
 // import { components } from "@pete_keen/north";
 // import { auth } from "@/auth";
 import { TesterComponent } from "@pete_keen/north";
+// import { TesterComponent } from "@pete_keen/north";
 // import { TesterComponent } from "@pete_keen/fuck-off";
 
 const page = () => {

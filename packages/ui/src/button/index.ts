@@ -1,2 +1,3 @@
-// packages/ui/src/Button/index.ts
+// packages/ui/src/button/index.ts
 export * from "./Button";
+export * from "./ServerButton";

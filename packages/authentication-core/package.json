@@ -1,0 +1,51 @@
+{
+	"name": "@pete_keen/authentication-core",
+	"version": "0.0.1",
+	"main": "src/index.ts",
+	"types": "src/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./src/index.ts",
+			"default": "./src/index.ts",
+			"types": "./src/index.d.ts"
+		},
+		"./tokens": {
+			"import": "./src/token-service/index.ts",
+			"default": "./src/tokens/index.ts",
+			"types": "./src/tokens/index.d.ts"
+		},
+		"./core": {
+			"import": "./src/core/index.ts",
+			"default": "./src/core/index.ts",
+			"types": "./src/core/index.d.ts"
+		},
+		"./session-storage-adapters": {
+			"import": "./src/session-storage-adapters/index.ts",
+			"default": "./src/session-storage-adapters/index.ts",
+			"types": "./src/session-storage-adapters/index.d.ts"
+		},
+		"./transporters": {
+			"import": "./src/transporters/index.ts",
+			"default": "./src/transporters/index.ts",
+			"types": "./src/transporters/index.d.ts"
+		}
+	},
+	"scripts": {
+		"build": "tsc",
+		"test": "jest"
+	},
+	"dependencies": {
+		"zod": "^3.0.0",
+		"jose": "^5.9.6"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0",
+		"drizzle-orm": "^0.36.3",
+		"next": "^15.0.3"
+	},
+	"devDependencies": {
+		"typescript": "^5.0.0",
+		"drizzle-orm": "^0.36.3",
+		"next": "^15.0.3"
+	}
+}

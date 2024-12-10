@@ -1,5 +1,5 @@
-// packages/ui/src/Button/Button.tsx
 "use client";
+
 import React from "react";
 import { useState } from "react";
 
@@ -9,13 +9,13 @@ export interface ButtonProps {
 	variant?: "primary" | "secondary";
 }
 
-export const Button: React.FC<ButtonProps> = ({
+export const Button = ({
 	children,
 	onClick,
 	variant = "primary",
-}) => {
+}: ButtonProps) => {
 	const [primary, setPrimary] = useState("primary");
-	const [count, setCount] = useState(0);
+	// const [count, setCount] = useState(0);
 
 	const handleClick = () => {
 		setPrimary((prev) => (prev === "primary" ? "secondary" : "primary"));

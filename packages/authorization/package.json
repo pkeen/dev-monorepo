@@ -1,0 +1,23 @@
+{
+	"name": "@pete_keen/authorization-core",
+	"version": "0.0.1",
+	"main": "src/index.ts",
+	"types": "src/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./src/index.ts",
+			"default": "./src/index.ts",
+			"types": "./src/index.d.ts"
+		}
+	},
+	"scripts": {
+		"build": "tsc",
+		"test": "jest"
+	},
+	"dependencies": {
+		"zod": "^3.0.0"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	}
+}

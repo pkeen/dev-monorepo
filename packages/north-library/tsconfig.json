@@ -1,0 +1,90 @@
+// {
+// 	"compilerOptions": {
+// 		"baseUrl": "./src",
+// 		"paths": {
+// 			"@main": ["index.ts"],
+// 			"@actions/*": ["actions/*"],
+// 			"@utils": ["utils/index.ts"],
+// 			"@utils/*": ["utils/*"],
+// 			"@context/*": ["context/*"],
+// 			"@api/*": ["api/*"],
+// 			"@db/*": ["db/*"],
+// 			"@client/*": ["client/*"],
+// 			"@config": ["config/index.ts"],
+// 			"@config/*": ["config/*"]
+// 		},
+// 		"jsx": "react-jsx",
+// 		// "declaration": true,
+// 		// "declarationMap": true,
+// 		// "outDir": "dist/types",
+// 		// "declarationDir": "./dist/types",
+// 		// "moduleResolution": "node",
+// 		"esModuleInterop": true,
+// 		"target": "es2019",
+// 		"module": "esnext",
+// 		"strict": true
+// 	},
+// 	"include": ["src/**/*"]
+// }
+
+// {
+// 	"compilerOptions": {
+// 		"rootDir": "./src", // Ensure TypeScript knows where the source files are
+// 		"target": "ES2019", // Target a modern JS version
+// 		"module": "ESNext", // Use ES modules
+// 		"moduleResolution": "Node",
+// 		"declaration": true, // Emit type declaration files
+// 		"declarationMap": true, // Emit source maps for types
+// 		"jsx": "react-jsx", // Support React JSX
+// 		"strict": true, // Enable strict typing
+// 		"esModuleInterop": true, // Allow interop between ES modules and CommonJS
+// 		"baseUrl": "./src", // Allow base URL imports
+// 		"outDir": "./dist/ts", // Specify a temporary directory for type declarations
+// 		"paths": {
+// 			"@main": ["index.ts"],
+// 			"@actions/*": ["actions/*"],
+// 			"@utils": ["utils/index.ts"],
+// 			"@utils/*": ["utils/*"],
+// 			"@context/*": ["context/*"],
+// 			"@api/*": ["api/*"],
+// 			"@db/*": ["db/*"],
+// 			"@client/*": ["client/*"],
+// 			"@config": ["config/index.ts"],
+// 			"@config/*": ["config/*"]
+// 		}
+// 	},
+// 	"include": ["src/**/*"],
+// 	"exclude": ["node_modules", "dist"]
+// }
+
+{
+	"compilerOptions": {
+		"rootDir": "./src",
+		"target": "ES2019",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"declaration": true,
+		"declarationMap": true,
+		"declarationDir": "./dist",
+		"jsx": "react-jsx",
+		"strict": true,
+		"esModuleInterop": true,
+		"baseUrl": "./src",
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"paths": {
+			"@main": ["index.ts"],
+			"@actions/*": ["actions/*"],
+			"@utils": ["utils/index.ts"],
+			"@utils/*": ["utils/*"],
+			"@context/*": ["context/*"],
+			"@api/*": ["api/*"],
+			"@db/*": ["db/*"],
+			"@client/*": ["client/*"],
+			"@config": ["config/index.ts"],
+			"@config/*": ["config/*"]
+		}
+	},
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "dist", "**/node_modules/*"]
+}

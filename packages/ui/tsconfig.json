@@ -1,19 +1,22 @@
 {
-	"compilerOptions": {
-		"target": "es2018",
-		"module": "esnext",
-		"lib": ["dom", "esnext"],
-		"jsx": "react",
-		"declaration": true,
-		"declarationDir": "dist",
-		"rootDir": "src",
-		"outDir": "dist",
-		"moduleResolution": "node",
-		"strict": true,
-		"esModuleInterop": true,
-		"skipLibCheck": true,
-		"forceConsistentCasingInFileNames": true
-	},
-	"include": ["src"],
-	"exclude": ["node_modules", "dist"]
+  "compilerOptions": {
+    "target": "es2018",
+    "module": "esnext",
+    "lib": ["dom", "esnext"],
+    "jsx": "react-jsx",  // Changed from "preserve"
+    "declaration": true,
+    "declarationDir": "dist",
+    "rootDir": "src",
+    "outDir": "dist",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "next/*": ["./node_modules/next/*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
 }

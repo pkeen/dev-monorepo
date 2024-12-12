@@ -12,6 +12,7 @@ import "./globals.css";
 // import { AuthProvider } from "@pete_keen/north";
 // import { AuthProvider } from "@/lib/ClientComponents";
 import LogoutButton from "@/lib/LogoutButton";
+import RefreshButton from "@/lib/RefreshButton";
 import Link from "next/link";
 
 const geistSans = localFont({
@@ -41,10 +42,11 @@ export default function RootLayout({
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 			>
 				{/* <AuthProvider> */}
-				<Link href="/">Next Custom Auth</Link>-
+				<Link href="/">Lume Auth</Link>-
 				<Link href="/dashboard">Dashboard</Link>-
-				<Link href="/auth/signin">Login</Link> - 
-				<LogoutButton>Logout</LogoutButton>
+				<Link href="/auth/signin">Login</Link> -
+				<LogoutButton>Logout</LogoutButton> - 
+				<RefreshButton />
 				{children}
 				{/* </AuthProvider> */}
 			</body>

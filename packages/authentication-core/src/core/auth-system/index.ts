@@ -1,41 +1,54 @@
 // packages/auth-core/src/services/AuthenticationService.ts
-import { AuthManager } from "../types";
+import { AuthManager, AuthValidationResult } from "../types";
 import { Credentials } from "../types";
 import { WebStorageAdapter } from "../types";
 import { User } from "../types";
 import { AuthStrategy } from "../types";
 import { TransportAdapter } from "../../transporters/types";
-import { AuthState } from "../types";
-
-type AuthResult = {
-	success: boolean;
-	authState?: AuthState;
-};
+import { AuthState, AuthResult } from "../types";
+import { UserRepository } from "../types";
+import { Adapter } from "../adapter";
 
 export class AuthSystem implements AuthManager {
 	public strategy: AuthStrategy;
 	public transportAdapter: TransportAdapter;
+	// public userRepository: UserRepository;
+	public adapter: Adapter;
+
 	// storageAdapter: WebStorageAdapter; // Declare the storageAdapter property
 
-	constructor(strategy: AuthStrategy, transportAdapter: TransportAdapter) {
+	constructor(
+		strategy: AuthStrategy,
+		transportAdapter: TransportAdapter,
+		// userRepository: UserRepository
+		adapter: Adapter
+	) {
 		this.strategy = strategy;
 		this.transportAdapter = transportAdapter;
+		// this.userRepository = userRepository;
+		this.adapter = adapter;
 	}
 	async authenticate(credentials: Credentials): Promise<AuthResult> {
-		if (
-			credentials.email === "pkeen7@gmail.com" &&
-			credentials.password === "password"
-		) {
-			const authState = await this.strategy.createAuthState({
-				id: 1,
-				email: "pkeen7@gmail.com",
-				// roles: ["user", "admin"],
-			});
-			return {
-				success: true,
-				authState,
-			};
-		} else {
+		// validation of credentials
+		if (!credentials.email || !credentials.password) {
+			return { success: false };
+		}
+		try {
+			// step 1: find user by email
+			const user = await this.adapter.getUserByEmail(credentials.email);
+			console.log("user:", user);
+			if (!user) {
+				return { success: false };
+			}
+			// step 2: verify password
+			if (user.password !== credentials.password) {
+				return { success: false };
+			}
+
+			// step 3: create auth state
+			const authState = await this.strategy.createAuthState(user);
+			return { success: true, authState };
+		} catch (error) {
 			return { success: false };
 		}
 	}
@@ -62,18 +75,22 @@ export class AuthSystem implements AuthManager {
 		// Return response or handle it in the route
 	}
 
-	// async createRole(name: string, permissions: string[]): Promise<void> {
-	// 	return Promise.resolve();
-	// }
+	async refresh(authState: AuthState): Promise<AuthState> {
+		if (!this.strategy.supportsRefresh()) {
+			throw new Error(
+				"Refresh token flow not supported by this strategy."
+			);
+		}
+		return this.strategy.refresh(authState);
+	}
 
-	// // Add more methods as needed
-	// createRole(name: string, permissions: string[]) {
-	// 	console.log(`Role "${name}" created with permissions: ${permissions}`);
-	// }
+	async validate(authState: AuthState): Promise<AuthValidationResult> {
+		return this.strategy.validate(authState);
+	}
 
-	// listPolicies() {
-	// 	return Object.keys(this.policies);
-	// }
+	async signup(credentials: Credentials): Promise<AuthState> {
+		return this.strategy.signup(credentials);
+	}
 }
 
 // export const createAuthService = (

@@ -9,6 +9,11 @@
 			"default": "./src/index.ts",
 			"types": "./src/index.d.ts"
 		},
+		"./adapters": {
+			"import": "./src/adapters/index.ts",
+			"default": "./src/adapters/index.ts",
+			"types": "./src/adapters/index.d.ts"
+		},
 		"./tokens": {
 			"import": "./src/token-service/index.ts",
 			"default": "./src/tokens/index.ts",

@@ -2,6 +2,7 @@ import { JwtStrategy } from "@pete_keen/authentication-core";
 import { AuthSystem } from "@pete_keen/authentication-core";
 import { NextAppTransportAdapter } from "@pete_keen/authentication-core/transporters";
 import { JwtConfig } from "@pete_keen/authentication-core";
+import { TestAdapter } from "@pete_keen/authentication-core/adapters";
 
 const jwtOptions: JwtConfig = {
 	access: {
@@ -22,4 +23,10 @@ const jwtOptions: JwtConfig = {
 
 const jwtStrategy = new JwtStrategy(jwtOptions);
 const transportAdapter = new NextAppTransportAdapter();
-export const authSystem = new AuthSystem(jwtStrategy, transportAdapter);
+const databaseAdapter = TestAdapter();
+
+export const authSystem = new AuthSystem(
+	jwtStrategy,
+	transportAdapter,
+    databaseAdapter
+);

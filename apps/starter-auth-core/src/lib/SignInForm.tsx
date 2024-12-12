@@ -52,7 +52,7 @@ export default function SignInForm() {
 		setIsPending(true);
 		try {
 			// const response = await authClient.post("/auth/signin", formData);
-			const response = await fetch("/api/auth/signin", {
+			const response = await fetch("/api/auth/login", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",

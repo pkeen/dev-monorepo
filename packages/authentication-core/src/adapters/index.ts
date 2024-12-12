@@ -1,2 +1,2 @@
-export * from "./drizzle";
+export * from "./drizzle-nextauth";
 export * from "./test";

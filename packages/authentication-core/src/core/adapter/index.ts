@@ -23,8 +23,9 @@ export interface AdapterUser extends User {
 
 	/**
 	 * Password - this may be used for credential based sign in only - for now thats the only way
+     * Should be optional but for now its required
 	 */
-	password?: string;
+	password: string;
 }
 
 // From next auth

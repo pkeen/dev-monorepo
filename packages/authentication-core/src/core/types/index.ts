@@ -4,8 +4,6 @@
 // 	// roles: string[];
 // }
 
-import { SignJWT } from "jose";
-
 export interface User {
 	id: string;
 	name?: string | null;
@@ -14,7 +12,7 @@ export interface User {
 }
 
 export interface Resource {
-	ownerId: number;
+	ownerId: string;
 	status: string;
 }
 

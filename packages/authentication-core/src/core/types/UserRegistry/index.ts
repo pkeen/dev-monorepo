@@ -1,8 +1,11 @@
-export interface DatabaseUser {
-	id: number;
+import { User } from "..";
+
+export interface DatabaseUser extends User {
+	id: string;
 	name: string;
 	email: string;
 	hashedPassword: string;
+	// emailVerified: Date | null;
 }
 
 export interface CreateUserDTO {
@@ -21,7 +24,7 @@ export interface UpdateUserDTO {
 
 export interface UserRepository {
 	findByEmail: (email: string) => Promise<DatabaseUser | null>;
-	findById: (id: string) => Promise<DatabaseUser | null>;
-	create: (user: CreateUserDTO) => Promise<DatabaseUser>;
-	update: (id: string, data: UpdateUserDTO) => Promise<DatabaseUser>;
+// 	findById: (id: string) => Promise<DatabaseUser | null>;
+// 	create: (user: CreateUserDTO) => Promise<DatabaseUser>;
+// 	update: (id: string, data: UpdateUserDTO) => Promise<DatabaseUser>;
 }

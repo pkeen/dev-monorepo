@@ -22,11 +22,9 @@ export type SqlFlavorOptions =
 	| AnyMySqlDatabase
 	| AnySQLiteDatabase;
 
-
-// // simplified for now
-// export type DefaultSchema<Flavor extends SqlFlavorOptions> = 
-// 	Flavor extends AnyPostgresDatabase
-//         ? DefaultPostgresSchema
+// simplified for now
+export type DefaultSchema<Flavor extends SqlFlavorOptions> =
+	Flavor extends AnyPostgresDatabase ? DefaultPostgresSchema : never;
 
 // export type DefaultSchema<Flavor extends SqlFlavorOptions> =
 // 	Flavor extends AnyMySqlDatabase

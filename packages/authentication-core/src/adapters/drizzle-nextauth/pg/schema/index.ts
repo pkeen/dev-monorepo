@@ -6,24 +6,46 @@ import {
 	integer,
 	PgColumn,
 	PgTableWithColumns,
+	uniqueIndex,
+	AnyPgColumn,
 } from "drizzle-orm/pg-core";
-import { GeneratedColumnConfig, and, eq, getTableColumns } from "drizzle-orm";
+import {
+	GeneratedColumnConfig,
+	and,
+	eq,
+	getTableColumns,
+	SQL,
+	sql,
+} from "drizzle-orm";
+
+export function lower(email: AnyPgColumn): SQL {
+	return sql`lower(${email})`;
+}
 
 export function defineTables(
 	schema: Partial<DefaultPostgresSchema> = {}
 ): Required<DefaultPostgresSchema> {
 	const usersTable =
 		schema.usersTable ??
-		(pgTable("users", {
-			id: text("id")
-				.primaryKey()
-				.$defaultFn(() => crypto.randomUUID()),
-			name: text("name"),
-			email: text("email").unique(),
-			emailVerified: timestamp("emailVerified", { mode: "date" }),
-			image: text("image"),
-			password: text("password"),
-		}) satisfies DefaultPostgresUsersTable);
+		(pgTable(
+			"users",
+			{
+				id: text("id")
+					.primaryKey()
+					.$defaultFn(() => crypto.randomUUID()),
+				name: text("name"),
+				email: text("email").unique(),
+				emailVerified: timestamp("emailVerified", { mode: "date" }),
+				image: text("image"),
+				password: text("password"),
+			},
+			(table) => ({
+				// emailUniqueIndex: uniqueIndex('emailUniqueIndex').on(sql`lower(${table.email})`),
+				emailUniqueIndex: uniqueIndex("emailUniqueIndex").on(
+					lower(table.email)
+				),
+			})
+		) satisfies DefaultPostgresUsersTable);
 
 	// const accountsTable =
 	// 	schema.accountsTable ??

@@ -44,8 +44,8 @@ export default function RootLayout({
 				{/* <AuthProvider> */}
 				<Link href="/">Lume Auth</Link>-
 				<Link href="/dashboard">Dashboard</Link>-
-				<Link href="/auth/signin">Login</Link> -
-				<LogoutButton>Logout</LogoutButton> - 
+				<Link href="/auth/login">Login</Link> -
+				<LogoutButton>Logout</LogoutButton> -
 				<RefreshButton />
 				{children}
 				{/* </AuthProvider> */}

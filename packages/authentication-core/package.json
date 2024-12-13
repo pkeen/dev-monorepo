@@ -24,10 +24,10 @@
 			"default": "./src/core/index.ts",
 			"types": "./src/core/index.d.ts"
 		},
-		"./session-storage-adapters": {
-			"import": "./src/session-storage-adapters/index.ts",
-			"default": "./src/session-storage-adapters/index.ts",
-			"types": "./src/session-storage-adapters/index.d.ts"
+		"./session-state-storage": {
+			"import": "./src/session-state-storage/index.ts",
+			"default": "./src/session-state-storage/index.ts",
+			"types": "./src/session-state-storage/index.d.ts"
 		},
 		"./transporters": {
 			"import": "./src/transporters/index.ts",

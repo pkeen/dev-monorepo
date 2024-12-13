@@ -1,6 +1,6 @@
 // packages/auth-core/src/services/AuthenticationService.ts
-import { AuthManager, AuthValidationResult } from "../types";
-import { Credentials } from "../types";
+import { AuthManager, AuthValidationResult, ImprovedAuthState } from "../types";
+import { Credentials, SignupCredentials } from "../types";
 // import { WebStorageAdapter } from "../types";
 import { User } from "../types";
 import { AuthStrategy } from "../types";
@@ -12,7 +12,6 @@ import { DefaultPasswordService, PasswordService } from "../password-service";
 
 export class AuthSystem implements AuthManager {
 	public strategy: AuthStrategy;
-	public transportAdapter: TransportAdapter;
 	// public userRepository: UserRepository;
 	public adapter: Adapter;
 	public passwordService: PasswordService;
@@ -21,33 +20,32 @@ export class AuthSystem implements AuthManager {
 
 	constructor(
 		strategy: AuthStrategy,
-		transportAdapter: TransportAdapter,
 		// userRepository: UserRepository
 		adapter: Adapter,
 		passwordService: PasswordService = DefaultPasswordService()
 	) {
 		this.strategy = strategy;
-		this.transportAdapter = transportAdapter;
 		// this.userRepository = userRepository;
 		this.adapter = adapter;
 		this.passwordService = passwordService;
 	}
-	async authenticate(credentials: Credentials): Promise<AuthResult> {
-		// validation of credentials
-		console.log("credentials:", credentials);
-		if (!credentials.email || !credentials.password) {
-			return { success: false };
-		}
+	async authenticate(credentials: Credentials): Promise<ImprovedAuthState> {
 		try {
+			// Step 1: Validate input
+			console.log("credentials:", credentials);
+			if (!credentials.email || !credentials.password) {
+				return { isLoggedIn: false };
+			}
+
 			// step 1: find user by email
 			const user = await this.adapter.getUserByEmail(credentials.email);
 			console.log("user:", user);
 			if (!user) {
 				console.log("user not found");
-				return { success: false };
+				return { isLoggedIn: false };
 			} else if (user.password === null) {
 				console.log("user has no password");
-				return { success: false };
+				return { isLoggedIn: false };
 			}
 
 			// step 2: verify password
@@ -56,38 +54,39 @@ export class AuthSystem implements AuthManager {
 				user.password
 			);
 			if (!isAuthenticated) {
-				return { success: false };
+				return { isLoggedIn: false };
 			}
 			// if (user.password !== credentials.password) {
 			// 	return { success: false };
 			// }
 
 			// step 3: create auth state
-			const authState = await this.strategy.createAuthState(user);
-			return { success: true, authState };
+			const tokens = await this.strategy.createAuthTokens(user);
+			return { isLoggedIn: true, tokens, user };
 		} catch (error) {
-			return { success: false };
+			return { isLoggedIn: false };
 		}
 	}
 
-	async logout(request: Request, response: Response): Promise<void> {
+	async logout(authState: ImprovedAuthState): Promise<void> {
 		// 1. Retrieve state from request
-		const authState = await this.transportAdapter.retrieveAuthState(
-			request
-		);
+		// const authState = await this.transportAdapter.retrieveAuthState(
+		// 	request
+		// );
+		// should be handled at application level
 		if (!authState) {
 			return; // all ready logged out
 		}
 
-		// 2. If we have a refresh token or session ID, pass it to the strategy
-		if (authState.refreshToken) {
-			await this.strategy.logout(authState.refreshToken);
-		} else if (authState?.sessionId) {
-			await this.strategy.logout(authState.sessionId);
-		}
+		// Perhaps we should have if (authState.strategy === 'session')
+		// go to database and delete the session
 
-		// 3. Clear auth state from client
-		this.transportAdapter.clearAuthState(response);
+		// 2. If we have a refresh token or session ID, pass it to the strategy
+		// if (authState.refreshToken) {
+		// 	await this.strategy.logout(authState.refreshToken);
+		// } else if (authState?.sessionId) {
+		// 	await this.strategy.logout(authState.sessionId);
+		// }
 
 		// Return response or handle it in the route
 	}
@@ -105,8 +104,35 @@ export class AuthSystem implements AuthManager {
 		return this.strategy.validate(authState);
 	}
 
-	async signup(credentials: Credentials): Promise<AuthState> {
-		return this.strategy.signup(credentials);
+	async signup(credentials: SignupCredentials): Promise<AuthState> {
+		// return this.strategy.signup(credentials);
+		// Step 1: Validate input
+		console.log("sign up credentials:", credentials);
+
+		// Step 2: Check if user already exists
+		const existingUser = await this.adapter.getUserByEmail(
+			credentials.email
+		);
+		if (existingUser) {
+			console.log("user already exists");
+			throw new Error("An account with that email is already registered");
+		}
+
+		// Step 3: Hash the password
+		const hashedPassword = await this.passwordService.hash(
+			credentials.password
+		);
+		credentials.password = hashedPassword;
+
+		// Step 4: Create the user
+		const user = await this.adapter.createUserWithoutId(credentials);
+
+		// Step 5: Create the auth state
+		const authState = await this.strategy.createAuthState(user);
+
+		// Step 6: Return the auth state
+		return authState;
+		// return { accessToken: "", refreshToken: "" };
 	}
 }
 

@@ -1,4 +1,4 @@
-import { AuthStrategy, JwtConfig, Credentials } from "../../types";
+import { AuthStrategy, JwtConfig, Credentials, AuthTokens } from "../../types";
 import { TokenService } from "../../types";
 import { User, AuthState } from "../../types";
 import { JwtTokenService } from "../../../token-service";
@@ -28,6 +28,26 @@ export class JwtStrategy implements AuthStrategy {
 			refreshToken,
 		};
 		return authState;
+	}
+
+	async createAuthTokens(user: User): Promise<AuthTokens> {
+		const accessToken = await this.tokenService.generate(
+			user,
+			this.config.access
+		);
+		const refreshToken = await this.tokenService.generate(
+			user,
+			this.config.refresh
+		);
+		const authTokens: AuthTokens = {
+			accessToken: {
+				value: accessToken,
+			},
+			refreshToken: {
+				value: refreshToken,
+			},
+		};
+		return authTokens;
 	}
 
 	logout(tokenOrSessionId: string): Promise<void> {
@@ -64,15 +84,20 @@ export class JwtStrategy implements AuthStrategy {
 		if (!authState.refreshToken) {
 			return {};
 		}
+
 		//1b verify refresh token
 		const validationResult = await this.tokenService.verify(
 			authState.refreshToken,
 			this.config.refresh
 		);
+		console.log("validationResult (in strategy):", validationResult);
 
 		if (!validationResult.valid) {
 			return {};
 		}
+
+		// 3. query the database for the user
+		// woah this doesnt work this strategy doesnt have access to it
 
 		// 2. Generate a new access token
 		const user = validationResult.user as User;

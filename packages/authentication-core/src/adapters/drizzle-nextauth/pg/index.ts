@@ -2,7 +2,8 @@ import { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import { Adapter, AdapterUser } from "../../../core/adapter";
 import { DefaultPostgresSchema, defineTables } from "./schema";
 import { getTableColumns } from "drizzle-orm";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
+import { SignupCredentials } from "../../../core/types";
 
 export function PostgresDrizzleAdapter(
 	client: PgDatabase<PgQueryResultHKT, any>,
@@ -18,6 +19,15 @@ export function PostgresDrizzleAdapter(
 	} = defineTables(schema);
 
 	return {
+		async createUserWithoutId(
+			signupCredentials: SignupCredentials
+		): Promise<AdapterUser> {
+			return client
+				.insert(usersTable)
+				.values(signupCredentials)
+				.returning()
+				.then((res) => res[0]) as Promise<AdapterUser>;
+		},
 		async createUser(data: AdapterUser) {
 			const { id, ...insertData } = data;
 			const hasDefaultId =
@@ -45,9 +55,12 @@ export function PostgresDrizzleAdapter(
 				const result = await client
 					.select()
 					.from(usersTable)
-					.where(eq(usersTable.email, email));
+					.where(sql`lower(${usersTable.email}) = lower(${email})`);
+				// .where(eq(usersTable.email, email));
 
 				const user = result.length > 0 ? result[0] : null;
+
+				console.log("user in getUserByEmail", user);
 
 				return user as AdapterUser; // No need to cast to Promise since we're in an async function
 			} catch (error) {

@@ -288,6 +288,9 @@ importers:
 
   packages/authentication-core:
     dependencies:
+      bcryptjs:
+        specifier: ^2.4.3
+        version: 2.4.3
       jose:
         specifier: ^5.9.6
         version: 5.9.6
@@ -295,6 +298,9 @@ importers:
         specifier: ^3.0.0
         version: 3.23.8
     devDependencies:
+      '@types/bcryptjs':
+        specifier: ^2.4.6
+        version: 2.4.6
       drizzle-orm:
         specifier: ^0.36.3
         version: 0.36.4(@neondatabase/serverless@0.10.4)(@types/pg@8.11.6)(@types/react@18.3.12)(react@19.0.0-rc-66855b96-20241106)

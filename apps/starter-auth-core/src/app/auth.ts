@@ -2,7 +2,13 @@ import { JwtStrategy } from "@pete_keen/authentication-core";
 import { AuthSystem } from "@pete_keen/authentication-core";
 import { NextAppTransportAdapter } from "@pete_keen/authentication-core/transporters";
 import { JwtConfig } from "@pete_keen/authentication-core";
-import { TestAdapter } from "@pete_keen/authentication-core/adapters";
+import {
+	TestAdapter,
+	DrizzleAdapter,
+} from "@pete_keen/authentication-core/adapters";
+import { NextSessionStateStorage } from "@pete_keen/authentication-core/session-state-storage"; // {NextSessionStateStorage}
+import db from "../lib/db";
+// import { db } from "../lib/db";
 
 const jwtOptions: JwtConfig = {
 	access: {
@@ -22,11 +28,10 @@ const jwtOptions: JwtConfig = {
 };
 
 const jwtStrategy = new JwtStrategy(jwtOptions);
-const transportAdapter = new NextAppTransportAdapter();
-const databaseAdapter = TestAdapter();
+// const transportAdapter = new NextAppTransportAdapter();
+// const databaseAdapter = TestAdapter();
+const databaseAdapter = DrizzleAdapter(db);
 
-export const authSystem = new AuthSystem(
-	jwtStrategy,
-	transportAdapter,
-    databaseAdapter
-);
+export const authSystem = new AuthSystem(jwtStrategy, databaseAdapter);
+
+export const sessionStateStorage = new NextSessionStateStorage();

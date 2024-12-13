@@ -4,6 +4,21 @@
 // 	// roles: string[];
 // }
 
+// Base token type with common properties
+export interface AuthToken {
+	value: string;
+	expiresAt?: Date;
+	name?: string;
+}
+
+// All possible token types in the system
+export interface AuthTokens {
+	accessToken?: AuthToken;
+	refreshToken?: AuthToken;
+	sessionId?: AuthToken;
+	csrfToken?: AuthToken;
+}
+
 export interface User {
 	id: string;
 	name?: string | null;
@@ -16,10 +31,14 @@ export interface Resource {
 	status: string;
 }
 
-export type Credentials = {
+export interface Credentials {
 	email: string;
 	password: string;
-};
+}
+
+export interface SignupCredentials extends Credentials {
+	name: string;
+}
 
 export type AuthResult = {
 	success: boolean;
@@ -27,14 +46,14 @@ export type AuthResult = {
 };
 
 export interface AuthManager {
-	authenticate: (credentials: Credentials) => Promise<AuthResult>;
+	authenticate: (credentials: Credentials) => Promise<ImprovedAuthState>;
 	// can: (user: User, action: string, resource: Resource) => boolean;
 	// storageAdapter: WebStorageAdapter;
-	signup: (credentials: Credentials) => Promise<AuthState>;
+	signup: (credentials: SignupCredentials) => Promise<ImprovedAuthState>;
 	validate: (authState: AuthState) => Promise<AuthValidationResult>;
 	// refreshToken: (refreshToken: string) => Promise<AuthResult>;
-	logout: (request: Request, response: Response) => Promise<void>;
-	refresh: (authState: AuthState) => Promise<AuthState>;
+	logout: (authState: ImprovedAuthState) => Promise<void>;
+	refresh: (authState: AuthState) => Promise<ImprovedAuthState>;
 }
 
 // Core interfaces that other components must implement
@@ -59,12 +78,6 @@ export interface WebStorageAdapter {
 	getRemovalHeaders: () => Record<string, string[]>;
 }
 
-export interface AuthTokens {
-	accessToken: string;
-	refreshToken: string;
-	csrfToken: string;
-}
-
 export interface CookieOptions {
 	httpOnly?: boolean;
 	secure?: boolean;
@@ -83,6 +96,28 @@ export interface AuthState {
 	accessToken?: string;
 	refreshToken?: string;
 	sessionId?: string;
+}
+
+// The complete auth state
+export interface ImprovedAuthState {
+	isLoggedIn: boolean;
+	// The authenticated user
+	user?: User;
+
+	// Active tokens
+	tokens?: AuthTokens;
+
+	// When the auth state was created
+	createdAt?: Date;
+
+	// When the entire auth state expires (might differ from individual token expiry)
+	expiresAt?: Date;
+
+	// The strategy that created this state
+	strategy?: "jwt" | "session";
+
+	// Optional metadata that might be needed by specific strategies
+	metadata?: Record<string, unknown>;
 }
 
 export interface JwtOptions {
@@ -119,6 +154,7 @@ export interface AuthStrategy {
 		// userId: string,
 		// roles: string[]
 	): Promise<AuthState>;
+	createAuthTokens(user: User): Promise<AuthTokens>;
 	logout(tokenOrSessionId: string): Promise<void>;
 	validate(authState: AuthState): Promise<AuthValidationResult>;
 	supportsRefresh(): boolean;

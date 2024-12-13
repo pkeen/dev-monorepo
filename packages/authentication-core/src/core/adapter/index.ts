@@ -1,4 +1,5 @@
 import { User } from "../types";
+import { SignupCredentials } from "../types";
 /**
  * WARNING: This module takes heavy influence from next auth.
  * Give credit to next auth.
@@ -23,7 +24,7 @@ export interface AdapterUser extends User {
 
 	/**
 	 * Password - this may be used for credential based sign in only - for now thats the only way
-     * Should be optional but for now its required
+	 * Should be optional but for now its required
 	 */
 	password: string;
 }
@@ -53,6 +54,14 @@ export interface Adapter {
 	 * See also [User management](https://authjs.dev/guides/creating-a-database-adapter#user-management)
 	 */
 	createUser(user: AdapterUser): Promise<AdapterUser>;
+	/**
+	 * My createUser method
+	 * The trouble with NextAuths createUser is that it takes an AdapterUser which requires an id field
+	 * When signing up a user with email and password, the id field is not required
+	 * So I need to create a createUser method that takes a user without an id field
+	 *
+	 */
+	createUserWithoutId(user: SignupCredentials): Promise<AdapterUser>;
 	/**
 	 * Returns a user from the database via the user id.
 	 *

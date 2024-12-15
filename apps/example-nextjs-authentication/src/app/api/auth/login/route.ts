@@ -8,9 +8,9 @@ export async function POST(request: Request) {
 
 	const authState = await authSystem.authenticate(credentials);
 
-	if (authState.isLoggedIn && authState.keyCards) {
+	if (authState.isLoggedIn && authState.tokens) {
 		const res = NextResponse.next();
-		await sessionStateStorage.store(authState.keyCards, res);
+		await sessionStateStorage.storeAuthState(authState.tokens, res);
 		return NextResponse.json({
 			success: true,
 			message: "Sign in successful",

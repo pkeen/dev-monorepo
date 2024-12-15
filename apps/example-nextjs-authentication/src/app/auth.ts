@@ -1,25 +1,24 @@
-import {
-	JwtStrategy,
-	JwtConfig,
-	AuthSystem,
-} from "@pete_keen/authentication-core";
+import { JwtStrategy } from "@pete_keen/authentication-core";
+import { AuthSystem } from "@pete_keen/authentication-core";
+import { JwtConfig } from "@pete_keen/authentication-core";
 import {
 	TestAdapter,
 	DrizzleAdapter,
 } from "@pete_keen/authentication-core/adapters";
-import { NextSessionStateStorage } from "@pete_keen/nextjs-authentication";
+import { NextSessionStateStorage } from "@pete_keen/nextjs-authentication"; // {NextSessionStateStorage}
 import db from "../lib/db";
+// import { db } from "../lib/db";
 
 const jwtOptions: JwtConfig = {
 	access: {
-		key: "KeyCard-access",
+		key: "pk-auth-access",
 		secretKey: process.env.JWT_ACCESS_SECRET_KEY || "asfjsdkfj",
 		algorithm: "HS256",
 		expiresIn: "30 minutes",
 		fields: ["id", "email"],
 	},
 	refresh: {
-		key: "KeyCard-refresh",
+		key: "pk-auth-refresh",
 		secretKey: process.env.JWT_REFRESH_SECRET_KEY || "jldmff",
 		algorithm: "HS256",
 		expiresIn: "30 days",

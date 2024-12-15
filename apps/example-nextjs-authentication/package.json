@@ -1,5 +1,5 @@
 {
-	"name": "nextjs-stater-auth-core",
+	"name": "nextjs-authentication-example",
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
@@ -16,7 +16,6 @@
 		"@pete_keen/nextjs-authentication": "workspace:*",
 		"@pete_keen/ui": "workspace:*",
 		"drizzle-orm": "^0.36.3",
-		"jose": "^5.9.6",
 		"next": "15.1.0",
 		"react": "^19.0.0",
 		"react-dom": "19.0.0"

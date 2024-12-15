@@ -1,33 +1,33 @@
-import { authSystem, sessionStateStorage } from "@/app/auth";
+import { authSystem } from "@/app/auth";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
 	// 1: Get the refresh token
-	const keyCards = await sessionStateStorage.retrieve(request);
-	if (!keyCards) {
+	const authState = await authSystem.transportAdapter.retrieveAuthState(
+		request
+	);
+	// if no refresh token, return 401
+	const refreshToken = authState?.refreshToken;
+	if (!refreshToken) {
 		return NextResponse.json(
-			{ message: "No refresh token found" },
+			{ message: "Refresh token is missing" },
 			{ status: 401 }
 		);
 	}
-	// if no refresh token, return 401
-	// this should be abstracted into a single authState call
 
 	// 2. Verify the refresh token
 	// if expired, return 401
-	const newAuthState = await authSystem.refresh(keyCards);
+	const newAuthState = await authSystem.refresh(authState);
 	// this is just the access token currently
 
-	console.log("newAuthState: ", newAuthState);
-
-	if (!newAuthState.isLoggedIn || !newAuthState.keyCards) {
+	if (!newAuthState) {
 		return NextResponse.json(
 			{ message: "Refresh token is invalid" },
 			{ status: 401 }
 		);
 	}
 
-	await sessionStateStorage.store(newAuthState.keyCards, request);
+	await authSystem.transportAdapter.storeAuthState(request, newAuthState);
 
 	// 3. Get the new access token
 	// const response = new NextResponse();

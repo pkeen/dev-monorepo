@@ -9,15 +9,68 @@ export interface AuthToken {
 	value: string;
 	expiresAt?: Date;
 	name?: string;
+	type: "access" | "refresh";
 }
 
-// All possible token types in the system
+export interface CookieOptions {
+	httpOnly?: boolean;
+	secure?: boolean;
+	sameSite?: "strict" | "lax" | "none";
+	maxAge?: number;
+	path?: string;
+}
+
+export interface SessionElement {
+	name: string;
+	value: string;
+	expiresAt?: Date;
+	type?: "access" | "refresh" | "session";
+	sessionStorageOptions: CookieOptions;
+}
+
+export type SessionElements = SessionElement[];
+
+export type ImprovedSessionState = {
+	sessionElements: SessionElements;
+};
+
+export interface KeyCard {
+	name: string;
+	value: string;
+	expiresAt?: Date;
+	type?: "access" | "refresh" | "session";
+	storageOptions: CookieOptions;
+}
+
+export type KeyCards = KeyCard[];
+
+// // All possible token types in the system
 export interface AuthTokens {
 	accessToken?: AuthToken;
 	refreshToken?: AuthToken;
 	sessionId?: AuthToken;
 	csrfToken?: AuthToken;
 }
+
+// // Session Element
+// export interface SessionElement {
+// 	value: string;
+// 	expiresAt?: Date;
+// 	name?: string;
+// 	type: "access" | "refresh" | "session" | "csrf";
+// }
+// this would be for sending to the client from the server, it will help with setting
+
+export interface SessionState {
+	accessToken?: SessionElement;
+	refreshToken?: SessionElement;
+	sessionId?: SessionElement;
+	csrfToken?: SessionElement;
+}
+
+// export interface ImprovedSessionState {
+//     tokens:
+// }
 
 export interface User {
 	id: string;
@@ -50,10 +103,10 @@ export interface AuthManager {
 	// can: (user: User, action: string, resource: Resource) => boolean;
 	// storageAdapter: WebStorageAdapter;
 	signup: (credentials: SignupCredentials) => Promise<ImprovedAuthState>;
-	validate: (authState: AuthState) => Promise<AuthValidationResult>;
+	validate: (keyCards: KeyCards) => Promise<AuthValidationResult>;
 	// refreshToken: (refreshToken: string) => Promise<AuthResult>;
-	logout: (authState: ImprovedAuthState) => Promise<void>;
-	refresh: (authState: AuthState) => Promise<ImprovedAuthState>;
+	logout: (keyCards: KeyCards) => Promise<void>;
+	refresh: (keyCards: KeyCards) => Promise<ImprovedAuthState>;
 }
 
 // Core interfaces that other components must implement
@@ -78,14 +131,6 @@ export interface WebStorageAdapter {
 	getRemovalHeaders: () => Record<string, string[]>;
 }
 
-export interface CookieOptions {
-	httpOnly?: boolean;
-	secure?: boolean;
-	sameSite?: "strict" | "lax" | "none";
-	maxAge?: number;
-	path?: string;
-}
-
 export interface CsrfOptions {
 	cookieName?: string;
 	headerName?: string;
@@ -100,7 +145,10 @@ export interface AuthState {
 
 // The complete auth state
 export interface ImprovedAuthState {
-	isLoggedIn: boolean;
+	// key cards this lexicon replaces session elements and auth tokens
+	keyCards?: KeyCards;
+
+	isLoggedIn?: boolean;
 	// The authenticated user
 	user?: User;
 
@@ -149,17 +197,19 @@ export interface VerifyResult {
 }
 
 export interface AuthStrategy {
-	createAuthState(
-		user: User
-		// userId: string,
-		// roles: string[]
-	): Promise<AuthState>;
-	createAuthTokens(user: User): Promise<AuthTokens>;
-	logout(tokenOrSessionId: string): Promise<void>;
-	validate(authState: AuthState): Promise<AuthValidationResult>;
+	createKeyCards(user: User): Promise<KeyCards>;
+	// createAuthState(
+	// 	user: User
+	// 	// userId: string,
+	// 	// roles: string[]
+	// ): Promise<AuthState>;
+	// createAuthTokens(user: User): Promise<AuthTokens>;
+	logout(keyCards: KeyCards): Promise<void>;
+	validate(keyCards: KeyCards): Promise<AuthValidationResult>;
+	validateAll(keyCards: KeyCards): Promise<AuthValidationResult>;
+	validateRefresh?(keyCards: KeyCards): Promise<AuthValidationResult>;
 	supportsRefresh(): boolean;
-	refresh(authState: AuthState): Promise<AuthState>;
-	signup(credentials: Credentials): Promise<AuthState>;
+	signup(credentials: Credentials): Promise<KeyCards>;
 	// revoke(token: string): Promise<void>; could support revoking
 }
 

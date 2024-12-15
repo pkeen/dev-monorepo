@@ -49,32 +49,19 @@ export function PostgresDrizzleAdapter(
 				) as Promise<AdapterUser | null>;
 		},
 		async getUserByEmail(email: string) {
-			console.log("getUserByEmail", email);
-
 			try {
 				const result = await client
 					.select()
 					.from(usersTable)
 					.where(sql`lower(${usersTable.email}) = lower(${email})`);
-				// .where(eq(usersTable.email, email));
 
 				const user = result.length > 0 ? result[0] : null;
 
-				console.log("user in getUserByEmail", user);
-
-				return user as AdapterUser; // No need to cast to Promise since we're in an async function
+				return user as AdapterUser;
 			} catch (error) {
 				console.error("Error in getUserByEmail:", error);
 				return null;
 			}
-			// return user as Promise<AdapterUser | null>;
-			// return client
-			// 	.select()
-			// 	.from(usersTable)
-			// 	.where(eq(usersTable.email, email))
-			// 	.then((res) =>
-			// 		res.length > 0 ? res[0] : null
-			// 	) as Promise<AdapterUser | null>;
 		},
 		// async createSession(data: {
 		// 	sessionToken: string;

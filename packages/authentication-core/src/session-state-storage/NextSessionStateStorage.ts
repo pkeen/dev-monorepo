@@ -1,6 +1,9 @@
-import { SessionStateStorage } from "../core/session-state-storage";
+import { SessionStateStorage } from "../core/session-state-storage/session-state-storage";
 // import { ImprovedAuthState, CookieOptions } from "../../core/types";
-import { CookieOptions, AuthTokens } from "../core/types";
+import {
+	CookieOptions,
+	AuthTokens,
+} from "../../../authentication-core/src/core/types";
 import { cookies } from "next/headers";
 
 export class NextSessionStateStorage implements SessionStateStorage {

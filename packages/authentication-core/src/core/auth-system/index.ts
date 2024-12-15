@@ -1,10 +1,14 @@
 // packages/auth-core/src/services/AuthenticationService.ts
-import { AuthManager, AuthValidationResult, ImprovedAuthState } from "../types";
+import {
+	AuthManager,
+	AuthValidationResult,
+	ImprovedAuthState,
+	KeyCards,
+} from "../types";
 import { Credentials, SignupCredentials } from "../types";
 // import { WebStorageAdapter } from "../types";
 import { User } from "../types";
 import { AuthStrategy } from "../types";
-import { TransportAdapter } from "../../transporters/types";
 import { AuthState, AuthResult } from "../types";
 import { UserRepository } from "../types";
 import { Adapter } from "../adapter";
@@ -32,14 +36,12 @@ export class AuthSystem implements AuthManager {
 	async authenticate(credentials: Credentials): Promise<ImprovedAuthState> {
 		try {
 			// Step 1: Validate input
-			console.log("credentials:", credentials);
 			if (!credentials.email || !credentials.password) {
 				return { isLoggedIn: false };
 			}
 
 			// step 1: find user by email
 			const user = await this.adapter.getUserByEmail(credentials.email);
-			console.log("user:", user);
 			if (!user) {
 				console.log("user not found");
 				return { isLoggedIn: false };
@@ -56,25 +58,22 @@ export class AuthSystem implements AuthManager {
 			if (!isAuthenticated) {
 				return { isLoggedIn: false };
 			}
-			// if (user.password !== credentials.password) {
-			// 	return { success: false };
-			// }
 
 			// step 3: create auth state
-			const tokens = await this.strategy.createAuthTokens(user);
-			return { isLoggedIn: true, tokens, user };
+			const keyCards = await this.strategy.createKeyCards(user);
+			return { isLoggedIn: true, keyCards, user };
 		} catch (error) {
 			return { isLoggedIn: false };
 		}
 	}
 
-	async logout(authState: ImprovedAuthState): Promise<void> {
+	async logout(keyCards: KeyCards): Promise<void> {
 		// 1. Retrieve state from request
 		// const authState = await this.transportAdapter.retrieveAuthState(
 		// 	request
 		// );
 		// should be handled at application level
-		if (!authState) {
+		if (!keyCards) {
 			return; // all ready logged out
 		}
 
@@ -91,20 +90,31 @@ export class AuthSystem implements AuthManager {
 		// Return response or handle it in the route
 	}
 
-	async refresh(authState: AuthState): Promise<AuthState> {
-		if (!this.strategy.supportsRefresh()) {
-			throw new Error(
-				"Refresh token flow not supported by this strategy."
-			);
+	async refresh(keyCards: KeyCards): Promise<ImprovedAuthState> {
+		// // optional supports refresh?
+		// if (!this.strategy.supportsRefresh())
+		// 	return Promise.resolve({ isLoggedIn: false });
+
+		if (!keyCards) throw new Error("No key cards found");
+
+		const validateResult = await this.strategy.validateRefresh(keyCards);
+		console.log("validateResult: ", validateResult);
+
+		if (validateResult.valid) {
+			const user = await this.adapter.getUser(validateResult.user.id);
+			console.log("user: ", user);
+			const keyCards = await this.strategy.createKeyCards(user);
+			return { isLoggedIn: true, keyCards, user };
+		} else {
+			return { isLoggedIn: false };
 		}
-		return this.strategy.refresh(authState);
 	}
 
-	async validate(authState: AuthState): Promise<AuthValidationResult> {
-		return this.strategy.validate(authState);
+	async validate(keyCards: KeyCards): Promise<AuthValidationResult> {
+		return this.strategy.validateAll(keyCards);
 	}
 
-	async signup(credentials: SignupCredentials): Promise<AuthState> {
+	async signup(credentials: SignupCredentials): Promise<ImprovedAuthState> {
 		// return this.strategy.signup(credentials);
 		// Step 1: Validate input
 		console.log("sign up credentials:", credentials);
@@ -128,10 +138,10 @@ export class AuthSystem implements AuthManager {
 		const user = await this.adapter.createUserWithoutId(credentials);
 
 		// Step 5: Create the auth state
-		const authState = await this.strategy.createAuthState(user);
+		const keyCards = await this.strategy.createKeyCards(user);
 
 		// Step 6: Return the auth state
-		return authState;
+		return { isLoggedIn: true, keyCards, user };
 		// return { accessToken: "", refreshToken: "" };
 	}
 }

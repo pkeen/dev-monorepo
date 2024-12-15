@@ -9,14 +9,14 @@ import { TokenService } from "../types";
 
 // Custom payload type that extends JWTPayload
 interface AuthPayload extends JWTPayload {
-	sub: string; // User ID
+	id: string; // User ID
 	email: string; // User email
 }
 
 export class JwtTokenService implements TokenService {
 	private createPayload(user: User): AuthPayload {
 		return {
-			sub: user.id.toString(),
+			id: user.id.toString(),
 			email: user.email,
 		};
 	}

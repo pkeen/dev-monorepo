@@ -2,7 +2,6 @@ import { AuthValidationResult, JwtConfig, JwtOptions, User } from "../types";
 // import jose from "jose";
 import { SignJWT } from "jose";
 import { jwtVerify } from "jose";
-import { AuthState } from "../types";
 import { JWTVerifyResult } from "jose";
 import { JWTPayload } from "jose";
 import { TokenService } from "../types";

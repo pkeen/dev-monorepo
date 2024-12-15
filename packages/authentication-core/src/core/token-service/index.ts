@@ -1,11 +1,12 @@
-import { AuthValidationResult, JwtConfig, JwtOptions, User } from "../types";
+import {
+	AuthValidationResult,
+	JwtConfig,
+	JwtOptions,
+	User,
+	TokenService,
+} from "../types";
 // import jose from "jose";
-import { SignJWT } from "jose";
-import { jwtVerify } from "jose";
-import { AuthState } from "../types";
-import { JWTVerifyResult } from "jose";
-import { JWTPayload } from "jose";
-import { TokenService } from "../types";
+import { SignJWT, JWTPayload, jwtVerify } from "jose";
 
 // Custom payload type that extends JWTPayload
 interface AuthPayload extends JWTPayload {

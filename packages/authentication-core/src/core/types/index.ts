@@ -205,11 +205,11 @@ export interface AuthStrategy {
 	// ): Promise<AuthState>;
 	// createAuthTokens(user: User): Promise<AuthTokens>;
 	logout(keyCards: KeyCards): Promise<void>;
-	validate(keyCards: KeyCards): Promise<AuthValidationResult>;
+	// validate(keyCards: KeyCards): Promise<AuthValidationResult>;
 	validateAll(keyCards: KeyCards): Promise<AuthValidationResult>;
 	validateRefresh?(keyCards: KeyCards): Promise<AuthValidationResult>;
 	supportsRefresh(): boolean;
-	signup(credentials: Credentials): Promise<KeyCards>;
+	// signup(credentials: Credentials): Promise<KeyCards>;
 	// revoke(token: string): Promise<void>; could support revoking
 }
 

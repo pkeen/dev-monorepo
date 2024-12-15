@@ -1,9 +1,6 @@
 import {
 	SessionStateStorage,
-	SessionState,
 	CookieOptions,
-	SessionElements,
-	SessionElement,
 	KeyCards,
 	KeyCard,
 } from "@pete_keen/authentication-core";

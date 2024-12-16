@@ -114,12 +114,10 @@ export interface AuthManager {
 // Core token service interface
 export interface TokenService {
 	generate: (user: User, options: JwtOptions) => Promise<string>;
-	verify: (
-		token: string,
-		options: JwtOptions
-	) => Promise<AuthValidationResult>;
-	revoke: (token: string) => Promise<void>;
+	// verify: (token: string, options: JwtOptions) => Promise<User>; // return user now
+	// revoke: (token: string) => Promise<void>;
 	// refresh: (refreshToken: string) => Promise<TokenResponse>;
+	validate: (token: string, options: JwtOptions) => Promise<VerifiedToken>;
 }
 
 // This adapter handles the specifics of how tokens are stored in a web browser
@@ -169,7 +167,7 @@ export interface ImprovedAuthState {
 }
 
 export interface JwtOptions {
-	key: string;
+	// key: string;
 	secretKey: string;
 	algorithm: string;
 	expiresIn: string;
@@ -211,6 +209,11 @@ export interface AuthStrategy {
 	supportsRefresh(): boolean;
 	// signup(credentials: Credentials): Promise<KeyCards>;
 	// revoke(token: string): Promise<void>; could support revoking
+}
+
+export interface VerifiedToken {
+	user: User;
+	expiresAt: number;
 }
 
 export * from "./UserRegistry";

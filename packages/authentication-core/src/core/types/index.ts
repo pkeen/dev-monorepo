@@ -167,7 +167,7 @@ export interface ImprovedAuthState {
 }
 
 export interface JwtOptions {
-	// key: string;
+	key: string;
 	secretKey: string;
 	algorithm: string;
 	expiresIn: string;
@@ -196,14 +196,8 @@ export interface VerifyResult {
 
 export interface AuthStrategy {
 	createKeyCards(user: User): Promise<KeyCards>;
-	// createAuthState(
-	// 	user: User
-	// 	// userId: string,
-	// 	// roles: string[]
-	// ): Promise<AuthState>;
-	// createAuthTokens(user: User): Promise<AuthTokens>;
 	logout(keyCards: KeyCards): Promise<void>;
-	// validate(keyCards: KeyCards): Promise<AuthValidationResult>;
+	validate(keyCards: KeyCards): Promise<AuthValidationResult>;
 	validateAll(keyCards: KeyCards): Promise<AuthValidationResult>;
 	validateRefresh?(keyCards: KeyCards): Promise<AuthValidationResult>;
 	supportsRefresh(): boolean;

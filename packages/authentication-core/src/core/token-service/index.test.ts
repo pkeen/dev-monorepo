@@ -11,6 +11,7 @@ import { User, JwtOptions } from "../types";
 describe("JwtTokenService", () => {
 	let tokenService: JwtTokenService;
 	const options: JwtOptions = {
+		key: "your-key",
 		secretKey: "your-secret-key",
 		algorithm: "HS256",
 		expiresIn: "1h",

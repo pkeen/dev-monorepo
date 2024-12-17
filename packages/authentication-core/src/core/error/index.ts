@@ -1,9 +1,10 @@
 // packages/auth-core/src/errors/auth-error.ts
+import { Logger } from "@pete_keen/logger";
 export class AuthError extends Error {
 	constructor(
 		message: string,
-		public code: AuthErrorCode,
-		public httpStatus: number = 400
+		public code: AuthErrorCode, // 
+        public httpStatus: number = 400
 	) {
 		super(message);
 		this.name = "AuthError";
@@ -109,6 +110,71 @@ export class KeyCardMissingError extends KeyCardError {
 	constructor(message: string) {
 		super(message, AuthErrorCode.KEYCARD_MISSING);
 		this.name = "KeyCardMissingError";
+	}
+}
+
+export class InvalidCredentialsError extends AuthError {
+	constructor(message: string, code: AuthErrorCode) {
+		super(message, AuthErrorCode.INVALID_CREDENTIALS);
+		this.name = "InvalidCredentialsError";
+	}
+}
+
+export class UserNotFoundError extends AuthError {
+	constructor(email: string) {
+		super(`User not found: ${email}`, AuthErrorCode.USER_NOT_FOUND);
+		this.name = "UserNotFoundError";
+	}
+}
+
+// Utility type to ensure error has required properties
+type ErrorType = AuthError | Error;
+
+export async function safeExecute<T, E extends ErrorType>(
+	operation: () => Promise<T>,
+	logger: Logger,
+	errorConfig: {
+		message: string;
+		error: new (...args: any[]) => E;
+		code?: string;
+	},
+	context: Record<string, unknown> = {}
+): Promise<T> {
+	try {
+		return await operation();
+	} catch (caught) {
+		// Preserve original error details
+		const errorDetails = {
+			...context,
+			originalError:
+				caught instanceof Error
+					? {
+							message: caught.message,
+							name: caught.name,
+							stack: caught.stack,
+							...((caught as any).code && {
+								code: (caught as any).code,
+							}),
+					  }
+					: "Unknown error",
+		};
+
+		// Log the error with full context
+		logger.error(errorConfig.message, errorDetails);
+
+		// Create and throw new error with preserved context
+		if (caught instanceof Error) {
+			throw new errorConfig.error(
+				caught.message,
+				errorConfig.code || (caught as any).code
+			);
+		}
+
+		// Handle non-Error throws
+		throw new errorConfig.error(
+			typeof caught === "string" ? caught : errorConfig.message,
+			errorConfig.code
+		);
 	}
 }
 

@@ -11,6 +11,13 @@ export default {
 	transform: {
 		"^.+\\.ts$": "ts-jest",
 	},
+	moduleDirectories: ["node_modules", "<rootDir>/src"],
+	moduleNameMapper: {
+		"@pete_keen/logger": "<rootDir>/../logger/src",
+	},
+	transform: {
+		"^.+\\.ts$": "ts-jest",
+	},
 	moduleFileExtensions: ["ts", "js", "json"],
 	collectCoverage: true,
 	coverageDirectory: "coverage",

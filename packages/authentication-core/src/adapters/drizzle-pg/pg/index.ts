@@ -3,6 +3,7 @@ import { Adapter, AdapterUser } from "../../../core/adapter";
 import { DefaultPostgresSchema, defineTables } from "./schema";
 import { getTableColumns } from "drizzle-orm";
 import { eq } from "drizzle-orm";
+import { SignupCredentials } from "../../../core/types";
 
 export function PostgresDrizzleAdapter(
 	client: PgDatabase<PgQueryResultHKT, any>,
@@ -47,6 +48,16 @@ export function PostgresDrizzleAdapter(
 					res.length > 0 ? res[0] : null
 				) as Promise<AdapterUser | null>;
 		},
+		async createUserWithoutId(
+			signupCredentials: SignupCredentials
+		): Promise<AdapterUser> {
+			return client
+				.insert(usersTable)
+				.values(signupCredentials)
+				.returning()
+				.then((res) => res[0]) as Promise<AdapterUser>;
+		},
+
 		// async createSession(data: {
 		// 	sessionToken: string;
 		// 	userId: string;

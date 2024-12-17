@@ -21,6 +21,8 @@ import {
 	KeyCardMissingError,
 } from "../../error";
 
+import { safeExecute } from "../../error";
+
 export class JwtStrategy implements AuthStrategy {
 	private tokenService: TokenService;
 	constructor(private config: JwtConfig) {
@@ -77,33 +79,21 @@ export class JwtStrategy implements AuthStrategy {
 	}
 
 	async validate(keyCards: KeyCards): Promise<AuthValidationResult> {
-		try {
-			const accessKeyCard = keyCards.find(
-				(keyCard) => keyCard.name === "access"
-			);
-			if (!accessKeyCard) {
-				throw new KeyCardMissingError("Access Key Card Missing");
-			}
-			const result = await this.tokenService.validate(
-				accessKeyCard.value,
-				this.config.access
-			);
-			return {
-				valid: true,
-				user: result.user,
-			};
-		} catch (error) {
-			if (error.name === "TokenExpiredError") {
-				throw new ExpiredKeyCardError(
-					"Key Card Expired " + error.message
-				);
-			} else if (error.name === "TokenTamperedError") {
-				throw new InvalidKeyCardError(
-					"Key Card Invalid " + error.message
-				);
-			}
-			throw error;
+		const accessKeyCard = keyCards.find(
+			(keyCard) => keyCard.name === "access"
+		);
+		if (!accessKeyCard) {
+			throw new KeyCardMissingError("Access Key Card Missing");
 		}
+
+		const result = await this.tokenService.validate(
+			accessKeyCard.value,
+			this.config.access
+		);
+		return {
+			valid: true,
+			user: result.user,
+		};
 	}
 
 	async validateAll(keyCards: KeyCards): Promise<AuthValidationResult> {

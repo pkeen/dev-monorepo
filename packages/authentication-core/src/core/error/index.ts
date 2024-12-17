@@ -3,8 +3,8 @@ import { Logger } from "@pete_keen/logger";
 export class AuthError extends Error {
 	constructor(
 		message: string,
-		public code: AuthErrorCode, // 
-        public httpStatus: number = 400
+		public code: AuthErrorCode, //
+		public httpStatus: number = 400
 	) {
 		super(message);
 		this.name = "AuthError";
@@ -32,6 +32,9 @@ export enum AuthErrorCode {
 	INVALID_CREDENTIALS = "INVALID_CREDENTIALS",
 	USER_NOT_FOUND = "USER_NOT_FOUND",
 	ACCOUNT_LOCKED = "ACCOUNT_LOCKED",
+
+	// SignUp Errors (400s)
+	ACCOUNT_ALREADY_EXISTS = "ACCOUNT_ALREADY_EXISTS",
 
 	// Authorization Errors (403s)
 	INSUFFICIENT_PERMISSIONS = "INSUFFICIENT_PERMISSIONS",
@@ -124,6 +127,16 @@ export class UserNotFoundError extends AuthError {
 	constructor(email: string) {
 		super(`User not found: ${email}`, AuthErrorCode.USER_NOT_FOUND);
 		this.name = "UserNotFoundError";
+	}
+}
+
+export class AccountAlreadyExistsError extends AuthError {
+	constructor(email: string) {
+		super(
+			"User with this email already exists",
+			AuthErrorCode.ACCOUNT_ALREADY_EXISTS
+		);
+		this.name = "AccountAlreadyExistsError";
 	}
 }
 

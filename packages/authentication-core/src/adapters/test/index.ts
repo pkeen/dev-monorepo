@@ -1,4 +1,5 @@
 import { Adapter, AdapterUser } from "../../core/adapter";
+import { SignupCredentials } from "../../core/types";
 
 export function TestAdapter(): Adapter {
 	return {
@@ -22,6 +23,18 @@ export function TestAdapter(): Adapter {
 				return user;
 			}
 			return null;
+		},
+		async createUserWithoutId(
+			credentials: SignupCredentials
+		): Promise<AdapterUser> {
+			const user: AdapterUser = {
+				id: "1",
+				email: credentials.email,
+				emailVerified: null,
+				password: credentials.password,
+				name: credentials.name,
+			};
+			return user;
 		},
 	};
 }

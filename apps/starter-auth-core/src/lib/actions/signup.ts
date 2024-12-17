@@ -1,5 +1,4 @@
 "use server";
-import { sign } from "crypto";
 import { headers as nextHeaders, cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { authSystem } from "@/app/auth";
@@ -59,6 +58,11 @@ export async function signup(
 	const authState = await authSystem.signup(credentials);
 
 	console.log("authState (after signup):", authState);
+
+	if (!authState.keyCards) {
+		throw new Error("No key cards found");
+	}
+	await sessionStateStorage.store(authState.keyCards);
 
 	redirect(callbackUrl);
 

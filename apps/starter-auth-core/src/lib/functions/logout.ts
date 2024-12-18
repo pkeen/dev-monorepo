@@ -8,13 +8,10 @@ export const logout = async (
 	options: {
 		redirect?: boolean;
 		redirectTo?: string;
-		provider?: string | undefined;
 	} = {
 		redirect: true,
 		redirectTo: "/",
-	},
-	previousFormData: FormData,
-	formData: FormData
+	}
 ) => {
 	// debugger
 	console.log("options:", options);

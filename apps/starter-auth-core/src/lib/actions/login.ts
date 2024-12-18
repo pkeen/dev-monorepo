@@ -9,7 +9,7 @@ interface SignInCredentials {
 	password: string;
 }
 
-export async function signin(
+export async function login(
 	options: {
 		redirect?: boolean;
 		redirectTo?: string;
@@ -54,6 +54,14 @@ export async function signin(
 	const callbackUrl = redirectTo?.toString() ?? headers.get("Referer") ?? "/";
 
 	const authState = await authSystem.authenticate(credentials);
+
+	if (!authState.isLoggedIn) {
+		console.log("Sign in failed");
+		return {
+			message: "Sign in failed",
+			...credentials,
+		};
+	}
 
 	console.log("authState (after signin):", authState);
 

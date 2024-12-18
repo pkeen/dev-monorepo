@@ -1,16 +1,17 @@
 "use client";
+// import { logout } from "./actions/logout";
+import { logout } from "./functions/logout";
+import { useActionState } from "react";
 
 const LogoutButton = ({ children }: { children: React.ReactNode }) => {
+	// const [state, action, isPending] = useActionState(
+	// 	logout.bind(null, { redirectTo: "/" }),
+	// 	undefined
+	// );
 	return (
-		<button
-			onClick={async () => {
-				await fetch("/api/auth/logout", {
-					method: "POST",
-				});
-			}}
-		>
-			{children}
-		</button>
+		// <form action={action}>
+		<button onClick={() => logout({ redirectTo: "/" })}>{children}</button>
+		// </form>
 	);
 };
 

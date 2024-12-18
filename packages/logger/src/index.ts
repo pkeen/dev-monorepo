@@ -6,8 +6,9 @@ export class MultiTransportLogger implements Logger {
 	private transports: LogTransport[] = [];
 	private logLevel: LogLevel;
 
-	constructor(options: LoggerOptions = {}) {
+	constructor(options: LoggerOptions = {}, transports: LogTransport[] = []) {
 		this.logLevel = options.level || "debug";
+		this.transports = transports;
 	}
 
 	addTransport(transport: LogTransport): void {

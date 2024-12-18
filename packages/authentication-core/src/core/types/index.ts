@@ -179,6 +179,14 @@ export interface JwtConfig {
 	refresh: JwtOptions;
 }
 
+export interface SessionConfig {
+	key: string;
+	secretKey: string;
+	algorithm: string;
+	expiresIn: string;
+	fields?: string[];
+}
+
 export interface AuthValidationResult {
 	valid: boolean;
 	user?: User; // Populated if validation succeeded and we could derive a user

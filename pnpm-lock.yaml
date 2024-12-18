@@ -90,6 +90,9 @@ importers:
       '@pete_keen/authentication-core':
         specifier: workspace:*
         version: link:../../packages/authentication-core
+      '@pete_keen/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
       '@pete_keen/nextjs-authentication':
         specifier: workspace:*
         version: link:../../packages/nextjs-authentication

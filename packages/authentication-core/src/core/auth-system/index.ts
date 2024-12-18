@@ -4,7 +4,10 @@ import {
 	AuthValidationResult,
 	DatabaseUser,
 	ImprovedAuthState,
+	JwtConfig,
+	JwtOptions,
 	KeyCards,
+	SessionConfig,
 } from "../types";
 import { Credentials, SignupCredentials } from "../types";
 // import { WebStorageAdapter } from "../types";
@@ -30,14 +33,14 @@ import {
 	InvalidCredentialsError,
 	KeyCardCreationError,
 } from "../error";
-import { is } from "drizzle-orm";
+import { JwtStrategy } from "../strategy";
 
-// Create logger with better naming
-const defaultLogger = new MultiTransportLogger({
-	level: "debug",
-});
-defaultLogger.addTransport(new ConsoleTransport());
-// logger.addTransport(new FileTransport("/var/log/myapp"));
+// // Create logger with better naming
+// const defaultLogger = new MultiTransportLogger({
+// 	level: "debug",
+// });
+// defaultLogger.addTransport(new ConsoleTransport());
+// // logger.addTransport(new FileTransport("/var/log/myapp"));
 
 export class AuthSystem implements AuthManager {
 	public logger: Logger;
@@ -52,8 +55,8 @@ export class AuthSystem implements AuthManager {
 		strategy: AuthStrategy,
 		// userRepository: UserRepository
 		adapter: Adapter,
-		passwordService: PasswordService = DefaultPasswordService(),
-		logger: Logger = defaultLogger
+		logger: Logger,
+		passwordService: PasswordService = DefaultPasswordService()
 	) {
 		this.strategy = strategy;
 		// this.userRepository = userRepository;
@@ -237,7 +240,7 @@ export class AuthSystem implements AuthManager {
 		);
 	}
 
-	async logout(keyCards: KeyCards): Promise<void> {
+	async logout(keyCards: KeyCards | undefined): Promise<void> {
 		// 1. Retrieve state from request
 		// const authState = await this.transportAdapter.retrieveAuthState(
 		// 	request
@@ -314,25 +317,60 @@ export class AuthSystem implements AuthManager {
 		return { isLoggedIn: true, keyCards, user };
 		// return { accessToken: "", refreshToken: "" };
 	}
+
+	static create(config: AuthConfig): AuthSystem {
+		let strategy: AuthStrategy;
+		if (config.strategy === "jwt") {
+			strategy = new JwtStrategy(config.jwtConfig);
+		} else if (config.strategy === "session") {
+			throw new Error("Session strategy not implemented yet");
+		} else {
+			throw new Error("Invalid strategy");
+		}
+
+		const logger = createLogger(config.logger);
+
+		if (!config.adapter) {
+			logger.warn("You will be using no persistence adapter");
+		}
+
+		return new AuthSystem(strategy, config.adapter, logger);
+	}
 }
 
-// export const createAuthService = (
-// 	storageAdapter: WebStorageAdapter
-// ): AuthManager => {
-// 	return {
-// 		authenticate(credentials: Credentials): Promise<AuthResult> {
-// 			if (
-// 				credentials.email === "pkeen7@gmail.com" &&
-// 				credentials.password === "password"
-// 			) {
-// 				return Promise.resolve({ success: true });
-// 			} else {
-// 				return Promise.resolve({ success: false });
-// 			}
-// 		},
-// 		logout(userId: string): Promise<void> {
-// 			return Promise.resolve();
-// 		},
-// 		storageAdapter: storageAdapter,
-// 	};
+export interface LoggerOptions {
+	level?: LogLevel;
+	filepath?: string; // If they want file logging
+	silent?: boolean; // Disable console logging
+	// format?: LogFormat; // Log format
+}
+
+export interface AuthConfigBase {
+	adapter?: Adapter;
+	// passwordService?: string;
+	logger?: LoggerOptions;
+}
+
+export type AuthConfig =
+	| (AuthConfigBase & { strategy: "jwt"; jwtConfig: JwtConfig })
+	| (AuthConfigBase & { strategy: "session"; sessionConfig: SessionConfig });
+// | (AuthConfigBase & { strategy: "hybrid"; hybridConfig: HybridConfig });
+
+// export const createAuthSystem = (config: AuthConfig): AuthSystem => {
+// 	let strategy: AuthStrategy;
+// 	if (config.strategy === "jwt") {
+// 		strategy = new JwtStrategy(config.jwtConfig);
+// 	} else if (config.strategy === "session") {
+// 		throw new Error("Session strategy not implemented yet");
+// 	} else {
+// 		throw new Error("Invalid strategy");
+// 	}
+
+// 	const logger = createLogger(config.logger);
+
+// 	if (!config.adapter) {
+// 		logger.warn("You will be using no persistence adapter");
+// 	}
+
+// 	return new AuthSystem(strategy, config.adapter, logger);
 // };

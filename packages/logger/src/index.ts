@@ -1,6 +1,6 @@
 import { Logger, LogTransport, LogLevel, LoggerOptions } from "./interfaces";
 import { ConsoleTransport } from "./transports/console";
-import { FileTransport } from "./transports/file";
+// import { FileTransport } from "./transports/file";
 // logger.ts
 export class MultiTransportLogger implements Logger {
 	private transports: LogTransport[] = [];
@@ -69,10 +69,11 @@ export function createLogger(options?: LoggerOptions): Logger {
 		logger.addTransport(new ConsoleTransport());
 	}
 
-	// Add file transport if filepath is provided
-	if (options?.filepath) {
-		logger.addTransport(new FileTransport(options.filepath));
-	}
+	// only console now
+	// // Add file transport if filepath is provided
+	// if (options?.filepath) {
+	// 	logger.addTransport(new FileTransport(options.filepath));
+	// }
 
 	return logger;
 }

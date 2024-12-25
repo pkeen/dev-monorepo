@@ -3,13 +3,12 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
 	const response = new NextResponse();
-	const tokens = await sessionStateStorage.retrieveAuthState(request);
+	const keyCards = await sessionStateStorage.retrieve(request);
 	await authSystem.logout({
-		isLoggedIn: true,
-		tokens,
+		keyCards,
 	});
 
-	await sessionStateStorage.clearAuthState(response);
+	await sessionStateStorage.clear(response);
 
 	return response;
 }

@@ -1,15 +1,17 @@
-import { JwtStrategy } from "@pete_keen/authentication-core";
-import { AuthSystem } from "@pete_keen/authentication-core";
-import { JwtConfig } from "@pete_keen/authentication-core";
+"use server";
 import {
-	TestAdapter,
+	NextAuthentication,
+	NextSessionStateStorage,
+} from "@pete_keen/nextjs-authentication";
+import {
 	DrizzleAdapter,
-} from "@pete_keen/authentication-core/adapters";
-import { NextSessionStateStorage } from "@pete_keen/nextjs-authentication"; // {NextSessionStateStorage}
+	JwtConfig,
+	AuthConfig,
+} from "@pete_keen/authentication-core";
 import db from "../lib/db";
 // import { db } from "../lib/db";
 
-const jwtOptions: JwtConfig = {
+const jwtConfig: JwtConfig = {
 	access: {
 		key: "pk-auth-access",
 		secretKey: process.env.JWT_ACCESS_SECRET_KEY || "asfjsdkfj",
@@ -26,11 +28,15 @@ const jwtOptions: JwtConfig = {
 	},
 };
 
-const jwtStrategy = new JwtStrategy(jwtOptions);
 // const transportAdapter = new NextAppTransportAdapter();
 // const databaseAdapter = TestAdapter();
 const databaseAdapter = DrizzleAdapter(db);
 
-export const authSystem = new AuthSystem(jwtStrategy, databaseAdapter);
+const authConfig: AuthConfig = {
+	strategy: "jwt",
+	jwtConfig: jwtConfig,
+	adapter: databaseAdapter,
+};
 
-export const sessionStateStorage = new NextSessionStateStorage();
+export const { authSystem, sessionStateStorage, login } =
+	NextAuthentication(authConfig);

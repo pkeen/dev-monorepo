@@ -23,7 +23,7 @@ import {
 	Logger,
 	MultiTransportLogger,
 	ConsoleTransport,
-	FileTransport,
+	// FileTransport,
 	createLogContext,
 } from "@pete_keen/logger";
 import {
@@ -35,15 +35,8 @@ import {
 } from "../error";
 import { JwtStrategy } from "../strategy";
 
-// // Create logger with better naming
-// const defaultLogger = new MultiTransportLogger({
-// 	level: "debug",
-// });
-// defaultLogger.addTransport(new ConsoleTransport());
-// // logger.addTransport(new FileTransport("/var/log/myapp"));
-
 export class AuthSystem implements AuthManager {
-	public logger: Logger;
+	public logger?: Logger;
 	public strategy: AuthStrategy;
 	// public userRepository: UserRepository;
 	public adapter: Adapter;
@@ -72,15 +65,18 @@ export class AuthSystem implements AuthManager {
 		});
 	}
 	async authenticate(credentials: Credentials): Promise<ImprovedAuthState> {
+		// Step 1: Validate input
 		if (!this.validateCredentials(credentials)) {
 			return { isLoggedIn: false };
 		}
 
+		// Step 2: Find user
 		const user = await this.findUser(credentials.email);
 		if (!user) {
 			return { isLoggedIn: false };
 		}
 
+		// Step 3: Verify password
 		const isAuthenticated = await this.verifyPassword(
 			credentials.password,
 			user
@@ -89,6 +85,7 @@ export class AuthSystem implements AuthManager {
 			return { isLoggedIn: false };
 		}
 
+		// Step 4: Create auth state
 		const keyCards = await this.createKeyCardsForUser(user);
 
 		this.logger.info(
@@ -99,69 +96,6 @@ export class AuthSystem implements AuthManager {
 			})
 		);
 		return { isLoggedIn: true, keyCards, user };
-
-		// try {
-		// 	this.logger.info("Authenticating user");
-		// 	// Step 1: Validate input
-		// 	if (!credentials.email || !credentials.password) {
-		// 		this.logger.warn("Invalid credentials provided", {
-		// 			missingFields: {
-		// 				email: !credentials.email,
-		// 				password: !credentials.password,
-		// 			},
-		// 		});
-		// 		return { isLoggedIn: false };
-		// 	}
-
-		// 	// Find user
-		// 	const user = await this.adapter.getUserByEmail(credentials.email);
-		// 	if (!user) {
-		// 		this.logger.info(
-		// 			"Authentication failed - user not found",
-		// 			logContext
-		// 		);
-		// 		return { isLoggedIn: false };
-		// 	}
-
-		// 	if (!user.password) {
-		// 		this.logger.warn(
-		// 			"Authentication failed - user has no password set",
-		// 			{
-		// 				...logContext,
-		// 				userId: user.id,
-		// 			}
-		// 		);
-		// 		return { isLoggedIn: false };
-		// 	}
-
-		// 	// step 2: verify password
-		// 	const isAuthenticated = await this.passwordService.verify(
-		// 		credentials.password,
-		// 		user.password
-		// 	);
-		// 	if (!isAuthenticated) {
-		// 		this.logger.info("Authentication failed - invalid password", {
-		// 			...logContext,
-		// 			userId: user.id,
-		// 		});
-		// 		return { isLoggedIn: false };
-		// 	}
-
-		// 	// step 3: create auth state
-		// 	const keyCards = await this.strategy.createKeyCards(user);
-		// 	this.logger.info("Authentication successful", {
-		// 		...logContext,
-		// 		userId: user.id,
-		// 	});
-		// 	return { isLoggedIn: true, keyCards, user };
-		// } catch (error) {
-		// 	this.logger.error("Authentication error", {
-		// 		...logContext,
-		// 		error: error instanceof Error ? error.message : "Unknown error",
-		// 		stack: error instanceof Error ? error.stack : undefined,
-		// 	});
-		// 	return { isLoggedIn: false };
-		// }
 	}
 
 	private validateCredentials(credentials: Credentials): boolean {
@@ -241,26 +175,10 @@ export class AuthSystem implements AuthManager {
 	}
 
 	async logout(keyCards: KeyCards | undefined): Promise<void> {
-		// 1. Retrieve state from request
-		// const authState = await this.transportAdapter.retrieveAuthState(
-		// 	request
-		// );
-		// should be handled at application level
 		if (!keyCards) {
 			return; // all ready logged out
 		}
-
-		// Perhaps we should have if (authState.strategy === 'session')
-		// go to database and delete the session
-
-		// 2. If we have a refresh token or session ID, pass it to the strategy
-		// if (authState.refreshToken) {
-		// 	await this.strategy.logout(authState.refreshToken);
-		// } else if (authState?.sessionId) {
-		// 	await this.strategy.logout(authState.sessionId);
-		// }
-
-		// Return response or handle it in the route
+		await this.strategy.logout(keyCards);
 	}
 
 	async refresh(keyCards: KeyCards): Promise<ImprovedAuthState> {
@@ -287,35 +205,44 @@ export class AuthSystem implements AuthManager {
 		return this.strategy.validateAll(keyCards);
 	}
 
-	async signup(credentials: SignupCredentials): Promise<ImprovedAuthState> {
+	async signup(credentials: Credentials): Promise<ImprovedAuthState> {
 		// return this.strategy.signup(credentials);
 		// Step 1: Validate input
-		console.log("sign up credentials:", credentials);
 
-		// Step 2: Check if user already exists
-		const existingUser = await this.adapter.getUserByEmail(
-			credentials.email
-		);
-		if (existingUser) {
-			console.log("user already exists");
-			throw new Error("An account with that email is already registered");
+		try {
+			console.log("sign up credentials:", credentials);
+
+			// Step 2: Check if user already exists
+			const existingUser = await this.adapter.getUserByEmail(
+				credentials.email
+			);
+			if (existingUser) {
+				console.log("user already exists");
+				throw new Error(
+					"An account with that email is already registered"
+				);
+				// console.error("An account with that email is already registered");
+				// return { isLoggedIn: false };
+			}
+
+			// Step 3: Hash the password
+			const hashedPassword = await this.passwordService.hash(
+				credentials.password
+			);
+			credentials.password = hashedPassword;
+
+			// Step 4: Create the user
+			const user = await this.adapter.createUserWithoutId(credentials);
+
+			// Step 5: Create the auth state
+			const keyCards = await this.strategy.createKeyCards(user);
+
+			// Step 6: Return the auth state
+			return { isLoggedIn: true, keyCards, user };
+			// return { accessToken: "", refreshToken: "" };
+		} catch (error) {
+			return { isLoggedIn: false };
 		}
-
-		// Step 3: Hash the password
-		const hashedPassword = await this.passwordService.hash(
-			credentials.password
-		);
-		credentials.password = hashedPassword;
-
-		// Step 4: Create the user
-		const user = await this.adapter.createUserWithoutId(credentials);
-
-		// Step 5: Create the auth state
-		const keyCards = await this.strategy.createKeyCards(user);
-
-		// Step 6: Return the auth state
-		return { isLoggedIn: true, keyCards, user };
-		// return { accessToken: "", refreshToken: "" };
 	}
 
 	static create(config: AuthConfig): AuthSystem {

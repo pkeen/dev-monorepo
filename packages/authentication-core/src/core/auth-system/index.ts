@@ -32,8 +32,10 @@ import {
 	KeyCardMissingError,
 	InvalidCredentialsError,
 	KeyCardCreationError,
+	CsrfError,
 } from "../error";
 import { JwtStrategy } from "../strategy";
+import crypto from "crypto";
 
 export class AuthSystem implements AuthManager {
 	public logger?: Logger;
@@ -202,7 +204,20 @@ export class AuthSystem implements AuthManager {
 	}
 
 	async validate(keyCards: KeyCards): Promise<AuthValidationResult> {
-		return this.strategy.validateAll(keyCards);
+		const result = await safeExecute(
+			async () => {
+				return await this.strategy.validate(keyCards);
+			},
+			this.logger,
+			{
+				message: "Failed to validate keycards",
+				error: InvalidCredentialsError,
+			}
+		);
+		if (!result.isAuthenticated) {
+			return { isAuthenticated: false, user: null };
+		}
+		return result;
 	}
 
 	async signup(credentials: Credentials): Promise<ImprovedAuthState> {
@@ -242,6 +257,20 @@ export class AuthSystem implements AuthManager {
 			// return { accessToken: "", refreshToken: "" };
 		} catch (error) {
 			return { isLoggedIn: false };
+		}
+	}
+
+	async generateCsrfToken(): Promise<string> {
+		return crypto.randomBytes(32).toString("hex");
+	}
+
+	// Validate a CSRF token
+	async validateCsrfToken(
+		requestToken: string,
+		storedToken: string
+	): Promise<void> {
+		if (!requestToken || requestToken !== storedToken) {
+			throw new CsrfError("Invalid CSRF token");
 		}
 	}
 

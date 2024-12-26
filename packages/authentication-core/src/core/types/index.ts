@@ -188,7 +188,8 @@ export interface SessionConfig {
 }
 
 export interface AuthValidationResult {
-	valid: boolean;
+	// valid: boolean;
+	isAuthenticated: boolean;
 	user?: User; // Populated if validation succeeded and we could derive a user
 	reason?: string; // Human-readable explanation of why validation failed
 	code?: string; // Machine-readable error code (e.g., "expired", "invalid_signature", "session_not_found")

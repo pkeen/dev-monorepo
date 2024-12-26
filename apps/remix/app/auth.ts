@@ -39,14 +39,14 @@ if (!process.env.JWT_REFRESH_SECRET) {
 
 const jwtOptions: JwtConfig = {
 	access: {
-		key: "KeyCard-access",
+		key: "access",
 		secretKey: process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET,
 		algorithm: "HS256",
 		expiresIn: "30 minutes",
 		fields: ["id", "email"],
 	},
 	refresh: {
-		key: "KeyCard-refresh",
+		key: "refresh",
 		secretKey: process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
 		algorithm: "HS256",
 		expiresIn: "7 days",

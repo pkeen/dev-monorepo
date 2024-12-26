@@ -91,7 +91,7 @@ export class JwtStrategy implements AuthStrategy {
 			this.config.access
 		);
 		return {
-			valid: true,
+			isAuthenticated: true,
 			user: result.user,
 		};
 	}

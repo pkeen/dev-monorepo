@@ -1,4 +1,4 @@
-import { createCookieSessionStorage } from "react-router";
+import { createCookieSessionStorage, createCookie } from "react-router";
 
 // Create session storage
 export const sessionStorage = createCookieSessionStorage({
@@ -16,3 +16,20 @@ export const sessionStorage = createCookieSessionStorage({
 // Get session
 export const getSession = (request: Request) =>
 	sessionStorage.getSession(request.headers.get("Cookie"));
+
+// export const getCsrfSession = (request: Request) =>
+// 	csrfStorage.getSession(request.headers.get("Cookie"));
+
+// export const sessionStorage = createCookie("__session", {
+// 	secure: process.env.NODE_ENV === "production",
+// 	httpOnly: true,
+// 	sameSite: "lax",
+// 	maxAge: 60 * 60 * 24 * 7, // 1 week
+// });
+
+export const csrfCookie = createCookie("__csrf", {
+	secure: process.env.NODE_ENV === "production",
+	httpOnly: true,
+	sameSite: "strict", // Stronger CSRF protection
+	maxAge: 60 * 60 * 24 * 7, // 1 week
+});

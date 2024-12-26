@@ -32,6 +32,7 @@ export enum AuthErrorCode {
 	INVALID_CREDENTIALS = "INVALID_CREDENTIALS",
 	USER_NOT_FOUND = "USER_NOT_FOUND",
 	ACCOUNT_LOCKED = "ACCOUNT_LOCKED",
+	CSRF_ERROR = "CSRF_ERROR",
 
 	// SignUp Errors (400s)
 	ACCOUNT_ALREADY_EXISTS = "ACCOUNT_ALREADY_EXISTS",
@@ -137,6 +138,13 @@ export class AccountAlreadyExistsError extends AuthError {
 			AuthErrorCode.ACCOUNT_ALREADY_EXISTS
 		);
 		this.name = "AccountAlreadyExistsError";
+	}
+}
+
+export class CsrfError extends AuthError {
+	constructor(message: string) {
+		super(message, AuthErrorCode.CSRF_ERROR);
+		this.name = "CsrfError";
 	}
 }
 

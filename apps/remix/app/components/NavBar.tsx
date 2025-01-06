@@ -1,5 +1,5 @@
 import { useLoaderData, Form, NavLink } from "react-router";
-import { getSession } from "~/sessionStorage";
+import { getSession } from "~/lib/remix-auth/sessionStorage";
 
 // // Example loader to check session
 // export const loader = async ({ request }: { request: Request }) => {

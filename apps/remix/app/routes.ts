@@ -14,7 +14,7 @@ export default [
 		route("/auth/login", "routes/auth/login.tsx"),
 		route("/auth/logout", "routes/auth/logout.tsx"),
 		route("/auth/signup", "routes/auth/signup.tsx"),
-		route("/auth/csrf", "routes/auth/csrf.tsx"),
+		// route("/auth/csrf", "routes/auth/csrf.tsx"),
 		// route("register", "./auth/register.tsx"),
 	]),
 
@@ -22,6 +22,8 @@ export default [
 		route("hello", "routes/api/hello.tsx"),
 		...prefix("auth", [
 			route("login", "routes/api/auth/login.tsx"),
+			route("csrf", "routes/api/auth/csrf.tsx"),
+			route("session", "routes/api/auth/session.tsx"),
 			// route("logout", "routes/api/auth/logout.tsx"),
 			// route("signup", "routes/api/auth/signup.tsx"),
 		]),

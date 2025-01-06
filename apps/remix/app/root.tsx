@@ -1,6 +1,13 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import type { LinksFunction } from "react-router";
-import { AuthProvider } from "~/lib/AuthContext";
+import { AuthProvider } from "~/lib/remix-auth/AuthContext";
+import {
+	csrfTokenMiddleware,
+	fetchCsrfToken,
+} from "~/lib/remix-auth/csrfMiddleware";
+import { LoaderFunctionArgs } from "react-router";
+import { getSession } from "~/lib/remix-auth/sessionStorage";
+import { Route } from "react-router";
 
 import "./tailwind.css";
 
@@ -38,9 +45,44 @@ export function Layout({ children }: { children: React.ReactNode }) {
 	);
 }
 
-export default function App() {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+	console.log("loader called");
+	const csrfResponse = await csrfTokenMiddleware(request);
+	const { csrfToken } = await csrfResponse.json();
+	const setCookieHeader = csrfResponse.headers.get("Set-Cookie");
+	// const csrf = await fetchCsrfToken(request);
+	// console.log("csrf: ", csrf);
+	const session = await getSession(request);
+	const user = (await session.get("user")) || null;
+	console.log("user: ", user);
+	const isAuthenticated = session.get("isLoggedIn") || false;
+
+	return new Response(
+		JSON.stringify({
+			csrf: csrfToken,
+			user,
+			isAuthenticated,
+		}),
+		{
+			headers: {
+				"Set-Cookie": setCookieHeader,
+			},
+		}
+	);
+};
+
+export default function App({ loaderData }: Route.ComponentProps) {
+	const { csrf, user, isAuthenticated } = JSON.parse(loaderData);
+	// console.log("loaderData: ", loaderData);
+	// console.log("csrf (server): ", csrf);
+	// console.log("user: ", user);
+	// console.log("isAuthenticated: ", isAuthenticated);
 	return (
-		<AuthProvider>
+		<AuthProvider
+			csrfToken={csrf}
+			user={user}
+			isAuthenticated={isAuthenticated}
+		>
 			<Outlet />
 		</AuthProvider>
 	);

@@ -1,6 +1,6 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { authMiddleware } from "~/authMiddleware";
-import { csrfMiddleware } from "~/csrfMiddleware";
+import { authMiddleware } from "~/lib/remix-auth/authMiddleware";
+import { csrfMiddleware } from "~/lib/remix-auth/csrfMiddleware";
 import { User } from "@pete_keen/authentication-core";
 
 // interface WithAuthArgs extends ActionFunctionArgs {
@@ -25,19 +25,16 @@ export function withAuth(
 		// leave the option for now - will only make sense when its a factory function
 		console.log("withAuth - options: ", options);
 
-		const csrf = options.csrf;
+		const csrfCheck = options.csrf;
 		// add && authConfig.csrf
 
 		// Validate auth
 		const { user, isAuthenticated } = await authMiddleware(request);
 
-		if (csrf) {
-			console.log("withAuth - csrf: ", csrf);
+		if (csrfCheck) {
+			// will throw error if not valid csrf
 			await csrfMiddleware(request);
 		}
-
-		console.log("withAuth - user: ", user);
-		console.log("withAuth - isAuthenticated: ", isAuthenticated);
 
 		// Role-based access check
 		// if (role && (!user || !user.roles.includes(role))) {

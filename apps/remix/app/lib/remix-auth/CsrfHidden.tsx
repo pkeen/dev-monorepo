@@ -1,4 +1,4 @@
-import { useAuth } from "~/lib/AuthContext";
+import { useAuth } from "~/lib/remix-auth/AuthContext";
 
 export const CsrfHidden = () => {
 	const { csrfToken } = useAuth();

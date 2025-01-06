@@ -1,4 +1,4 @@
-import { csrfTokenMiddleware } from "~/csrfMiddleware";
+import { csrfTokenMiddleware } from "~/lib/remix-auth/csrfMiddleware";
 import { LoaderFunctionArgs } from "react-router";
 // csrf route for token fetching
 export async function loader({ request }: LoaderFunctionArgs) {

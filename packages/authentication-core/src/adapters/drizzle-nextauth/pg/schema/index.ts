@@ -8,6 +8,7 @@ import {
 	PgTableWithColumns,
 	uniqueIndex,
 	AnyPgColumn,
+	pgSchema,
 } from "drizzle-orm/pg-core";
 import {
 	GeneratedColumnConfig,
@@ -25,9 +26,11 @@ export function lower(email: AnyPgColumn): SQL {
 export function defineTables(
 	schema: Partial<DefaultPostgresSchema> = {}
 ): Required<DefaultPostgresSchema> {
+	const authSchema = pgSchema("auth");
+
 	const usersTable =
 		schema.usersTable ??
-		(pgTable(
+		(authSchema.table(
 			"users",
 			{
 				id: text("id")

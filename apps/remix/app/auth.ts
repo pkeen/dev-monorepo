@@ -10,7 +10,7 @@ import {
 } from "@pete_keen/authentication-core/adapters";
 import db from "./lib/db";
 import { redirect, type ActionFunctionArgs } from "react-router";
-import { sessionStorage, getSession } from "./sessionStorage";
+import { sessionStorage, getSession } from "./lib/remix-auth/sessionStorage";
 
 // App-specific config extension
 export interface ExtendedAuthConfig {
@@ -89,6 +89,8 @@ export const remixAuth = (config: AppAuthConfig) => {
 				email: email as string,
 				password: password as string,
 			});
+
+			console.log("authState", authState);
 
 			if (!authState.isLoggedIn) {
 				return new Response(JSON.stringify(authState), {

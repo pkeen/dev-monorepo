@@ -1,6 +1,6 @@
 // import { json } from "@remix-run/node";
-import { getSession } from "~/sessionStorage";
-import { authSystem } from "./auth";
+import { getSession } from "~/lib/remix-auth/sessionStorage";
+import { authSystem } from "../../auth";
 import { User } from "@pete_keen/authentication-core";
 
 interface AuthMiddlewareUser {

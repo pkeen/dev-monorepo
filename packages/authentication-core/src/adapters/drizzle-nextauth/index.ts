@@ -19,6 +19,7 @@ import { BaseSQLiteDatabase } from "drizzle-orm/sqlite-core";
 import { DefaultPostgresSchema, PostgresDrizzleAdapter } from "./pg";
 // import { DefaultSQLiteSchema, SQLiteDrizzleAdapter } from "./lib/sqlite.js"
 import { DefaultSchema, SqlFlavorOptions } from "./utils";
+// import { defineTables } from "./pg/schema";
 
 import type { Adapter } from "../../core/adapter/index.js";
 
@@ -41,3 +42,5 @@ export function DrizzleAdapter<SqlFlavor extends SqlFlavorOptions>(
 		`Unsupported database type (${typeof db}) in Drizzle adapter.`
 	);
 }
+
+export { defineTables } from "./pg/schema";

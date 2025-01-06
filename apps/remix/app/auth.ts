@@ -8,7 +8,7 @@ import {
 	TestAdapter,
 	DrizzleAdapter,
 } from "@pete_keen/authentication-core/adapters";
-import db from "./lib/db";
+import db from "./lib/db/db";
 import { redirect, type ActionFunctionArgs } from "react-router";
 import { sessionStorage, getSession } from "./lib/remix-auth/sessionStorage";
 

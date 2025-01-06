@@ -130,6 +130,7 @@ export function defineTables(
 
 	return {
 		usersTable,
+		authSchema,
 		// accountsTable,
 		// sessionsTable,
 		// verificationTokensTable,

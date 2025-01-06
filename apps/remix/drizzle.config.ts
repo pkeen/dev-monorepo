@@ -1,4 +1,7 @@
 import { defineConfig } from "drizzle-kit";
+import { defineTables } from "@pete_keen/authentication-core/adapters";
+
+const { usersTable } = defineTables();
 
 const databaseUrl = process.env.DATABASE_URL || "";
 

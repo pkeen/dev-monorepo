@@ -7,27 +7,6 @@ import {
 	pgTable,
 } from "drizzle-orm/pg-core";
 
-const { usersTable } = defineTables();
-const authSchema = pgSchema("auth");
-
-const usersTableWithAuth = authSchema.table(
-	"users",
-	{
-		id: text("id")
-			.primaryKey()
-			.$defaultFn(() => crypto.randomUUID()),
-		name: text("name"),
-		email: text("email").unique(),
-		emailVerified: timestamp("emailVerified", { mode: "date" }),
-		image: text("image"),
-		password: text("password"),
-	}
-	// (table) => ({
-	// 	// emailUniqueIndex: uniqueIndex('emailUniqueIndex').on(sql`lower(${table.email})`),
-	// 	emailUniqueIndex: uniqueIndex("emailUniqueIndex").on(
-	// 		lower(table.email)
-	// 	),
-	// })
-);
+const { usersTable, authSchema } = defineTables({ schemaName: "auth" });
 
 export { usersTable, authSchema };

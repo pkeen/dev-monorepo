@@ -209,6 +209,7 @@ export type DefaultPostgresUsersTable = PgTableWithColumns<{
 
 export type DefaultPostgresSchema = {
 	usersTable: DefaultPostgresUsersTable;
+	authSchema: any;
 	// Simplified version for now
 	// accountsTable: DefaultPostgresAccountsTable;
 	// sessionsTable?: DefaultPostgresSessionsTable;

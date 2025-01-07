@@ -13,6 +13,7 @@
 	},
 	"dependencies": {
 		"@pete_keen/authentication-core": "workspace:*",
+		"@pete_keen/remix-authentication": "workspace:*",
 		"@react-router/node": "^7.0.0",
 		"@react-router/serve": "^7.0.0",
 		"drizzle-orm": "^0.36.3",

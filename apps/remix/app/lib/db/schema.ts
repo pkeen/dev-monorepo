@@ -7,6 +7,6 @@ import {
 	pgTable,
 } from "drizzle-orm/pg-core";
 
-const { usersTable, authSchema } = defineTables({ schemaName: "auth" });
+const { usersTable, authSchema } = defineTables();
 
 export { usersTable, authSchema };

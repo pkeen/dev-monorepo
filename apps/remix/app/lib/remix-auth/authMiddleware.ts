@@ -1,11 +1,16 @@
 // import { json } from "@remix-run/node";
 import { getSession } from "~/lib/remix-auth/sessionStorage";
+import { redirect } from "react-router";
 import { authSystem } from "../../auth";
-import { User } from "@pete_keen/authentication-core";
+import {
+	User,
+	AuthValidationResult,
+	AuthResult,
+} from "@pete_keen/authentication-core";
 
 interface AuthMiddlewareUser {
 	user: User | null;
-	isAuthenticated: boolean;
+	isLoggedIn: boolean;
 }
 
 // import jwt from "jsonwebtoken";
@@ -14,14 +19,25 @@ interface AuthMiddlewareUser {
 export async function authMiddleware(
 	request: Request
 ): Promise<AuthMiddlewareUser> {
+	// Get the keycards from the session
 	const session = await getSession(request);
 	const keyCards = await session.get("keyCards");
 
 	console.log("authMiddleware keyCards:", keyCards);
 
-	return keyCards
-		? authSystem.validate(keyCards)
-		: { user: null, isAuthenticated: false };
+	const authResult = await authSystem.validate(keyCards);
+	console.log("authResult: ", authResult);
+
+	if (authResult.success) {
+		return { user: authResult.user, isLoggedIn: true };
+	} else {
+		// return redirect("/auth/login");
+		return { user: null, isLoggedIn: false };
+	}
+
+	// return keyCards
+	// 	? authSystem.validate(keyCards)
+	// 	: { user: null, isAuthenticated: false };
 
 	// const token = session.get("accessToken");
 

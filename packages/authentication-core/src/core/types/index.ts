@@ -4,6 +4,8 @@
 // 	// roles: string[];
 // }
 
+import { AuthError } from "../error";
+
 // Base token type with common properties
 export interface AuthToken {
 	value: string;
@@ -93,17 +95,17 @@ export interface SignupCredentials extends Credentials {
 	name: string;
 }
 
-export type AuthResult = {
-	success: boolean;
-	authState?: AuthState;
-};
+// export type AuthResult = {
+// 	success: boolean;
+// 	authState?: AuthState;
+// };
 
 export interface AuthManager {
 	authenticate: (credentials: Credentials) => Promise<ImprovedAuthState>;
 	// can: (user: User, action: string, resource: Resource) => boolean;
 	// storageAdapter: WebStorageAdapter;
 	signup: (credentials: SignupCredentials) => Promise<ImprovedAuthState>;
-	validate: (keyCards: KeyCards) => Promise<AuthValidationResult>;
+	validate: (keyCards: KeyCards) => Promise<AuthResult>;
 	// refreshToken: (refreshToken: string) => Promise<AuthResult>;
 	logout: (keyCards: KeyCards) => Promise<void>;
 	refresh: (keyCards: KeyCards) => Promise<ImprovedAuthState>;
@@ -196,6 +198,10 @@ export interface AuthValidationResult {
 	expiresAt?: number; // Optional, e.g., for JWT to indicate expiration time
 }
 
+export type AuthResult =
+	| { success: true; user: User; keyCards?: KeyCards }
+	| { success: false; error: AuthError };
+
 export interface VerifyResult {
 	valid: boolean;
 	user?: User; // Populated on success
@@ -206,7 +212,7 @@ export interface VerifyResult {
 export interface AuthStrategy {
 	createKeyCards(user: User): Promise<KeyCards>;
 	logout(keyCards: KeyCards): Promise<void>;
-	validate(keyCards: KeyCards): Promise<AuthValidationResult>;
+	validate(keyCards: KeyCards): Promise<AuthResult>;
 	validateAll(keyCards: KeyCards): Promise<AuthValidationResult>;
 	validateRefresh?(keyCards: KeyCards): Promise<AuthValidationResult>;
 	supportsRefresh(): boolean;

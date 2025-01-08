@@ -29,7 +29,7 @@ export function withAuth(
 		// add && authConfig.csrf
 
 		// Validate auth
-		const { user, isAuthenticated } = await authMiddleware(request);
+		const { user, isLoggedIn } = await authMiddleware(request);
 
 		if (csrfCheck) {
 			// will throw error if not valid csrf
@@ -50,6 +50,6 @@ export function withAuth(
 		// 	});
 		// }
 		// Pass user to the handler
-		return handler({ request, user });
+		return handler({ request, user, isLoggedIn });
 	};
 }

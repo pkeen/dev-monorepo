@@ -33,6 +33,7 @@ import {
 	InvalidCredentialsError,
 	KeyCardCreationError,
 	CsrfError,
+	AuthError,
 } from "../error";
 import { JwtStrategy } from "../strategy";
 import crypto from "crypto";
@@ -203,21 +204,34 @@ export class AuthSystem implements AuthManager {
 		}
 	}
 
-	async validate(keyCards: KeyCards): Promise<AuthValidationResult> {
-		const result = await safeExecute(
-			async () => {
-				return await this.strategy.validate(keyCards);
-			},
-			this.logger,
-			{
-				message: "Failed to validate keycards",
-				error: InvalidCredentialsError,
-			}
-		);
-		if (!result.isAuthenticated) {
-			return { isAuthenticated: false, user: null };
+	async validate(keyCards: KeyCards): Promise<AuthResult> {
+		const result = await this.strategy.validate(keyCards);
+		if (!result.success) {
+			// log the error
+			this.logger.error("Failed to validate keycards", {
+				message: result.error?.message,
+				meta: result.error?
+			});
 		}
 		return result;
+
+		// try {
+		//     const result =await this.strategy.validate(keyCards);
+		// }
+		// const result = await safeExecute(
+		// 	async () => {
+		// 		return await this.strategy.validate(keyCards);
+		// 	},
+		// 	this.logger,
+		// 	{
+		// 		message: "Failed to validate keycards",
+		// 		error: InvalidCredentialsError,
+		// 	}
+		// );
+		// if (!result.isAuthenticated) {
+		// 	return { success: false, error: null };
+		// }
+		// return result;
 	}
 
 	async signup(credentials: Credentials): Promise<ImprovedAuthState> {

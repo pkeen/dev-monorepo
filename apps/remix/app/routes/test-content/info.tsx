@@ -1,4 +1,4 @@
-import { LoaderFunction } from "react-router";
+import { LoaderFunction, redirect } from "react-router";
 import { withAuth } from "~/lib/remix-auth/withAuth";
 import { Form } from "react-router";
 // import { Route } from "react-router";
@@ -12,8 +12,19 @@ import { CsrfHidden } from "~/lib/remix-auth/CsrfHidden";
 // };
 
 export const loader = withAuth(
-	async ({ request, user }: { request: Request; user: User }) => {
+	async ({
+		request,
+		user,
+		isLoggedIn,
+	}: {
+		request: Request;
+		user: User;
+		isLoggedIn: boolean;
+	}) => {
 		console.log(" loader user: ", user);
+		if (!isLoggedIn) {
+			return redirect("/auth/login");
+		}
 		return user;
 	},
 	{ csrf: true }

@@ -9,6 +9,7 @@ import {
 	AuthState,
 	TokenService,
 	VerifiedToken,
+	AuthResult,
 } from "../../types";
 // import { JwtTokenService } from "../../token-service";
 import { JwtTokenService } from "../../token-service";
@@ -19,6 +20,8 @@ import {
 	InvalidKeyCardError,
 	KeyCardCreationError,
 	KeyCardMissingError,
+	AuthError,
+	UnknownAuthError,
 } from "../../error";
 
 import { safeExecute } from "../../error";
@@ -78,22 +81,35 @@ export class JwtStrategy implements AuthStrategy {
 		return Promise.resolve();
 	}
 
-	async validate(keyCards: KeyCards): Promise<AuthValidationResult> {
-		const accessKeyCard = keyCards.find(
-			(keyCard) => keyCard.name === "access"
-		);
-		if (!accessKeyCard) {
-			throw new KeyCardMissingError("Access Key Card Missing");
+	async validate(keyCards: KeyCards): Promise<AuthResult> {
+		try {
+			const accessKeyCard = keyCards.find(
+				(keyCard) => keyCard.name === "access"
+			);
+			if (!accessKeyCard) {
+				throw new KeyCardMissingError("Access Key Card Missing");
+			}
+			const result = await this.tokenService.validate(
+				accessKeyCard.value,
+				this.config.access
+			);
+			return {
+				success: true,
+				user: result.user,
+			};
+		} catch (error) {
+			if (error instanceof AuthError) {
+				return {
+					success: false,
+					error,
+				};
+			} else {
+				return {
+					success: false,
+					error: new UnknownAuthError("Unknown error"),
+				};
+			}
 		}
-
-		const result = await this.tokenService.validate(
-			accessKeyCard.value,
-			this.config.access
-		);
-		return {
-			isAuthenticated: true,
-			user: result.user,
-		};
 	}
 
 	async validateAll(keyCards: KeyCards): Promise<AuthValidationResult> {

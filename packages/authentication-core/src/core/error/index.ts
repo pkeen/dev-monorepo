@@ -12,6 +12,10 @@ export class AuthError extends Error {
 }
 
 export enum AuthErrorCode {
+	UNKNOWN_ERROR = "UNKNOWN_ERROR",
+	// Validation Errors (400s)
+	VALIDATION_ERROR = "VALIDATION_ERROR",
+
 	// Token Errors | Security Errors (400s)
 	TOKEN_TAMPERED = "TOKEN_TAMPERED",
 	TOKEN_EXPIRED = "TOKEN_EXPIRED",
@@ -53,6 +57,13 @@ export enum AuthErrorCode {
 // 	}
 // }
 
+export class UnknownAuthError extends AuthError {
+	constructor(message: string) {
+		super(message, AuthErrorCode.UNKNOWN_ERROR, 500);
+		this.name = "UnknownAuthError";
+	}
+}
+
 export class ConfigurationError extends AuthError {
 	constructor(message: string) {
 		super(message, AuthErrorCode.INVALID_CONFIG, 500);
@@ -60,22 +71,29 @@ export class ConfigurationError extends AuthError {
 	}
 }
 
+export class ValidationError extends AuthError {
+	constructor(message: string, code: AuthErrorCode) {
+		super(message, code);
+		this.name = "ValidationError";
+	}
+}
+
 // Define specific error types
-export class TokenError extends AuthError {
+export class TokenError extends ValidationError {
 	constructor(message: string, code: AuthErrorCode) {
 		super(message, code);
 		this.name = "TokenError";
 	}
 }
 
-export class TokenExpiredError extends TokenError {
+export class TokenExpiredError extends ValidationError {
 	constructor(message: string) {
 		super(message, AuthErrorCode.TOKEN_EXPIRED);
 		this.name = "TokenExpiredError";
 	}
 }
 
-export class TokenTamperedError extends TokenError {
+export class TokenTamperedError extends ValidationError {
 	constructor(message: string) {
 		super(message, AuthErrorCode.TOKEN_TAMPERED);
 		this.name = "TokenTamperedError";

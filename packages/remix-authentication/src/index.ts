@@ -15,7 +15,7 @@ export interface ExtendedAuthConfig {
 // Combined configuration for dependency injection
 export type AppAuthConfig = AuthConfig & ExtendedAuthConfig;
 
-export const remixAuth = (config: AppAuthConfig) => {
+export const RemixAuth = (config: AppAuthConfig) => {
 	const authSystem = AuthSystem.create(config);
 
 	const createLoginAction = (authSystem: AuthSystem, redirectTo?: string) => {
@@ -194,4 +194,4 @@ export const remixAuth = (config: AppAuthConfig) => {
 	};
 };
 
-export default remixAuth;
+export default RemixAuth;

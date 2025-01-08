@@ -11,7 +11,7 @@ import {
 import db from "./lib/db/db";
 import { redirect, type ActionFunctionArgs } from "react-router";
 import { sessionStorage, getSession } from "./lib/remix-auth/sessionStorage";
-import { remixAuth } from "@pete_keen/remix-authentication";
+import { RemixAuth } from "@pete_keen/remix-authentication";
 
 // App-specific config extension
 export interface ExtendedAuthConfig {
@@ -245,7 +245,7 @@ const databaseAdapter = DrizzleAdapter(db);
 // 	};
 // };
 
-export const { authSystem, login, logout, signup } = remixAuth({
+export const { authSystem, login, logout, signup } = RemixAuth({
 	strategy: "jwt",
 	jwtConfig: jwtOptions,
 	adapter: databaseAdapter,

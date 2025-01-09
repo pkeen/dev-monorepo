@@ -11,33 +11,33 @@ import { CsrfHidden } from "~/lib/remix-auth/CsrfHidden";
 // 	return null;
 // };
 
-export const loader = withAuth(
-	async ({
-		request,
-		user,
-		isLoggedIn,
-	}: {
-		request: Request;
-		user: User;
-		isLoggedIn: boolean;
-	}) => {
-		console.log(" loader user: ", user);
-		if (!isLoggedIn) {
-			return redirect("/auth/login");
-		}
-		return user;
-	},
-	{ csrf: true }
-);
+// export const loader = withAuth(
+// 	async ({
+// 		request,
+// 		user,
+// 		isLoggedIn,
+// 	}: {
+// 		request: Request;
+// 		user: User;
+// 		isLoggedIn: boolean;
+// 	}) => {
+// 		console.log(" loader user: ", user);
+// 		if (!isLoggedIn) {
+// 			return redirect("/auth/login");
+// 		}
+// 		return user;
+// 	},
+// 	{ csrf: true }
+// );
 
-export const action = withAuth(
-	async ({ request, user }: { request: Request; user: User }) => {
-		console.log(" action user: ", user);
-		console.log("action completed");
-		return user;
-	},
-	{ csrf: true }
-);
+// export const action = withAuth(
+// 	async ({ request, user }: { request: Request; user: User }) => {
+// 		console.log(" action user: ", user);
+// 		console.log("action completed");
+// 		return user;
+// 	},
+// 	{ csrf: true }
+// );
 
 export default function Info({ loaderData }: { loaderData: User }) {
 	// const user = loaderData.user;

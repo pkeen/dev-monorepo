@@ -1,12 +1,13 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import type { LinksFunction } from "react-router";
 import { AuthProvider } from "~/lib/remix-auth/AuthContext";
-import { csrfTokenMiddleware } from "~/lib/remix-auth/csrfMiddleware";
-import { LoaderFunctionArgs } from "react-router";
-import { getSession } from "~/lib/remix-auth/sessionStorage";
 import { Route } from "./+types/root";
-import { middleware } from "./lib/remix-auth/middleware";
-import { withRemixAuth, withValidation } from "./lib/remix-auth/withAuth";
+import {
+	withValidation,
+	WithValidationArgs,
+	HandlerFunction,
+} from "./lib/remix-auth/withAuth";
+import { User } from "@pete_keen/authentication-core";
 
 import "./tailwind.css";
 
@@ -75,31 +76,46 @@ export function Layout({ children }: { children: React.ReactNode }) {
 // 	return await middleware(request);
 // };
 
-export const loader = withValidation(
-	async ({
-		request,
+interface LoaderData {
+	csrf: string | null;
+	user: User | null;
+	isLoggedIn: boolean;
+}
+
+interface HandlerArgs {
+	csrf: string | null;
+	user: User | null;
+	isLoggedIn: boolean;
+}
+
+const loaderHandler: HandlerFunction<HandlerArgs> = async ({
+	request,
+	user,
+	isLoggedIn,
+	csrf,
+}: WithValidationArgs): Promise<LoaderData> => {
+	console.log("ROOT LOADER called");
+	return {
 		user,
 		isLoggedIn,
 		csrf,
-	}: {
-		request: Request;
-		user: any;
-		isLoggedIn: boolean;
-		csrf: string;
-	}) => {
-		console.log("ROOT LOADER called");
-		return {
-			user,
-			isLoggedIn,
-			csrf,
-		};
-	}
-);
+	};
+};
+
+export const loader = withValidation(loaderHandler, {
+	csrf: true,
+});
+
+const parseLoaderData = (data: string | any) => {
+	return JSON.parse(data);
+};
 
 export default function App({ loaderData }: Route.ComponentProps) {
 	// const { csrf, user, isLoggedIn } = JSON.parse(loaderData);
-	const { csrf, user, isLoggedIn } = loaderData;
-    console.log("loaderData: ", loaderData);
+	// const { csrf, user, isLoggedIn } = JSON.parse(loaderData);
+	const { csrf, user, isLoggedIn } = parseLoaderData(loaderData);
+	console.log("loaderData: ", loaderData);
+	console.log("csrf in root: ", csrf);
 	// console.log("loaderData: ", loaderData);
 	// console.log("csrf (server): ", csrf);
 	// console.log("user: ", user);

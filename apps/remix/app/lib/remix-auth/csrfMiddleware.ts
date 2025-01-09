@@ -2,31 +2,31 @@
 // import { generateCsrfToken, validateCsrfToken } from "auth-core/csrfUtils";
 // import { getSession } from "~/sessionStorage";
 import { authSystem } from "../../auth";
-import { csrfCookie } from "~/lib/remix-auth/sessionStorage";
+// import { csrfCookie } from "~/lib/remix-auth/sessionStorage";
 import { LoaderFunctionArgs } from "react-router";
 
 // Generate or refresh CSRF token
-export async function csrfTokenMiddleware(request: Request) {
-	// get cookie
-	const cookieHeader = request.headers.get("Cookie");
-	const csrfCookieHeader = await csrfCookie.parse(cookieHeader);
-	// console.log("csrfCookieHeader: ", csrfCookieHeader);
+// export async function csrfTokenMiddleware(request: Request) {
+// 	// get cookie
+// 	const cookieHeader = request.headers.get("Cookie");
+// 	const csrfCookieHeader = await csrfCookie.parse(cookieHeader);
+// 	// console.log("csrfCookieHeader: ", csrfCookieHeader);
 
-	let csrfToken = csrfCookieHeader || (await authSystem.generateCsrfToken());
+// 	let csrfToken = csrfCookieHeader || (await authSystem.generateCsrfToken());
 
-	// console.log("csrfToken (middleware): ", csrfToken);
+// 	// console.log("csrfToken (middleware): ", csrfToken);
 
-	return new Response(JSON.stringify({ csrfToken }), {
-		headers: {
-			"Set-Cookie": await csrfCookie.serialize(csrfToken),
-			"Content-Type": "application/json",
-		},
-	});
-}
+// 	return new Response(JSON.stringify({ csrfToken }), {
+// 		headers: {
+// 			"Set-Cookie": await csrfCookie.serialize(csrfToken),
+// 			"Content-Type": "application/json",
+// 		},
+// 	});
+// }
 
-export async function getOrCreateCsrfTokenMiddleware(request: Request) {
-	return getCsrfToken(request) || (await authSystem.generateCsrfToken());
-}
+// export async function getOrCreateCsrfTokenMiddleware(request: Request) {
+// 	return getCsrfToken(request) || (await authSystem.generateCsrfToken());
+// }
 
 // Middleware function
 // Validate CSRF token
@@ -40,6 +40,9 @@ export async function csrfMiddleware(request: Request, sessionCsrf: string) {
 	const incomingCsrf =
 		request.headers.get("X-CSRF-Token") ||
 		(await request.formData()).get("csrfToken");
+
+	console.log("csrfMiddleware - incomingCsrf: ", incomingCsrf);
+	console.log("csrfMiddleware - sessionCsrf: ", sessionCsrf);
 
 	// console.log("csrfToken: in middleware", csrfToken);
 

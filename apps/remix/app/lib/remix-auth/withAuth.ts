@@ -1,4 +1,10 @@
-import { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
+import {
+	ActionFunctionArgs,
+	LoaderFunctionArgs,
+	ActionFunction,
+	LoaderFunction,
+} from "react-router";
+
 // import { authMiddleware } from "~/lib/remix-auth/authMiddleware";
 import {
 	csrfMiddleware,
@@ -14,97 +20,94 @@ import { authMiddleware } from "~/lib/remix-auth/authMiddleware";
 // 	user: User;
 // }
 
+// // Auth and CSRF wrapper
+// export function withAuth(
+// 	handler: Function,
+// 	options: {
+// 		csrf: boolean;
+// 		role?: string;
+// 	} = { csrf: true }
+// ) {
+// 	return async function ({
+// 		request,
+// 	}: ActionFunctionArgs | LoaderFunctionArgs) {
+// 		// Apply CSRF middleware if enabled
+// 		// if (options.csrf && authConfig.csrf) {
+// 		// 	await csrfMiddleware(request);
+// 		// }
+// 		// leave the option for now - will only make sense when its a factory function
+// 		console.log("withAuth - options: ", options);
+
+// 		const csrfCheck = options.csrf;
+// 		// add && authConfig.csrf
+
+// 		// Validate auth
+// 		const { user, isLoggedIn } = await authMiddleware(request);
+
+// 		if (csrfCheck) {
+// 			// will throw error if not valid csrf
+// 			await csrfMiddleware(request);
+// 		}
+
+// 		// Role-based access check
+// 		// if (role && (!user || !user.roles.includes(role))) {
+// 		// 	throw new Response(JSON.stringify({ error: "Permission denied" }), {
+// 		// 		status: 403,
+// 		// 	});
+// 		// }
+
+// 		// // test id based access check
+// 		// if (user.id !== "2d518ba8-3cb6-44af-8f3f-9ce79ba11b8c") {
+// 		// 	throw new Response(JSON.stringify({ error: "Permission denied" }), {
+// 		// 		status: 403,
+// 		// 	});
+// 		// }
+// 		// Pass user to the handler
+// 		return handler({ request, user, isLoggedIn });
+// 	};
+// }
+
+// // Auth and CSRF wrapper
+// export function withRemixAuth(
+// 	handler: Function,
+// 	options: {
+// 		csrf: boolean;
+// 		role?: string;
+// 	} = { csrf: true }
+// ) {
+// 	return async function ({
+// 		request,
+// 	}: ActionFunctionArgs | LoaderFunctionArgs) {
+// 		// console.log("withRemixAuth - options: ", options);
+// 		// Step 1: Get CSRF Token or create one if not present
+// 		const csrf = await getCsrfTokenFromCookie(request);
+// 		// console.log("withRemixAuth - csrf: ", csrf);
+// 		if (!csrf) {
+// 			console.log("withRemixAuth - setting csrf token");
+// 			return await generateAndSetCsrfToken(request);
+// 		}
+
+// 		// Verify CSRF if wanted
+// 		const csrfCheck = options.csrf;
+// 		if (csrfCheck) {
+// 			// will throw error if not valid csrf
+// 			await csrfMiddleware(request);
+// 		}
+
+// 		// Validate auth
+// 		const { user, isLoggedIn } = await authMiddleware(request);
+
+// 		return handler({ request, user, isLoggedIn, csrf });
+
+// 		// TO-DO - Role based access checks
+// 	};
+// }
+
 // Auth and CSRF wrapper
-export function withAuth(
-	handler: Function,
-	options: {
-		csrf: boolean;
-		role?: string;
-	} = { csrf: true }
-) {
-	return async function ({
-		request,
-	}: ActionFunctionArgs | LoaderFunctionArgs) {
-		// Apply CSRF middleware if enabled
-		// if (options.csrf && authConfig.csrf) {
-		// 	await csrfMiddleware(request);
-		// }
-		// leave the option for now - will only make sense when its a factory function
-		console.log("withAuth - options: ", options);
-
-		const csrfCheck = options.csrf;
-		// add && authConfig.csrf
-
-		// Validate auth
-		const { user, isLoggedIn } = await authMiddleware(request);
-
-		if (csrfCheck) {
-			// will throw error if not valid csrf
-			await csrfMiddleware(request);
-		}
-
-		// Role-based access check
-		// if (role && (!user || !user.roles.includes(role))) {
-		// 	throw new Response(JSON.stringify({ error: "Permission denied" }), {
-		// 		status: 403,
-		// 	});
-		// }
-
-		// // test id based access check
-		// if (user.id !== "2d518ba8-3cb6-44af-8f3f-9ce79ba11b8c") {
-		// 	throw new Response(JSON.stringify({ error: "Permission denied" }), {
-		// 		status: 403,
-		// 	});
-		// }
-		// Pass user to the handler
-		return handler({ request, user, isLoggedIn });
-	};
-}
-
-// Auth and CSRF wrapper
-export function withRemixAuth(
-	handler: Function,
-	options: {
-		csrf: boolean;
-		role?: string;
-	} = { csrf: true }
-) {
-	return async function ({
-		request,
-	}: ActionFunctionArgs | LoaderFunctionArgs) {
-		// console.log("withRemixAuth - options: ", options);
-		// Step 1: Get CSRF Token or create one if not present
-		const csrf = await getCsrfTokenFromCookie(request);
-		// console.log("withRemixAuth - csrf: ", csrf);
-		if (!csrf) {
-			console.log("withRemixAuth - setting csrf token");
-			return await generateAndSetCsrfToken(request);
-		}
-
-		// Verify CSRF if wanted
-		const csrfCheck = options.csrf;
-		if (csrfCheck) {
-			// will throw error if not valid csrf
-			await csrfMiddleware(request);
-		}
-
-		// Validate auth
-		const { user, isLoggedIn } = await authMiddleware(request);
-
-		return handler({ request, user, isLoggedIn, csrf });
-
-		// TO-DO - Role based access checks
-	};
-}
-
-// Auth and CSRF wrapper
-export function withValidation(
-	handler: Function,
-	options: {
-		csrf: boolean;
-		role?: string;
-	} = { csrf: true }
-) {
+export function withValidation<T>(
+	handler: HandlerFunction<T>,
+	options: WithValidationOptions = { csrf: true }
+): LoaderFunction | ActionFunction {
 	return async function ({
 		request,
 	}: ActionFunctionArgs | LoaderFunctionArgs) {
@@ -169,3 +172,18 @@ export const getSessionData = async (request: Request) => {
 	const isLoggedIn = session.get("isLoggedIn");
 	return { user, isLoggedIn };
 };
+
+// types/withValidation.d.ts
+export interface WithValidationArgs {
+	request: Request;
+	user: User | null; // Replace 'any' with your actual User type
+	isLoggedIn: boolean;
+	csrf: string | null;
+}
+
+export type HandlerFunction<T> = (args: WithValidationArgs) => Promise<T>;
+
+export interface WithValidationOptions {
+	csrf?: boolean;
+	role?: string;
+}

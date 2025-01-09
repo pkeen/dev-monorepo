@@ -6,6 +6,7 @@ import {
 	User,
 	AuthValidationResult,
 	AuthResult,
+	KeyCards,
 } from "@pete_keen/authentication-core";
 
 interface AuthMiddlewareUser {
@@ -13,12 +14,16 @@ interface AuthMiddlewareUser {
 	isLoggedIn: boolean;
 }
 
+interface AuthStatus {
+	user: User | null;
+	isLoggedIn: boolean;
+	keyCards: KeyCards | null;
+}
+
 // import jwt from "jsonwebtoken";
 
 // Middleware to fetch and validate the user
-export async function authMiddleware(
-	request: Request
-): Promise<AuthMiddlewareUser> {
+export async function authMiddleware(request: Request): Promise<AuthStatus> {
 	// Get the keycards from the session
 	const session = await getSession(request.headers.get("Cookie"));
 	const keyCards = session.get("keyCards");

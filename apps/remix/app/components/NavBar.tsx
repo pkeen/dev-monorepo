@@ -27,14 +27,21 @@ export default function Navbar() {
 
 			{/* Show logout button only if authenticated */}
 			{isLoggedIn ? (
-				<Form method="post" action="/auth/logout" className="ml-auto">
-					<button
-						type="submit"
-						className="text-red-500 hover:text-red-700"
+				<>
+					<Form
+						method="post"
+						action="/auth/logout"
+						className="ml-auto"
 					>
-						Logout
-					</button>
-				</Form>
+						<button
+							type="submit"
+							className="text-red-500 hover:text-red-700"
+						>
+							Logout
+						</button>
+					</Form>
+					-<p>{user?.email}</p>
+				</>
 			) : (
 				<NavLink
 					to="auth/login"

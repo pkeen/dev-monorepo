@@ -115,7 +115,7 @@ export function withValidation(
 		// console.log("withRemixAuth - csrf: ", csrf);
 		// Step 2a: Check if csrf is present
 		if (!csrf) {
-			console.log("withRemixAuth - setting csrf token");
+			console.log("withValidation - setting csrf token");
 			csrf = await authSystem.generateCsrfToken();
 			session.set("csrf", csrf);
 		}
@@ -130,16 +130,24 @@ export function withValidation(
 		// Validate auth
 		const { user, isLoggedIn } = await authMiddleware(request);
 
+		console.log("withValidation - user: ", user);
+		console.log("withValidation - isLoggedIn: ", isLoggedIn);
+
 		// set these as session variables
 		session.set("user", user);
 		session.set("isLoggedIn", isLoggedIn);
-		await commitSession(session);
+		// Step 6: Commit the session (with new CSRF token if generated)
+		const headers: HeadersInit = {
+			"Set-Cookie": await commitSession(session),
+		};
 
 		// Call the handler with user and CSRF data
 		const data = await handler({ request, user, isLoggedIn, csrf });
 
 		// TO-DO - Role based access checks
-		return data;
+		// return data;
+		// Make sure cookie is actually set must return headers
+		return new Response(JSON.stringify(data), { headers });
 	};
 }
 
@@ -156,8 +164,8 @@ export function withSession(handler: Function) {
 
 export const getSessionData = async (request: Request) => {
 	const session = await getSession(request.headers.get("Cookie"));
-	console.log("getSessionData - session: ", session);
 	const user = session.get("user");
+	console.log("getSessionData - user: ", user);
 	const isLoggedIn = session.get("isLoggedIn");
 	return { user, isLoggedIn };
 };

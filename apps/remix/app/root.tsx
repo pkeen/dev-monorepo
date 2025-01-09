@@ -1,13 +1,10 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import type { LinksFunction } from "react-router";
 import { AuthProvider } from "~/lib/remix-auth/AuthContext";
-import {
-	csrfTokenMiddleware,
-	fetchCsrfToken,
-} from "~/lib/remix-auth/csrfMiddleware";
+import { csrfTokenMiddleware } from "~/lib/remix-auth/csrfMiddleware";
 import { LoaderFunctionArgs } from "react-router";
 import { getSession } from "~/lib/remix-auth/sessionStorage";
-import { Route } from "react-router";
+import { Route } from "./+types/root";
 import { middleware } from "./lib/remix-auth/middleware";
 import { withRemixAuth, withValidation } from "./lib/remix-auth/withAuth";
 
@@ -102,6 +99,7 @@ export const loader = withValidation(
 export default function App({ loaderData }: Route.ComponentProps) {
 	// const { csrf, user, isLoggedIn } = JSON.parse(loaderData);
 	const { csrf, user, isLoggedIn } = loaderData;
+    console.log("loaderData: ", loaderData);
 	// console.log("loaderData: ", loaderData);
 	// console.log("csrf (server): ", csrf);
 	// console.log("user: ", user);

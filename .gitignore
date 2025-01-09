@@ -46,3 +46,6 @@ out/
 
 # Bit-specific (if using it alongside)
 .bit/
+
+# React Router Types
+.react-router/

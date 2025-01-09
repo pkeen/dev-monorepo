@@ -30,7 +30,7 @@ import { LoaderFunctionArgs } from "react-router";
 
 // Middleware function
 // Validate CSRF token
-export async function csrfMiddleware(request: Request, sessionCsrf: string) {
+export async function csrfMiddleware(request: Request, sessionCsrf?: string) {
 	//   if (!authConfig.csrf) return; // Skip validation if disabled - this wont work for now
 
 	const safeMethods = ["GET", "HEAD", "OPTIONS"];
@@ -63,23 +63,23 @@ export async function csrfMiddleware(request: Request, sessionCsrf: string) {
 
 // All ecompassing middleware
 
-export async function getCsrfTokenFromCookie(request: Request) {
-	// return the csrf token or null
-	const cookieHeader = request.headers.get("Cookie");
-	const csrfCookieHeader = await csrfCookie.parse(cookieHeader);
-	// console.log("csrfCookieHeader: ", csrfCookieHeader);
-	return csrfCookieHeader || null;
-}
+// export async function getCsrfTokenFromCookie(request: Request) {
+// 	// return the csrf token or null
+// 	const cookieHeader = request.headers.get("Cookie");
+// 	const csrfCookieHeader = await csrfCookie.parse(cookieHeader);
+// 	// console.log("csrfCookieHeader: ", csrfCookieHeader);
+// 	return csrfCookieHeader || null;
+// }
 
-export async function generateAndSetCsrfToken(request: Request) {
-	// generate a csrf token
-	const csrfToken = await authSystem.generateCsrfToken();
-	// set the csrf token in the cookie
+// export async function generateAndSetCsrfToken(request: Request) {
+// 	// generate a csrf token
+// 	const csrfToken = await authSystem.generateCsrfToken();
+// 	// set the csrf token in the cookie
 
-	return new Response(JSON.stringify({ csrfToken }), {
-		headers: {
-			"Set-Cookie": await csrfCookie.serialize(csrfToken),
-			"Content-Type": "application/json",
-		},
-	});
-}
+// 	return new Response(JSON.stringify({ csrfToken }), {
+// 		headers: {
+// 			"Set-Cookie": await csrfCookie.serialize(csrfToken),
+// 			"Content-Type": "application/json",
+// 		},
+// 	});
+// }

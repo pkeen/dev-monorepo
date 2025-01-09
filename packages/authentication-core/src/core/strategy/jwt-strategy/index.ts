@@ -23,8 +23,11 @@ import {
 	AuthError,
 	UnknownAuthError,
 } from "../../error";
+import { createLogger } from "@pete_keen/logger";
 
 import { safeExecute } from "../../error";
+
+const logger = createLogger({});
 
 export class JwtStrategy implements AuthStrategy {
 	private tokenService: TokenService;
@@ -83,27 +86,75 @@ export class JwtStrategy implements AuthStrategy {
 
 	async validate(keyCards: KeyCards): Promise<AuthResult> {
 		try {
-			const accessKeyCard = keyCards.find(
-				(keyCard) => keyCard.name === "access"
+			const validationResult = await this.validateCard(
+				keyCards,
+				"access"
 			);
-			if (!accessKeyCard) {
-				throw new KeyCardMissingError("Access Key Card Missing");
+			if (validationResult.success) {
+				logger.info("Keycards validated", {
+					userId: validationResult.user.id,
+					email: validationResult.user.email,
+				});
+				return {
+					success: true,
+					user: validationResult.user,
+					keyCards,
+				};
+			}
+			const refreshResult = await this.validateCard(keyCards, "refresh");
+			if (refreshResult.success) {
+				logger.info("Refresh keycard validated", {
+					userId: refreshResult.user.id,
+					email: refreshResult.user.email,
+				});
+				const newKeyCards = await this.createKeyCards(
+					refreshResult.user
+				);
+				return {
+					success: true,
+					user: refreshResult.user,
+					keyCards: newKeyCards,
+				};
+			}
+		} catch (error) {
+			return {
+				success: false,
+				error,
+			};
+		}
+	}
+
+	private async validateCard(
+		keyCards: KeyCards,
+		name: string
+	): Promise<AuthResult> {
+		try {
+			const card = keyCards.find((keyCard) => keyCard.name === name);
+			if (!card) {
+				throw new KeyCardMissingError(`${name} Key Card Missing`);
 			}
 			const result = await this.tokenService.validate(
-				accessKeyCard.value,
-				this.config.access
+				card.value,
+				this.config[name]
 			);
 			return {
 				success: true,
 				user: result.user,
+				keyCards,
 			};
 		} catch (error) {
 			if (error instanceof AuthError) {
+				logger.warn(`${name} keycard not validated`, {
+					error,
+				});
 				return {
 					success: false,
 					error,
 				};
 			} else {
+				logger.warn(`${name} keycard not validated - unknown error`, {
+					error,
+				});
 				return {
 					success: false,
 					error: new UnknownAuthError("Unknown error"),
@@ -112,80 +163,8 @@ export class JwtStrategy implements AuthStrategy {
 		}
 	}
 
-	async validateAll(keyCards: KeyCards): Promise<AuthValidationResult> {
-		try {
-			// 1. Make sure they are present
-			const accessKeyCard = keyCards.find(
-				(keyCard) => keyCard.name === "access"
-			);
-			if (!accessKeyCard) {
-				throw new KeyCardMissingError("Access Key Card Missing");
-			}
-			const refreshKeyCard = keyCards.find(
-				(keyCard) => keyCard.name === "refresh"
-			);
-			if (!refreshKeyCard) {
-				throw new KeyCardMissingError("Refresh Key Card Missing");
-			}
-			// 2. Verify the tokens
-			const resultAccess = await this.tokenService.validate(
-				accessKeyCard.value,
-				this.config.access
-			);
-			const resultRefresh = await this.tokenService.validate(
-				refreshKeyCard.value,
-				this.config.refresh
-			);
-
-			return {
-				valid: true,
-				user: resultAccess.user,
-			};
-		} catch (error) {
-			if (error.name === "TokenExpiredError") {
-				throw new ExpiredKeyCardError(
-					"Key Card Expired " + error.message
-				);
-			} else if (error.name === "TokenTamperedError") {
-				throw new InvalidKeyCardError(
-					"Key Card Invalid " + error.message
-				);
-			}
-			throw error;
-		}
-	}
-
 	supportsRefresh(): boolean {
+		// TO-DO decide if this is needed
 		return true;
-	}
-
-	async validateRefresh(keyCards: KeyCards): Promise<AuthValidationResult> {
-		try {
-			const refreshKeyCard = keyCards.find(
-				(keyCard) => keyCard.name === "refresh"
-			);
-			if (!refreshKeyCard)
-				throw new KeyCardMissingError("Refresh Key Card Missing");
-
-			const result = await this.tokenService.validate(
-				refreshKeyCard.value,
-				this.config.refresh
-			);
-			return {
-				valid: true,
-				user: result.user,
-			};
-		} catch (error) {
-			if (error.name === "TokenExpiredError") {
-				throw new ExpiredKeyCardError(
-					"Key Card Expired " + error.message
-				);
-			} else if (error.name === "TokenTamperedError") {
-				throw new InvalidKeyCardError(
-					"Key Card Invalid " + error.message
-				);
-			}
-			throw error;
-		}
 	}
 }

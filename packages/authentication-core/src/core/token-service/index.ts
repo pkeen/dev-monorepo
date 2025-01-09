@@ -15,6 +15,9 @@ import {
 } from "../error";
 // import jose from "jose";
 import { SignJWT, JWTPayload, jwtVerify } from "jose";
+import { createLogger } from "@pete_keen/logger";
+
+const logger = createLogger({});
 
 // Custom payload type that extends JWTPayload
 interface AuthPayload extends JWTPayload {
@@ -85,6 +88,9 @@ export class JwtTokenService implements TokenService {
 					"Token has expired " + (error.message || "Invalid token")
 				);
 			}
+			logger.warn(
+				"Token validation failed: " + (error.message || "Invalid token")
+			);
 
 			// All other JWT errors indicate tampering - throw security error
 			if (

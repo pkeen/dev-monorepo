@@ -45,37 +45,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
 	);
 }
 
-// export const loader = async ({ request }: LoaderFunctionArgs) => {
-// 	console.log("ROOT LOADER called");
-// 	const csrfResponse = await csrfTokenMiddleware(request);
-// 	const { csrfToken } = await csrfResponse.json();
-// 	const setCookieHeader = csrfResponse.headers.get("Set-Cookie");
-// 	// const csrf = await fetchCsrfToken(request);
-// 	// console.log("csrf: ", csrf);
-// 	const session = await getSession(request);
-// 	const user = (await session.get("user")) || null;
-// 	console.log("user: ", user);
-// 	const isAuthenticated = session.get("isLoggedIn") || false;
-
-// 	return new Response(
-// 		JSON.stringify({
-// 			csrf: csrfToken,
-// 			user,
-// 			isAuthenticated,
-// 		}),
-// 		{
-// 			headers: {
-// 				"Set-Cookie": setCookieHeader,
-// 			},
-// 		}
-// 	);
-// };
-
-// export const loader = async ({ request }: LoaderFunctionArgs) => {
-// 	console.log("ROOT LOADER called");
-// 	return await middleware(request);
-// };
-
 interface LoaderData {
 	csrf: string | null;
 	user: User | null;
@@ -90,14 +59,14 @@ interface HandlerArgs {
 
 const loaderHandler: HandlerFunction<HandlerArgs> = async ({
 	request,
-	user,
-	isLoggedIn,
+	authStatus,
 	csrf,
 }: WithValidationArgs): Promise<LoaderData> => {
 	console.log("ROOT LOADER called");
+	// console.log("loaderHandler - authStatus: ", authStatus);
 	return {
-		user,
-		isLoggedIn,
+		user: authStatus.user,
+		isLoggedIn: authStatus.isLoggedIn,
 		csrf,
 	};
 };
@@ -111,15 +80,8 @@ const parseLoaderData = (data: string | any) => {
 };
 
 export default function App({ loaderData }: Route.ComponentProps) {
-	// const { csrf, user, isLoggedIn } = JSON.parse(loaderData);
-	// const { csrf, user, isLoggedIn } = JSON.parse(loaderData);
 	const { csrf, user, isLoggedIn } = parseLoaderData(loaderData);
-	console.log("loaderData: ", loaderData);
-	console.log("csrf in root: ", csrf);
-	// console.log("loaderData: ", loaderData);
-	// console.log("csrf (server): ", csrf);
-	// console.log("user: ", user);
-	// console.log("isAuthenticated: ", isAuthenticated);
+
 	return (
 		<Layout>
 			<AuthProvider csrfToken={csrf} user={user} isLoggedIn={isLoggedIn}>

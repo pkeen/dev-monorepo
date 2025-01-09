@@ -184,53 +184,38 @@ export class AuthSystem implements AuthManager {
 		await this.strategy.logout(keyCards);
 	}
 
-	async refresh(keyCards: KeyCards): Promise<ImprovedAuthState> {
-		// // optional supports refresh?
-		// if (!this.strategy.supportsRefresh())
-		// 	return Promise.resolve({ isLoggedIn: false });
+	// async refresh(keyCards: KeyCards): Promise<ImprovedAuthState> {
+	// 	// // optional supports refresh?
+	// 	// if (!this.strategy.supportsRefresh())
+	// 	// 	return Promise.resolve({ isLoggedIn: false });
 
-		if (!keyCards) throw new Error("No key cards found");
+	// 	if (!keyCards) throw new Error("No key cards found");
 
-		const validateResult = await this.strategy.validateRefresh(keyCards);
-		console.log("validateResult: ", validateResult);
+	// 	const validateResult = await this.strategy.validateRefresh(keyCards);
+	// 	console.log("validateResult: ", validateResult);
 
-		if (validateResult.valid) {
-			const user = await this.adapter.getUser(validateResult.user.id);
-			console.log("user: ", user);
-			const keyCards = await this.strategy.createKeyCards(user);
-			return { isLoggedIn: true, keyCards, user };
-		} else {
-			return { isLoggedIn: false };
-		}
-	}
+	// 	if (validateResult.valid) {
+	// 		const user = await this.adapter.getUser(validateResult.user.id);
+	// 		console.log("user: ", user);
+	// 		const keyCards = await this.strategy.createKeyCards(user);
+	// 		return { isLoggedIn: true, keyCards, user };
+	// 	} else {
+	// 		return { isLoggedIn: false };
+	// 	}
+	// }
 
 	async validate(keyCards: KeyCards): Promise<AuthResult> {
+		// TO-DO decide how to deal with missing keycards
+		// its probably early on the game
+
 		const result = await this.strategy.validate(keyCards);
-		if (!result.success) {
+		if (result.success === false) {
 			// log the error
 			this.logger.error("Failed to validate keycards", {
 				message: result.error?.message,
 			});
 		}
 		return result;
-
-		// try {
-		//     const result =await this.strategy.validate(keyCards);
-		// }
-		// const result = await safeExecute(
-		// 	async () => {
-		// 		return await this.strategy.validate(keyCards);
-		// 	},
-		// 	this.logger,
-		// 	{
-		// 		message: "Failed to validate keycards",
-		// 		error: InvalidCredentialsError,
-		// 	}
-		// );
-		// if (!result.isAuthenticated) {
-		// 	return { success: false, error: null };
-		// }
-		// return result;
 	}
 
 	async signup(credentials: Credentials): Promise<ImprovedAuthState> {

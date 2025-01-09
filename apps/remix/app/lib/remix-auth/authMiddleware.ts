@@ -1,6 +1,9 @@
 // import { json } from "@remix-run/node";
-import { getSession } from "~/lib/remix-auth/sessionStorage";
-import { redirect } from "react-router";
+import {
+	getSession,
+	commitSession,
+	destroySession,
+} from "~/lib/remix-auth/sessionStorage";
 import { authSystem } from "../../auth";
 import {
 	User,
@@ -8,52 +11,68 @@ import {
 	AuthResult,
 	KeyCards,
 } from "@pete_keen/authentication-core";
+import { Session } from "react-router";
 
-interface AuthMiddlewareUser {
-	user: User | null;
-	isLoggedIn: boolean;
-}
+// interface AuthMiddlewareUser {
+// 	user: User | null;
+// 	isLoggedIn: boolean;
+// }
 
+// a simplified auth status to be returned to the client and stored
 interface AuthStatus {
 	user: User | null;
 	isLoggedIn: boolean;
 	keyCards: KeyCards | null;
 }
 
-// import jwt from "jsonwebtoken";
+// interface AuthMiddlewareResult {
+// 	authStatus: AuthStatus;
+// 	headers: HeadersInit;
+// }
 
-// Middleware to fetch and validate the user
-export async function authMiddleware(request: Request): Promise<AuthStatus> {
+// Middleware to validate the keycard - and return AuthStatus
+// export async function authMiddleware(
+// 	request: Request
+// ): Promise<AuthMiddlewareResult> {
+// 	// Get the keycards from the session
+// 	const session = await getSession(request.headers.get("Cookie"));
+// 	const keyCards = session.get("keyCards");
+
+// 	if (!keyCards) {
+// 		return { user: null, isLoggedIn: false, keyCards: null };
+// 	}
+// 	const authResult = await authSystem.validate(keyCards);
+// 	console.log("authResult: ", authResult);
+
+// 	if (authResult.success) {
+// 		return {
+// 			user: authResult.user,
+// 			isLoggedIn: true,
+// 			keyCards: authResult.keyCards,
+// 		};
+// 	} else {
+// 		return { user: null, isLoggedIn: false, keyCards: null };
+// 	}
+// }
+// Middleware to validate the keycard - and return AuthStatus
+export async function authStatusMiddleware(
+	session: Session
+): Promise<AuthStatus> {
 	// Get the keycards from the session
-	const session = await getSession(request.headers.get("Cookie"));
 	const keyCards = session.get("keyCards");
 
-	// console.log("authMiddleware keyCards:", keyCards);
-
+	if (!keyCards) {
+		return { user: null, isLoggedIn: false, keyCards: null };
+	}
 	const authResult = await authSystem.validate(keyCards);
-	// console.log("authResult: ", authResult);
 
 	if (authResult.success) {
-		return { user: authResult.user, isLoggedIn: true };
+		return {
+			user: authResult.user,
+			isLoggedIn: true,
+			keyCards: authResult.keyCards,
+		};
 	} else {
-		// return redirect("/auth/login");
-		return { user: null, isLoggedIn: false };
+		return { user: null, isLoggedIn: false, keyCards: null };
 	}
-
-	// return keyCards
-	// 	? authSystem.validate(keyCards)
-	// 	: { user: null, isAuthenticated: false };
-
-	// const token = session.get("accessToken");
-
-	// if (!token) {
-	// 	return { user: null, isAuthenticated: false };
-	// }
-
-	// try {
-	// 	const user = jwt.verify(token, process.env.JWT_SECRET); // Use your secret key
-	// 	return { user, isAuthenticated: true };
-	// } catch (err) {
-	// 	throw json({ error: "Invalid token" }, { status: 401 });
-	// }
 }

@@ -100,6 +100,12 @@ export interface SignupCredentials extends Credentials {
 // 	authState?: AuthState;
 // };
 
+export interface AuthStatus {
+	user: User | null;
+	isLoggedIn: boolean;
+	keyCards: KeyCards | null;
+}
+
 export interface AuthManager {
 	authenticate: (credentials: Credentials) => Promise<ImprovedAuthState>;
 	// can: (user: User, action: string, resource: Resource) => boolean;
@@ -199,7 +205,7 @@ export interface AuthValidationResult {
 }
 
 export type AuthResult =
-	| { success: true; user: User; keyCards?: KeyCards }
+	| { success: true; user: User; keyCards: KeyCards }
 	| { success: false; error: AuthError };
 
 export interface VerifyResult {
@@ -213,8 +219,9 @@ export interface AuthStrategy {
 	createKeyCards(user: User): Promise<KeyCards>;
 	logout(keyCards: KeyCards): Promise<void>;
 	validate(keyCards: KeyCards): Promise<AuthResult>;
-	validateAll(keyCards: KeyCards): Promise<AuthValidationResult>;
-	validateRefresh?(keyCards: KeyCards): Promise<AuthValidationResult>;
+	// validateCard(keyCards: KeyCards, name: string): Promise<AuthResult>;
+	// validateAll(keyCards: KeyCards): Promise<AuthValidationResult>;
+	// validateRefresh?(keyCards: KeyCards): Promise<AuthValidationResult>;
 	supportsRefresh(): boolean;
 	// signup(credentials: Credentials): Promise<KeyCards>;
 	// revoke(token: string): Promise<void>; could support revoking

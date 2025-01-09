@@ -6,15 +6,15 @@ import {
 } from "react-router";
 
 // import { authMiddleware } from "~/lib/remix-auth/authMiddleware";
+import { csrfMiddleware } from "~/lib/remix-auth/csrfMiddleware";
 import {
-	csrfMiddleware,
-	getCsrfTokenFromCookie,
-	generateAndSetCsrfToken,
-} from "~/lib/remix-auth/csrfMiddleware";
-import { User } from "@pete_keen/authentication-core";
-import { getSession, commitSession } from "~/lib/remix-auth/sessionStorage";
+	getSession,
+	commitSession,
+	destroySession,
+} from "~/lib/remix-auth/sessionStorage";
 import { authSystem } from "~/auth";
-import { authMiddleware } from "~/lib/remix-auth/authMiddleware";
+// import { authMiddleware } from "~/lib/remix-auth/authMiddleware";
+import { User, KeyCards } from "@pete_keen/authentication-core";
 
 // interface WithAuthArgs extends ActionFunctionArgs {
 // 	user: User;
@@ -103,6 +103,12 @@ import { authMiddleware } from "~/lib/remix-auth/authMiddleware";
 // 	};
 // }
 
+interface AuthStatus {
+	user: User | null;
+	isLoggedIn: boolean;
+	keyCards: KeyCards | null;
+}
+
 // Auth and CSRF wrapper
 export function withValidation<T>(
 	handler: HandlerFunction<T>,
@@ -113,39 +119,66 @@ export function withValidation<T>(
 	}: ActionFunctionArgs | LoaderFunctionArgs) {
 		// Step 1 - load the session data
 		const session = await getSession(request.headers.get("Cookie"));
-		// Step 2: Get CSRF Token or create one if not present
+		console.log("withValidation - session: ", session.data);
+		const headers = new Headers();
+		// Default Auth Status - signed out
+		const authStatus: AuthStatus = {
+			user: null,
+			isLoggedIn: false,
+			keyCards: null,
+		};
+		// Step 2: CSFR Protection -
+		// Step 2a: Get CSRF Token or create one if not present
 		let csrf = session.get("csrf");
 		// console.log("withRemixAuth - csrf: ", csrf);
-		// Step 2a: Check if csrf is present
+		// Step 2b: Check if csrf is present
 		if (!csrf) {
 			console.log("withValidation - setting csrf token");
 			csrf = await authSystem.generateCsrfToken();
 			session.set("csrf", csrf);
+			headers.append("Set-Cookie", await commitSession(session));
 		}
 
-		// Verify CSRF if needed
+		// Step 2c: Verify CSRF Token - if wanted csrfMiddleware
 		const csrfCheck = options.csrf;
 		if (csrfCheck) {
 			// will throw error if not valid csrf
 			await csrfMiddleware(request, csrf);
 		}
 
-		// Validate auth
-		const { user, isLoggedIn } = await authMiddleware(request);
+		// Step 3: Validate the keyCards
+		const keyCards = session.get("keyCards");
+		if (!keyCards) {
+			return Response.json(
+				{ user: null, isLoggedIn: false, keyCards: null },
+				{ headers }
+			);
+		}
 
-		console.log("withValidation - user: ", user);
-		console.log("withValidation - isLoggedIn: ", isLoggedIn);
+		const authResult = await authSystem.validate(keyCards);
+		// Add a headers object to be used later
 
-		// set these as session variables
-		session.set("user", user);
-		session.set("isLoggedIn", isLoggedIn);
-		// Step 6: Commit the session (with new CSRF token if generated)
-		const headers: HeadersInit = {
-			"Set-Cookie": await commitSession(session),
-		};
+		if (authResult.success === false) {
+			// headers.append("Set-Cookie", await destroySession(session));
+			authStatus.user = null;
+			authStatus.isLoggedIn = false;
+			authStatus.keyCards = null;
+			// redirect to login?
+		} else {
+			session.set("user", authResult.user);
+			session.set("isLoggedIn", true);
+			session.set("keyCards", keyCards);
+			authStatus.user = authResult.user;
+			authStatus.isLoggedIn = true;
+			authStatus.keyCards = keyCards;
+			headers.append("Set-Cookie", await commitSession(session));
+		}
 
 		// Call the handler with user and CSRF data
-		const data = await handler({ request, user, isLoggedIn, csrf });
+
+		const data = await handler({ request, authStatus, csrf });
+
+		console.log("withValidation - data: ", data);
 
 		// TO-DO - Role based access checks
 		// return data;
@@ -165,6 +198,9 @@ export function withSession(handler: Function) {
 	};
 }
 
+// To-Do withCsrf
+// for login and signup
+
 export const getSessionData = async (request: Request) => {
 	const session = await getSession(request.headers.get("Cookie"));
 	const user = session.get("user");
@@ -176,8 +212,7 @@ export const getSessionData = async (request: Request) => {
 // types/withValidation.d.ts
 export interface WithValidationArgs {
 	request: Request;
-	user: User | null; // Replace 'any' with your actual User type
-	isLoggedIn: boolean;
+	authStatus: AuthStatus;
 	csrf: string | null;
 }
 
@@ -187,3 +222,13 @@ export interface WithValidationOptions {
 	csrf?: boolean;
 	role?: string;
 }
+
+export const withCsrf = (handler: Function) => {
+	return async function (args: ActionFunctionArgs | LoaderFunctionArgs) {
+		const session = await getSession(args.request.headers.get("Cookie"));
+		const csrf = session.get("csrf");
+		// test it by setting it different
+		csrf && (await csrfMiddleware(args.request, csrf));
+		return handler(args);
+	};
+};

@@ -1,5 +1,6 @@
 import { useLoaderData, Form, NavLink } from "react-router";
 import { getSession } from "~/lib/remix-auth/sessionStorage";
+import { useAuth } from "~/lib/remix-auth/AuthContext";
 
 // // Example loader to check session
 // export const loader = async ({ request }: { request: Request }) => {
@@ -11,7 +12,7 @@ import { getSession } from "~/lib/remix-auth/sessionStorage";
 // Navbar component
 export default function Navbar() {
 	// const { isAuthenticated } = useLoaderData();
-	let isAuthenticated = true;
+	const { user, isLoggedIn } = useAuth();
 
 	return (
 		<nav className="flex items-center justify-between p-4 bg-gray-800 text-white">
@@ -25,7 +26,7 @@ export default function Navbar() {
 			</div>
 
 			{/* Show logout button only if authenticated */}
-			{isAuthenticated ? (
+			{isLoggedIn ? (
 				<Form method="post" action="/auth/logout" className="ml-auto">
 					<button
 						type="submit"
@@ -35,7 +36,10 @@ export default function Navbar() {
 					</button>
 				</Form>
 			) : (
-				<NavLink to="/login" className="ml-auto hover:text-gray-300">
+				<NavLink
+					to="auth/login"
+					className="ml-auto hover:text-gray-300"
+				>
 					Login
 				</NavLink>
 			)}

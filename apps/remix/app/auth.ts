@@ -1,7 +1,5 @@
 import {
-	AuthSystem,
 	JwtConfig,
-	AuthConfig,
 	// createAuthSystem,
 } from "@pete_keen/authentication-core";
 import {
@@ -9,18 +7,7 @@ import {
 	DrizzleAdapter,
 } from "@pete_keen/authentication-core/adapters";
 import db from "./lib/db/db";
-import { redirect, type ActionFunctionArgs } from "react-router";
-import { sessionStorage, getSession } from "./lib/remix-auth/sessionStorage";
-import { RemixAuth } from "@pete_keen/remix-authentication";
-
-// App-specific config extension
-export interface ExtendedAuthConfig {
-	redirectAfterLogin?: string;
-	redirectAfterLogout?: string;
-}
-
-// Combined configuration for dependency injection
-export type AppAuthConfig = AuthConfig & ExtendedAuthConfig;
+import { RemixAuth, RemixAuthConfig } from "@pete_keen/remix-authentication";
 
 if (!process.env.JWT_ACCESS_SECRET) {
 	// throw new Error("JWT_ACCESS_SECRET not found in process.env");
@@ -56,6 +43,17 @@ const jwtOptions: JwtConfig = {
 };
 
 const databaseAdapter = DrizzleAdapter(db);
+
+const remixAuthConfig: RemixAuthConfig = {
+	strategy: "jwt",
+	jwtConfig: jwtOptions,
+	adapter: databaseAdapter,
+	logger: {
+		level: "debug",
+	},
+	redirectAfterLogin: "/",
+	redirectAfterLogout: "/",
+};
 
 // export const authSystem = AuthSystem.create({
 // 	strategy: "jwt",
@@ -245,15 +243,6 @@ const databaseAdapter = DrizzleAdapter(db);
 // 	};
 // };
 
-export const { authSystem, login, logout, signup } = RemixAuth({
-	strategy: "jwt",
-	jwtConfig: jwtOptions,
-	adapter: databaseAdapter,
-	logger: {
-		level: "debug",
-	},
-	redirectAfterLogin: "/",
-	redirectAfterLogout: "/",
-});
+export const { authSystem, login, logout, signup } = RemixAuth(remixAuthConfig);
 
 // export const sessionStateStorage = new NextSessionStateStorage();

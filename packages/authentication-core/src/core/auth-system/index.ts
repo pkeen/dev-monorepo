@@ -210,7 +210,6 @@ export class AuthSystem implements AuthManager {
 			// log the error
 			this.logger.error("Failed to validate keycards", {
 				message: result.error?.message,
-				meta: result.error?
 			});
 		}
 		return result;

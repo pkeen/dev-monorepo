@@ -1,18 +1,18 @@
 // React Router generated types for route:
-// routes/api/auth/csrf.tsx
+// routes/dashboard/index.tsx
 
 import type * as T from "react-router/route-module"
 
-import type { Info as Parent0 } from "../../../../+types/root.js"
-import type { Info as Parent1 } from "../../../+types/_layout.js"
+import type { Info as Parent0 } from "../../../+types/root.js"
+import type { Info as Parent1 } from "../../+types/_layout.js"
 
-type Module = typeof import("../csrf.js")
+type Module = typeof import("../index.js")
 
 export type Info = {
   parents: [Parent0, Parent1],
-  id: "routes/api/auth/csrf"
-  file: "routes/api/auth/csrf.tsx"
-  path: "api/auth/csrf"
+  id: "routes/dashboard/index"
+  file: "routes/dashboard/index.tsx"
+  path: "dashboard"
   params: {} & { [key: string]: string | undefined }
   module: Module
   loaderData: T.CreateLoaderData<Module>

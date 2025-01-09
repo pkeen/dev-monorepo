@@ -4,7 +4,7 @@
 
 import { AuthConfig, AuthSystem } from "@pete_keen/authentication-core";
 import { redirect, type ActionFunctionArgs } from "react-router";
-import { sessionStorage, getSession } from "./session-storage";
+import { commitSession, destroySession, getSession } from "./session.server";
 
 // App-specific config extension
 export interface ExtendedAuthConfig {
@@ -13,9 +13,9 @@ export interface ExtendedAuthConfig {
 }
 
 // Combined configuration for dependency injection
-export type AppAuthConfig = AuthConfig & ExtendedAuthConfig;
+export type RemixAuthConfig = AuthConfig & ExtendedAuthConfig;
 
-export const RemixAuth = (config: AppAuthConfig) => {
+export const RemixAuth = (config: RemixAuthConfig) => {
 	const authSystem = AuthSystem.create(config);
 
 	const createLoginAction = (authSystem: AuthSystem, redirectTo?: string) => {
@@ -23,7 +23,7 @@ export const RemixAuth = (config: AppAuthConfig) => {
 			const formData = await request.formData();
 			// console.log("form data", formData);
 
-			let session = await getSession(request);
+			let session = await getSession(request.headers.get("Cookie"));
 			// console.log("session data:", session.data);
 
 			const entries = Object.fromEntries(formData);
@@ -50,14 +50,16 @@ export const RemixAuth = (config: AppAuthConfig) => {
 			}
 
 			// Get or create a session
-			session = await getSession(request);
+			session = await getSession(request.headers.get("Cookie"));
 			// console.log("session", session);
 
 			// Store the keycards array in session
 			session.set("keyCards", authState.keyCards); // Can be any JSON array
+			session.set("user", authState.user);
+			session.set("isLoggedIn", authState.isLoggedIn);
 
 			// Commit session and set cookie header
-			const cookie = await sessionStorage.commitSession(session);
+			const cookie = await commitSession(session);
 
 			// console.log("authState", authState);
 			// needs session storage
@@ -88,12 +90,12 @@ export const RemixAuth = (config: AppAuthConfig) => {
 	) => {
 		return async function logout({ request }: ActionFunctionArgs) {
 			// Retrieve the session
-			let session = await getSession(request);
+			let session = await getSession(request.headers.get("Cookie"));
 			const keyCards = await session.get("keyCards");
 			console.log("keyCards", keyCards);
 
 			// Destroy the session and get a new cookie
-			const cookie = await sessionStorage.destroySession(session);
+			const cookie = await destroySession(session);
 			console.log("Session destroyed!");
 
 			// call the auth system method
@@ -154,14 +156,14 @@ export const RemixAuth = (config: AppAuthConfig) => {
 				});
 			}
 			// Get or create a session
-			let session = await getSession(request);
+			let session = await getSession(request.headers.get("Cookie"));
 			console.log("session", session);
 
 			// Store the keycards array in session
 			session.set("keyCards", authState.keyCards); // Can be any JSON array
 
 			// Commit session and set cookie header
-			const cookie = await sessionStorage.commitSession(session);
+			const cookie = await destroySession(session);
 
 			console.log("authState", authState);
 			// needs session storage

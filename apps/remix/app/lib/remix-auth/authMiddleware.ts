@@ -20,13 +20,13 @@ export async function authMiddleware(
 	request: Request
 ): Promise<AuthMiddlewareUser> {
 	// Get the keycards from the session
-	const session = await getSession(request);
-	const keyCards = await session.get("keyCards");
+	const session = await getSession(request.headers.get("Cookie"));
+	const keyCards = session.get("keyCards");
 
-	console.log("authMiddleware keyCards:", keyCards);
+	// console.log("authMiddleware keyCards:", keyCards);
 
 	const authResult = await authSystem.validate(keyCards);
-	console.log("authResult: ", authResult);
+	// console.log("authResult: ", authResult);
 
 	if (authResult.success) {
 		return { user: authResult.user, isLoggedIn: true };

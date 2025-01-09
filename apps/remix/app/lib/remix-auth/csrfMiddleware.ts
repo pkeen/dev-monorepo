@@ -10,11 +10,11 @@ export async function csrfTokenMiddleware(request: Request) {
 	// get cookie
 	const cookieHeader = request.headers.get("Cookie");
 	const csrfCookieHeader = await csrfCookie.parse(cookieHeader);
-	console.log("csrfCookieHeader: ", csrfCookieHeader);
+	// console.log("csrfCookieHeader: ", csrfCookieHeader);
 
 	let csrfToken = csrfCookieHeader || (await authSystem.generateCsrfToken());
 
-	console.log("csrfToken (middleware): ", csrfToken);
+	// console.log("csrfToken (middleware): ", csrfToken);
 
 	return new Response(JSON.stringify({ csrfToken }), {
 		headers: {
@@ -24,33 +24,26 @@ export async function csrfTokenMiddleware(request: Request) {
 	});
 }
 
-export async function fetchCsrfToken(request: Request) {
-	// return the csrf token or null
-	const cookieHeader = request.headers.get("Cookie");
-	const csrfCookieHeader = await csrfCookie.parse(cookieHeader);
-	console.log("csrfCookieHeader: ", csrfCookieHeader);
-	return csrfCookieHeader || null;
+export async function getOrCreateCsrfTokenMiddleware(request: Request) {
+	return getCsrfToken(request) || (await authSystem.generateCsrfToken());
 }
 
 // Middleware function
 // Validate CSRF token
-export async function csrfMiddleware(request: Request) {
+export async function csrfMiddleware(request: Request, sessionCsrf: string) {
 	//   if (!authConfig.csrf) return; // Skip validation if disabled - this wont work for now
 
 	const safeMethods = ["GET", "HEAD", "OPTIONS"];
 	if (safeMethods.includes(request.method)) return; // Skip safe methods
 
-	const csrfCookieHeader = await csrfCookie.parse(
-		request.headers.get("Cookie")
-	);
-	console.log("csrfCookieHeader: ", csrfCookieHeader);
-	const csrfToken =
+	// console.log("csrfCookieHeader: ", csrfCookieHeader);
+	const incomingCsrf =
 		request.headers.get("X-CSRF-Token") ||
 		(await request.formData()).get("csrfToken");
 
-	console.log("csrfToken: in middleware", csrfToken);
+	// console.log("csrfToken: in middleware", csrfToken);
 
-	if (!csrfToken || csrfToken !== csrfCookieHeader) {
+	if (!incomingCsrf || incomingCsrf !== sessionCsrf) {
 		throw new Response(JSON.stringify({ error: "Invalid CSRF token" }), {
 			status: 403,
 			headers: { "Content-Type": "application/json" },
@@ -64,3 +57,26 @@ export async function csrfMiddleware(request: Request) {
 // 	session.set("csrfToken", token);
 // 	return token;
 // }
+
+// All ecompassing middleware
+
+export async function getCsrfTokenFromCookie(request: Request) {
+	// return the csrf token or null
+	const cookieHeader = request.headers.get("Cookie");
+	const csrfCookieHeader = await csrfCookie.parse(cookieHeader);
+	// console.log("csrfCookieHeader: ", csrfCookieHeader);
+	return csrfCookieHeader || null;
+}
+
+export async function generateAndSetCsrfToken(request: Request) {
+	// generate a csrf token
+	const csrfToken = await authSystem.generateCsrfToken();
+	// set the csrf token in the cookie
+
+	return new Response(JSON.stringify({ csrfToken }), {
+		headers: {
+			"Set-Cookie": await csrfCookie.serialize(csrfToken),
+			"Content-Type": "application/json",
+		},
+	});
+}

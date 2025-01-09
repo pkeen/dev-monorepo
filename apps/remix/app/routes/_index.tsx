@@ -2,8 +2,11 @@ import type { MetaFunction } from "react-router";
 
 export const meta: MetaFunction = () => {
 	return [
-		{ title: "Remix Example - Author" },
-		{ name: "Auth Starter for remix", content: "Welcome to Remix!" },
+		{ title: "Auth Starter for Remix/React-Router" },
+		{
+			name: "Auth Starter for Remix/React-Router",
+			content: "Welcome to Remix Auth!",
+		},
 	];
 };
 

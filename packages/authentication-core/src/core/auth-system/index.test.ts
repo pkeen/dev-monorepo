@@ -1,9 +1,15 @@
 import { AuthSystem } from "./index";
-import { AuthStrategy, KeyCards, AuthValidationResult } from "../types";
+import { AuthStrategy, KeyCards, AuthState } from "../types";
 import { Adapter, AdapterUser } from "../adapter";
 import { PasswordService } from "../password-service";
 import { MultiTransportLogger } from "@pete_keen/logger";
-import { AuthError, InvalidKeyCardError } from "../error";
+import {
+	AccountAlreadyExistsError,
+	AuthError,
+	InvalidCredentialsError,
+	InvalidKeyCardError,
+	UserNotFoundError,
+} from "../error";
 
 describe("AuthSystem Integration", () => {
 	// Mock dependencies
@@ -83,7 +89,7 @@ describe("AuthSystem Integration", () => {
 
 			// Verify successful authentication
 			expect(result).toEqual({
-				success: true,
+				authenticated: true,
 				keyCards: mockKeyCards,
 				user: mockUser,
 			});
@@ -113,7 +119,10 @@ describe("AuthSystem Integration", () => {
 			});
 
 			expect(result).toEqual({
-				isLoggedIn: false,
+				authenticated: false,
+				user: null,
+				keyCards: null,
+				error: new InvalidCredentialsError(),
 			});
 
 			expect(mockStrategy.createKeyCards).not.toHaveBeenCalled();
@@ -128,7 +137,10 @@ describe("AuthSystem Integration", () => {
 			});
 
 			expect(result).toEqual({
-				success: false,
+				authenticated: false,
+				user: null,
+				keyCards: null,
+				error: new UserNotFoundError("nonexistent@example.com"),
 			});
 
 			expect(mockPasswordService.verify).not.toHaveBeenCalled();
@@ -139,7 +151,7 @@ describe("AuthSystem Integration", () => {
 	describe("validate", () => {
 		it("successfully refreshes validates keyCards", async () => {
 			mockStrategy.validate.mockResolvedValue({
-				success: true,
+				authenticated: true,
 				user: mockUser,
 				keyCards: mockKeyCards,
 			});
@@ -149,7 +161,7 @@ describe("AuthSystem Integration", () => {
 			const result = await authSystem.validate(mockKeyCards);
 
 			expect(result).toEqual({
-				success: true,
+				authenticated: true,
 				keyCards: mockKeyCards,
 				user: mockUser,
 			});
@@ -157,15 +169,19 @@ describe("AuthSystem Integration", () => {
 
 		it("fails validation with invalid keyCards", async () => {
 			mockStrategy.validate.mockResolvedValue({
-				success: false,
+				authenticated: false,
 				error: new InvalidKeyCardError("Invalid keycard"),
+				user: null,
+				keyCards: null,
 			});
 
 			const result = await authSystem.validate(mockKeyCards);
 
 			expect(result).toEqual({
-				success: false,
+				authenticated: false,
 				error: new InvalidKeyCardError("Invalid keycard"),
+				user: null,
+				keyCards: null,
 			});
 		});
 	});
@@ -186,7 +202,7 @@ describe("AuthSystem Integration", () => {
 			const result = await authSystem.signup(signupCredentials);
 
 			expect(result).toEqual({
-				isLoggedIn: true,
+				authenticated: true,
 				keyCards: mockKeyCards,
 				user: mockUser,
 			});
@@ -204,15 +220,18 @@ describe("AuthSystem Integration", () => {
 		it("prevents duplicate email registration", async () => {
 			mockAdapter.getUserByEmail.mockResolvedValue(mockUser);
 
-			await expect(
-				authSystem.signup({
-					email: "test@example.com",
-					password: "password",
-					// name: "Test User",
-				})
-			).rejects.toThrow(
-				"An account with that email is already registered"
-			);
+			const result = await authSystem.signup({
+				email: "test@example.com",
+				password: "password",
+				// name: "Test User",
+			});
+
+			expect(result).toEqual({
+				authenticated: false,
+				error: new AccountAlreadyExistsError("test@example.com"),
+				user: null,
+				keyCards: null,
+			});
 		});
 	});
 });

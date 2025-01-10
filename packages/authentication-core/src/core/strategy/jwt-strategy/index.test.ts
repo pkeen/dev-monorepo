@@ -41,8 +41,8 @@ describe("JwtStrategy", () => {
 	it("should validate access and refresh tokens", async () => {
 		const keyCards = await jwtStrategy.createKeyCards(mockUser);
 		const result = await jwtStrategy.validate(keyCards);
-		expect(result.success).toBe(true);
-		if (result.success) {
+		expect(result.authenticated).toBe(true);
+		if (result.authenticated) {
 			expect(result.user).toEqual(mockUser);
 		}
 	});

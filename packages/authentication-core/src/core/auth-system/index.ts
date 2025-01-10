@@ -1,7 +1,8 @@
 // packages/auth-core/src/services/AuthenticationService.ts
 import {
 	AuthManager,
-	AuthValidationResult,
+	AuthState,
+	AuthStrategy,
 	DatabaseUser,
 	JwtConfig,
 	JwtOptions,
@@ -11,8 +12,6 @@ import {
 import { Credentials, SignupCredentials } from "../types";
 // import { WebStorageAdapter } from "../types";
 import { User } from "../types";
-import { AuthStrategy } from "../types";
-import { AuthState } from "../types";
 import { UserRepository } from "../types";
 import { Adapter, AdapterUser } from "../adapter";
 import { DefaultPasswordService, PasswordService } from "../password-service";
@@ -105,9 +104,7 @@ export class AuthSystem implements AuthManager {
 		try {
 			// Step 1: Validate input
 			if (!this.validateCredentials(credentials))
-				throw new InvalidCredentialsError(
-					"Invalid credentials provided"
-				);
+				throw new InvalidCredentialsError();
 
 			// Step 2: Find user
 			const user = await this.findUser(credentials.email);
@@ -176,7 +173,7 @@ export class AuthSystem implements AuthManager {
 		const user = await safeExecute(
 			async () => {
 				const user = await this.adapter.getUserByEmail(email);
-				console.log("DEBUG - Found user:", user); // Temporary debug log
+				// console.log("DEBUG - Found user:", user); // Temporary debug log
 				return user;
 			},
 			this.logger,

@@ -13,13 +13,16 @@ export class ConsoleTransport implements LogTransport {
 	log(
 		level: LogLevel,
 		message: string,
-		meta?: Record<string, unknown>
+		meta?: Record<string, unknown>,
+		prefix?: string
 	): Promise<void> {
 		const color = this.colors[level] || this.colors.reset;
 		const timestamp = new Date().toISOString();
 		const metaStr = meta ? ` ${JSON.stringify(meta)}` : "";
 
-		const formattedMessage = `${color}[${timestamp}] ${level.toUpperCase()}: ${message}${metaStr}${
+		const formattedMessage = `${color}${
+			prefix ? `${prefix}: ` : ""
+		}[${timestamp}] ${level.toUpperCase()}: ${message}${metaStr}${
 			this.colors.reset
 		}`;
 

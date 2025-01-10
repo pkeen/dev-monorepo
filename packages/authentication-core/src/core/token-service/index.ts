@@ -1,5 +1,4 @@
 import {
-	AuthValidationResult,
 	JwtConfig,
 	JwtOptions,
 	User,

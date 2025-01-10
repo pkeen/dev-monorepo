@@ -3,7 +3,8 @@ export interface LogTransport {
 	log(
 		level: string,
 		message: string,
-		meta?: Record<string, unknown>
+		meta?: Record<string, unknown>,
+		prefix?: string
 	): Promise<void>;
 }
 
@@ -31,4 +32,5 @@ export interface LoggerOptions {
 	filepath?: string; // If they want file logging
 	silent?: boolean; // Disable console logging
 	format?: LogFormat; // Log format
+	prefix?: string;
 }

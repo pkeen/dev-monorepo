@@ -4,7 +4,7 @@ import { KeyCard, User } from "@pete_keen/authentication-core";
 export interface SessionData {
 	keyCards: KeyCard[] | null;
 	user: User | null;
-	isLoggedIn: boolean;
+	authenticated: boolean;
 	csrf: string | null;
 }
 

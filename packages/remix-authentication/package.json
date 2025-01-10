@@ -17,7 +17,8 @@
 		"test": "jest"
 	},
 	"dependencies": {
-		"@pete_keen/authentication-core": "workspace:*"
+		"@pete_keen/authentication-core": "workspace:*",
+		"@pete_keen/logger": "workspace:*"
 	},
 	"peerDependencies": {
 		"react": "^18.2.0",

@@ -1,14 +1,7 @@
-// export const hello = () => {
-// 	return "hello world";
-// };
-
-import {
-	AuthConfig,
-	AuthSystem,
-	AuthResult,
-} from "@pete_keen/authentication-core";
+import { AuthConfig, AuthSystem } from "@pete_keen/authentication-core";
 import { redirect, type ActionFunctionArgs } from "react-router";
 import { commitSession, destroySession, getSession } from "./session.server";
+import { createLogger } from "@pete_keen/logger";
 
 // App-specific config extension
 export interface ExtendedAuthConfig {
@@ -26,6 +19,9 @@ export interface ActionFormFunctionArgs extends ActionFunctionArgs {
 export const RemixAuth = (config: RemixAuthConfig) => {
 	const authSystem = AuthSystem.create(config);
 
+	// TO-DO: incorperate logger into config somehow
+	const logger = createLogger({ prefix: "Remix-Auth" });
+
 	const createLoginAction = (authSystem: AuthSystem, redirectTo?: string) => {
 		return async function login({
 			request,
@@ -37,45 +33,36 @@ export const RemixAuth = (config: RemixAuthConfig) => {
 			// Step 1 Get Session and Form Data
 			let session = await getSession(request.headers.get("Cookie"));
 			const headers = new Headers();
+			// TO-DO: Provide optional credentials type
 			const { email, password } = Object.fromEntries(formData);
-			// const email = entries.email;
-			// const password = entries.password;
 
-			// // VALIDATION - could be moved to the auth system
-			// if (typeof email !== "string" && typeof password !== "string") {
-			// 	console.error(
-			// 		"Expected email and password to be strings, but received non-string values."
-			// 	);
-			// }
+			// TO-DO: ensure type validation
 
 			// Call the auth system
-			const authResult: AuthResult = await authSystem.authenticate({
+			const authState = await authSystem.authenticate({
 				email: email as string,
 				password: password as string,
 			});
 
-			// console.log("authResult", authResult);
-
-			if (!authResult.success) {
-				console.log("LOGIN FAILED");
-				return new Response(JSON.stringify({}), {
+			if (!authState.authenticated) {
+				logger.info("LOGIN FAILED", { ...authState.error });
+				return new Response(JSON.stringify({ ...authState }), {
 					headers,
 				});
 			} else {
-				console.log("LOGIN SUCCESSFUL", authResult);
+				logger.info("LOGIN SUCCESSFUL", { ...authState.user });
+
 				// Store the keycards array in session
-				session.set("keyCards", authResult.keyCards); // Can be any JSON array
-				session.set("user", authResult.user);
-				session.set("isLoggedIn", authResult.success);
+				session.set("keyCards", authState.keyCards); // Can be any JSON array
+				session.set("user", authState.user);
+				session.set("authenticated", authState.authenticated);
 				headers.append("Set-Cookie", await commitSession(session));
 				// If redirectTo is provided, redirect and set cookie
 				if (redirectTo) {
-					return redirect(redirectTo, {
-						headers,
-					});
+					return redirect(redirectTo, { headers });
 				}
 				// Otherwise, return a response and still set the cookie
-				return new Response(JSON.stringify(authResult), {
+				return new Response(JSON.stringify({ ...authState }), {
 					headers,
 				});
 			}

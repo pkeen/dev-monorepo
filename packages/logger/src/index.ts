@@ -5,10 +5,12 @@ import { ConsoleTransport } from "./transports/console";
 export class MultiTransportLogger implements Logger {
 	private transports: LogTransport[] = [];
 	private logLevel: LogLevel;
+	private options: LoggerOptions;
 
 	constructor(options: LoggerOptions = {}, transports: LogTransport[] = []) {
 		this.logLevel = options.level || "debug";
 		this.transports = transports;
+		this.options = options;
 	}
 
 	addTransport(transport: LogTransport): void {
@@ -27,12 +29,19 @@ export class MultiTransportLogger implements Logger {
 	): Promise<void> {
 		if (!this.shouldLog(level)) return;
 
+		// // prefix Message with domain
+		// if (this.options.prefix) {
+		// 	message = `${this.options.prefix}: ${message}`;
+		// }
+
 		// Using Promise.all maintains order within each transport
 		await Promise.all(
 			this.transports.map((transport) =>
-				transport.log(level, message, meta).catch((error) => {
-					console.error("Transport failed:", error);
-				})
+				transport
+					.log(level, message, meta, this.options.prefix)
+					.catch((error) => {
+						console.error("Transport failed:", error);
+					})
 			)
 		);
 	}
@@ -56,7 +65,6 @@ export class MultiTransportLogger implements Logger {
 		message: string,
 		meta?: Record<string, unknown>
 	): Promise<void> {
-		console.log(message);
 		await this.logToTransports("debug", message, meta);
 	}
 }

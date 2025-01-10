@@ -707,6 +707,9 @@ importers:
       '@pete_keen/authentication-core':
         specifier: workspace:*
         version: link:../authentication-core
+      '@pete_keen/logger':
+        specifier: workspace:*
+        version: link:../logger
       isbot:
         specifier: ^4.1.0
         version: 4.4.0

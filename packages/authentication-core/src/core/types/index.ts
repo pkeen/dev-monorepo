@@ -9,7 +9,7 @@ import { AuthError } from "../error";
 // Basic return type for Authentication functions
 export type AuthState =
 	| { authenticated: true; user: User; keyCards: KeyCards }
-	| { authenticated: false; user: null; keyCards: null; error: AuthError };
+	| { authenticated: false; user: null; keyCards: null; error?: AuthError };
 
 // Base token type with common properties
 export interface AuthToken {
@@ -130,7 +130,7 @@ export interface AuthManager {
 	signup: (credentials: SignupCredentials) => Promise<AuthState>;
 	validate: (keyCards: KeyCards) => Promise<AuthState>;
 	// refreshToken: (refreshToken: string) => Promise<AuthResult>;
-	logout: (keyCards: KeyCards) => Promise<void>;
+	logout: (keyCards: KeyCards) => Promise<AuthState>;
 	// refresh: (keyCards: KeyCards) => Promise<ImprovedAuthState>;
 }
 
@@ -207,7 +207,7 @@ export interface VerifyResult {
 
 export interface AuthStrategy {
 	createKeyCards(user: User): Promise<KeyCards>;
-	logout(keyCards: KeyCards): Promise<void>;
+	logout(keyCards: KeyCards): Promise<AuthState>;
 	validate(keyCards: KeyCards): Promise<AuthState>;
 	// validateCard(keyCards: KeyCards, name: string): Promise<AuthResult>;
 	// validateAll(keyCards: KeyCards): Promise<AuthValidationResult>;

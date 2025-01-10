@@ -12,32 +12,28 @@ import { useLoaderData } from "react-router";
 import { Route } from "./+types/index";
 import {
 	withValidation,
-	WithValidationArgs,
+	WithValidationHandlerArgs,
 	HandlerFunction,
 } from "~/lib/remix-auth/withAuth";
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
 	console.log("DASHBOARD LOADER called");
-	const { user, isLoggedIn } = await getSessionData(request);
+	const { user, authenticated } = await getSessionData(request);
 	console.log("loader - user: ", user);
-	if (!isLoggedIn) {
+	if (!authenticated) {
 		return redirect("/auth/login");
 	}
 	return { user };
 };
 
-const actionHandler = async ({
-	request,
-	user,
-	csrf,
-	isLoggedIn,
-}: WithValidationArgs) => {
-	console.log(" action user: ", user);
-	console.log("action completed");
-	return { csrf, user, isLoggedIn }; //user;
+const actionHandler = async (args: WithValidationHandlerArgs) => {
+	// console.log(" action user: ", user);
+	// console.log("action completed");
+	const hello = "hello";
+	return hello; //user;
 };
 
-export const action = withValidation(actionHandler, {
+export const action = withValidation<string>(actionHandler, {
 	csrf: true,
 });
 

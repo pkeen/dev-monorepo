@@ -5,25 +5,25 @@ import { getSession } from "~/lib/remix-auth/sessionStorage";
 interface AuthContextType {
 	csrfToken: string | null;
 	user: User | null;
-	isLoggedIn: boolean;
+	authenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
 	csrfToken: null,
 	user: null,
-	isLoggedIn: false,
+	authenticated: false,
 });
 
 export function AuthProvider({
 	children,
 	csrfToken,
 	user,
-	isLoggedIn,
+	authenticated,
 }: {
 	children: React.ReactNode;
 	csrfToken: string | null;
 	user: User | null;
-	isLoggedIn: boolean;
+	authenticated: boolean;
 }) {
 	// const [csrfToken, setCsrfToken] = useState<string | null>(null);
 	// const [user, setUser] = useState<User | null>(null);
@@ -63,7 +63,7 @@ export function AuthProvider({
 	// }, []);
 
 	return (
-		<AuthContext.Provider value={{ csrfToken, user, isLoggedIn }}>
+		<AuthContext.Provider value={{ csrfToken, user, authenticated }}>
 			{children}
 		</AuthContext.Provider>
 	);

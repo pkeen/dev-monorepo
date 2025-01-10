@@ -76,38 +76,34 @@ export const RemixAuth = (config: RemixAuthConfig) => {
 			// Retrieve the session
 			let session = await getSession(request.headers.get("Cookie"));
 			const keyCards = await session.get("keyCards");
-			console.log("keyCards", keyCards);
-
-			// Destroy the session and get a new cookie
-			const cookie = await destroySession(session);
-			console.log("Session destroyed!");
+			const headers = new Headers();
 
 			// call the auth system method
 			const authState = await authSystem.logout(keyCards);
 
+			// Option A
+			// Destroy the session and get a new cookie
+			// Destroy or set the AuthState to null?
+			// headers.append("Set-Cookie", await destroySession(session));
+			// console.log("Session destroyed!");
+
+			// Option B
+			session.set("keyCards", authState.keyCards);
+			session.set("user", authState.user);
+			session.set("authenticated", authState.authenticated);
+			headers.append("Set-Cookie", await commitSession(session));
+
 			// Handle redirect with Set-Cookie header
 			if (redirectTo) {
 				return redirect(redirectTo, {
-					headers: {
-						"Set-Cookie": cookie, // <- Send the cookie header
-					},
+					headers,
 				});
 			}
 
 			// Return JSON response with the Set-Cookie header
-			return new Response(
-				JSON.stringify({
-					success: true,
-					message: "Session destroyed!",
-				}),
-				{
-					status: 200,
-					headers: {
-						"Set-Cookie": cookie, // <- Send the cookie header
-						"Content-Type": "application/json",
-					},
-				}
-			);
+			return new Response(JSON.stringify({ ...authState }), {
+				headers,
+			});
 		};
 	};
 	const createSignupAction = (
@@ -133,11 +129,8 @@ export const RemixAuth = (config: RemixAuthConfig) => {
 				password: password as string,
 			});
 
-			if (!authState.isLoggedIn) {
-				return new Response(JSON.stringify(authState), {
-					success: false,
-					message: "Sign up failed",
-				});
+			if (!authState.authenticated) {
+				return new Response(JSON.stringify({ ...authState }), {});
 			}
 			// Get or create a session
 			let session = await getSession(request.headers.get("Cookie"));

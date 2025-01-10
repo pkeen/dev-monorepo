@@ -79,8 +79,13 @@ export class JwtStrategy implements AuthStrategy {
 		}
 	}
 
-	async logout(keyCards: KeyCards): Promise<void> {
-		return Promise.resolve();
+	async logout(keyCards: KeyCards): Promise<AuthState> {
+		return Promise.resolve({
+			authenticated: false,
+			user: null,
+			keyCards: null,
+			error: null,
+		});
 	}
 
 	async validate(keyCards: KeyCards): Promise<AuthState> {

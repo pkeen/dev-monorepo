@@ -4,10 +4,10 @@ import { AuthProvider } from "~/lib/remix-auth/AuthContext";
 import { Route } from "./+types/root";
 import {
 	withValidation,
-	WithValidationArgs,
+	WithValidationHandlerArgs,
 	HandlerFunction,
 } from "./lib/remix-auth/withAuth";
-import { User } from "@pete_keen/authentication-core";
+import { User, AuthState } from "@pete_keen/authentication-core";
 
 import "./tailwind.css";
 
@@ -45,33 +45,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
 	);
 }
 
-interface LoaderData {
-	csrf: string | null;
-	user: User | null;
-	isLoggedIn: boolean;
-}
+// interface LoaderData {
+// 	csrf: string | null;
+// 	authState: AuthState;
+// 	user: User | null;
+// 	authenticated: boolean;
+// }
 
-interface HandlerArgs {
-	csrf: string | null;
-	user: User | null;
-	isLoggedIn: boolean;
-}
-
-const loaderHandler: HandlerFunction<HandlerArgs> = async ({
-	request,
-	authStatus,
-	csrf,
-}: WithValidationArgs): Promise<LoaderData> => {
-	console.log("ROOT LOADER called");
-	// console.log("loaderHandler - authStatus: ", authStatus);
-	return {
-		user: authStatus.user,
-		isLoggedIn: authStatus.isLoggedIn,
-		csrf,
-	};
+const loaderHandler = async (args: WithValidationHandlerArgs) => {
+	console.log("ROOT LOADER CALLED");
+	// console.log("args: ", args);
+	return "hello";
 };
 
-export const loader = withValidation(loaderHandler, {
+export const loader = withValidation<string>(loaderHandler, {
 	csrf: true,
 });
 
@@ -80,12 +67,17 @@ const parseLoaderData = (data: string | any) => {
 };
 
 export default function App({ loaderData }: Route.ComponentProps) {
-	const { csrf, user, isLoggedIn } = parseLoaderData(loaderData);
+	const { csrf, user, authenticated, data } = parseLoaderData(loaderData);
 	// const { csrf, user, isLoggedIn } = loaderData;
+	console.log("ROOT LOADER DATA: ", data);
 
 	return (
 		<Layout>
-			<AuthProvider csrfToken={csrf} user={user} isLoggedIn={isLoggedIn}>
+			<AuthProvider
+				csrfToken={csrf}
+				user={user}
+				authenticated={authenticated}
+			>
 				<Outlet />
 			</AuthProvider>
 		</Layout>

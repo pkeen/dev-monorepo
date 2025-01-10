@@ -231,11 +231,16 @@ export class AuthSystem implements AuthManager {
 		);
 	}
 
-	async logout(keyCards: KeyCards | undefined): Promise<void> {
+	async logout(keyCards: KeyCards | undefined | null): Promise<AuthState> {
 		if (!keyCards) {
-			return; // all ready logged out
+			return {
+				authenticated: false,
+				user: null,
+				keyCards: null,
+				error: null,
+			}; // all ready logged out
 		}
-		await this.strategy.logout(keyCards);
+		return await this.strategy.logout(keyCards);
 	}
 
 	// async refresh(keyCards: KeyCards): Promise<ImprovedAuthState> {

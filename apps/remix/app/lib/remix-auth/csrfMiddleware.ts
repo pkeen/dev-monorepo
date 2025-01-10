@@ -36,10 +36,10 @@ export async function csrfMiddleware(
 	formData?: FormData
 ) {
 	//   if (!authConfig.csrf) return; // Skip validation if disabled - this wont work for now
-	console.log(
-		"csrfMiddleware - form data csrf: ",
-		formData?.get("csrfToken")
-	);
+	// console.log(
+	// 	"csrfMiddleware - form data csrf: ",
+	// 	formData?.get("csrfToken")
+	// );
 
 	const safeMethods = ["GET", "HEAD", "OPTIONS"];
 	if (safeMethods.includes(request.method)) return; // Skip safe methods

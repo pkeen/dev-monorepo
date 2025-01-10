@@ -3,7 +3,6 @@ import {
 	AuthManager,
 	AuthValidationResult,
 	DatabaseUser,
-	ImprovedAuthState,
 	JwtConfig,
 	JwtOptions,
 	KeyCards,
@@ -13,7 +12,7 @@ import { Credentials, SignupCredentials } from "../types";
 // import { WebStorageAdapter } from "../types";
 import { User } from "../types";
 import { AuthStrategy } from "../types";
-import { AuthState, AuthResult } from "../types";
+import { AuthState } from "../types";
 import { UserRepository } from "../types";
 import { Adapter, AdapterUser } from "../adapter";
 import { DefaultPasswordService, PasswordService } from "../password-service";
@@ -35,6 +34,7 @@ import {
 	CsrfError,
 	AuthError,
 	UnknownAuthError,
+	AccountAlreadyExistsError,
 } from "../error";
 import { JwtStrategy } from "../strategy";
 import crypto from "crypto";
@@ -101,7 +101,7 @@ export class AuthSystem implements AuthManager {
 	// 	);
 	// 	return { isLoggedIn: true, keyCards, user };
 	// }
-	async authenticate(credentials: Credentials): Promise<AuthResult> {
+	async authenticate(credentials: Credentials): Promise<AuthState> {
 		try {
 			// Step 1: Validate input
 			if (!this.validateCredentials(credentials))
@@ -133,16 +133,23 @@ export class AuthSystem implements AuthManager {
 					email: user.email,
 				})
 			);
-			return { success: true, keyCards, user };
+			return { authenticated: true, keyCards, user };
 		} catch (error) {
 			this.logger.error("Error while signing in: ", {
 				error,
 			});
 			if (error instanceof AuthError) {
-				return { success: false, error };
+				return {
+					authenticated: false,
+					error,
+					user: null,
+					keyCards: null,
+				};
 			} else {
 				return {
-					success: false,
+					authenticated: false,
+					user: null,
+					keyCards: null,
 					error: new UnknownAuthError(
 						"An unknown error occurred while signing in"
 					),
@@ -254,12 +261,20 @@ export class AuthSystem implements AuthManager {
 	// 	}
 	// }
 
-	async validate(keyCards: KeyCards): Promise<AuthResult> {
+	async validate(keyCards: KeyCards): Promise<AuthState> {
 		// TO-DO decide how to deal with missing keycards
 		// its probably early on the game
+		if (!keyCards) {
+			return {
+				authenticated: false,
+				user: null,
+				keyCards: null,
+				error: new KeyCardMissingError("No keycards found"),
+			};
+		}
 
 		const result = await this.strategy.validate(keyCards);
-		if (result.success === false) {
+		if (result.authenticated === false) {
 			// log the error
 			this.logger.error("Failed to validate keycards", {
 				message: result.error?.message,
@@ -268,24 +283,23 @@ export class AuthSystem implements AuthManager {
 		return result;
 	}
 
-	async signup(credentials: Credentials): Promise<ImprovedAuthState> {
+	async signup(credentials: Credentials): Promise<AuthState> {
 		// return this.strategy.signup(credentials);
 		// Step 1: Validate input
+		// TO-DO Zod input validation
 
 		try {
-			console.log("sign up credentials:", credentials);
+			this.logger.info("Signing up user", {
+				email: credentials.email,
+			});
 
 			// Step 2: Check if user already exists
 			const existingUser = await this.adapter.getUserByEmail(
 				credentials.email
 			);
 			if (existingUser) {
-				console.log("user already exists");
-				throw new Error(
-					"An account with that email is already registered"
-				);
-				// console.error("An account with that email is already registered");
-				// return { isLoggedIn: false };
+				this.logger.error("An account with that email already exists");
+				throw new AccountAlreadyExistsError(credentials.email);
 			}
 
 			// Step 3: Hash the password
@@ -301,10 +315,13 @@ export class AuthSystem implements AuthManager {
 			const keyCards = await this.strategy.createKeyCards(user);
 
 			// Step 6: Return the auth state
-			return { isLoggedIn: true, keyCards, user };
+			return { authenticated: true, keyCards, user };
 			// return { accessToken: "", refreshToken: "" };
 		} catch (error) {
-			return { isLoggedIn: false, keyCards: null, user: null };
+			this.logger.error("Error while signing up: ", {
+				error,
+			});
+			return { authenticated: false, keyCards: null, user: null, error };
 		}
 	}
 

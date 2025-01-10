@@ -9,11 +9,10 @@ import {
 	AuthState,
 	TokenService,
 	VerifiedToken,
-	AuthResult,
+	// AuthResult,
 } from "../../types";
 // import { JwtTokenService } from "../../token-service";
 import { JwtTokenService } from "../../token-service";
-import { AuthValidationResult } from "../../types";
 import { expiresInToSeconds } from "../../utils";
 import {
 	ExpiredKeyCardError,
@@ -84,42 +83,45 @@ export class JwtStrategy implements AuthStrategy {
 		return Promise.resolve();
 	}
 
-	async validate(keyCards: KeyCards): Promise<AuthResult> {
+	async validate(keyCards: KeyCards): Promise<AuthState> {
 		try {
 			const validationResult = await this.validateCard(
 				keyCards,
 				"access"
 			);
-			if (validationResult.success) {
+			if (validationResult.authenticated) {
 				logger.info("Keycards validated", {
 					userId: validationResult.user.id,
 					email: validationResult.user.email,
 				});
 				return {
-					success: true,
+					authenticated: true,
 					user: validationResult.user,
 					keyCards,
 				};
 			}
 			const refreshResult = await this.validateCard(keyCards, "refresh");
-			if (refreshResult.success) {
+			if (refreshResult.authenticated) {
 				logger.info("Refresh keycard validated", {
 					userId: refreshResult.user.id,
 					email: refreshResult.user.email,
 				});
+				// TO-DO - Add DB check here, dont just refresh the cards
 				const newKeyCards = await this.createKeyCards(
 					refreshResult.user
 				);
 				return {
-					success: true,
+					authenticated: true,
 					user: refreshResult.user,
 					keyCards: newKeyCards,
 				};
 			}
 		} catch (error) {
 			return {
-				success: false,
+				authenticated: false,
 				error,
+				user: null,
+				keyCards: null,
 			};
 		}
 	}
@@ -127,7 +129,7 @@ export class JwtStrategy implements AuthStrategy {
 	private async validateCard(
 		keyCards: KeyCards,
 		name: string
-	): Promise<AuthResult> {
+	): Promise<AuthState> {
 		try {
 			const card = keyCards.find((keyCard) => keyCard.name === name);
 			if (!card) {
@@ -138,7 +140,7 @@ export class JwtStrategy implements AuthStrategy {
 				this.config[name]
 			);
 			return {
-				success: true,
+				authenticated: true,
 				user: result.user,
 				keyCards,
 			};
@@ -148,15 +150,19 @@ export class JwtStrategy implements AuthStrategy {
 					error,
 				});
 				return {
-					success: false,
+					authenticated: false,
 					error,
+					user: null,
+					keyCards: null,
 				};
 			} else {
 				logger.warn(`${name} keycard not validated - unknown error`, {
 					error,
 				});
 				return {
-					success: false,
+					authenticated: false,
+					user: null,
+					keyCards: null,
 					error: new UnknownAuthError("Unknown error"),
 				};
 			}

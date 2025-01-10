@@ -6,6 +6,11 @@
 
 import { AuthError } from "../error";
 
+// Basic return type for Authentication functions
+export type AuthState =
+	| { authenticated: true; user: User; keyCards: KeyCards }
+	| { authenticated: false; user: null; keyCards: null; error: AuthError };
+
 // Base token type with common properties
 export interface AuthToken {
 	value: string;
@@ -101,7 +106,9 @@ export interface Credentials {
 }
 
 export interface SignupCredentials extends Credentials {
-	name: string;
+	email: string;
+	password: string;
+	name?: string;
 }
 
 // export type AuthResult = {
@@ -109,19 +116,19 @@ export interface SignupCredentials extends Credentials {
 // 	authState?: AuthState;
 // };
 
-export interface AuthStatus {
-	user: User | null;
-	isLoggedIn: boolean;
-	keyCards: KeyCards | null;
-}
+// export interface AuthStatus {
+// 	isLoggedIn: boolean;
+// 	user: User | null;
+// 	keyCards: KeyCards | null;
+// }
 
 export interface AuthManager {
 	// authenticate: (credentials: Credentials) => Promise<ImprovedAuthState>;
-	authenticate: (credentials: Credentials) => Promise<AuthResult>;
+	authenticate: (credentials: Credentials) => Promise<AuthState>;
 	// can: (user: User, action: string, resource: Resource) => boolean;
 	// storageAdapter: WebStorageAdapter;
-	signup: (credentials: SignupCredentials) => Promise<ImprovedAuthState>;
-	validate: (keyCards: KeyCards) => Promise<AuthResult>;
+	signup: (credentials: SignupCredentials) => Promise<AuthState>;
+	validate: (keyCards: KeyCards) => Promise<AuthState>;
 	// refreshToken: (refreshToken: string) => Promise<AuthResult>;
 	logout: (keyCards: KeyCards) => Promise<void>;
 	// refresh: (keyCards: KeyCards) => Promise<ImprovedAuthState>;
@@ -153,37 +160,6 @@ export interface CsrfOptions {
 	tokenLength?: number;
 }
 
-export interface AuthState {
-	accessToken?: string;
-	refreshToken?: string;
-	sessionId?: string;
-}
-
-// The complete auth state
-export interface ImprovedAuthState {
-	// key cards this lexicon replaces session elements and auth tokens
-	keyCards?: KeyCards;
-
-	isLoggedIn?: boolean;
-	// The authenticated user
-	user?: User;
-
-	// Active tokens
-	tokens?: AuthTokens;
-
-	// When the auth state was created
-	createdAt?: Date;
-
-	// When the entire auth state expires (might differ from individual token expiry)
-	expiresAt?: Date;
-
-	// The strategy that created this state
-	strategy?: "jwt" | "session";
-
-	// Optional metadata that might be needed by specific strategies
-	metadata?: Record<string, unknown>;
-}
-
 export interface JwtOptions {
 	key: string;
 	secretKey: string;
@@ -205,18 +181,22 @@ export interface SessionConfig {
 	fields?: string[];
 }
 
-export interface AuthValidationResult {
-	// valid: boolean;
-	isAuthenticated: boolean;
-	user?: User; // Populated if validation succeeded and we could derive a user
-	reason?: string; // Human-readable explanation of why validation failed
-	code?: string; // Machine-readable error code (e.g., "expired", "invalid_signature", "session_not_found")
-	expiresAt?: number; // Optional, e.g., for JWT to indicate expiration time
-}
+// export interface AuthValidationResult {
+// 	// valid: boolean;
+// 	isAuthenticated: boolean;
+// 	user?: User; // Populated if validation succeeded and we could derive a user
+// 	reason?: string; // Human-readable explanation of why validation failed
+// 	code?: string; // Machine-readable error code (e.g., "expired", "invalid_signature", "session_not_found")
+// 	expiresAt?: number; // Optional, e.g., for JWT to indicate expiration time
+// }
 
-export type AuthResult =
-	| { success: true; user: User; keyCards: KeyCards }
-	| { success: false; error: AuthError };
+// export type AuthResult =
+// 	| { success: true; status: AuthStatus }
+// 	| { success: false; status: AuthStatus };
+
+// export type AuthResult =
+// 	| { success: true; user: User; keyCards: KeyCards }
+// 	| { success: false; error: AuthError };
 
 export interface VerifyResult {
 	valid: boolean;
@@ -228,7 +208,7 @@ export interface VerifyResult {
 export interface AuthStrategy {
 	createKeyCards(user: User): Promise<KeyCards>;
 	logout(keyCards: KeyCards): Promise<void>;
-	validate(keyCards: KeyCards): Promise<AuthResult>;
+	validate(keyCards: KeyCards): Promise<AuthState>;
 	// validateCard(keyCards: KeyCards, name: string): Promise<AuthResult>;
 	// validateAll(keyCards: KeyCards): Promise<AuthValidationResult>;
 	// validateRefresh?(keyCards: KeyCards): Promise<AuthValidationResult>;

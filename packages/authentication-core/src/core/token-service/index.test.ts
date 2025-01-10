@@ -2,11 +2,12 @@ import { jest, describe, it, expect } from "@jest/globals";
 import { JwtTokenService } from "./index";
 import {
 	TokenTamperedError,
+	TokenExpiredError,
 	AuthError,
 	TokenError,
 	AuthErrorCode,
 } from "../error";
-import { User, JwtOptions } from "../types";
+import { User, JwtOptions, DatabaseUser } from "../types";
 
 describe("JwtTokenService", () => {
 	let tokenService: JwtTokenService;
@@ -17,8 +18,17 @@ describe("JwtTokenService", () => {
 		expiresIn: "1h",
 	};
 	const mockUser: User = {
-		id: "123",
-		email: "test@example.com",
+		id: "fdfcec84-8bd0-4442-9132-400ac39b9bfc",
+		email: "pkeen7@gmail.com",
+	};
+	const mockDatabaseUser: DatabaseUser = {
+		id: "fdfcec84-8bd0-4442-9132-400ac39b9bfc",
+		name: null,
+		email: "pkeen7@gmail.com",
+		emailVerified: null,
+		image: null,
+		password:
+			"$2a$10$YrKnYObyoAl5XhyFHAZev.n4w5Y7LmkQM2vAXrCNg7sX/lioNjkry",
 	};
 
 	beforeEach(() => {
@@ -26,9 +36,10 @@ describe("JwtTokenService", () => {
 	});
 
 	it("should convert user to payload", () => {
-		const payload = tokenService.createPayload(mockUser);
+		const payload = tokenService.createPayload(mockDatabaseUser);
 		expect(payload.id).toStrictEqual(mockUser.id);
 		expect(payload.email).toStrictEqual(mockUser.email);
+		expect(payload.password).toBeUndefined();
 	});
 
 	it("should generate a JWT token", async () => {
@@ -64,7 +75,7 @@ describe("JwtTokenService", () => {
 		try {
 			await tokenService.validate(token, options);
 		} catch (error) {
-			expect(error).toBeInstanceOf(TokenError);
+			expect(error).toBeInstanceOf(TokenExpiredError);
 			expect(error.code).toBe(AuthErrorCode.TOKEN_EXPIRED);
 		}
 	});

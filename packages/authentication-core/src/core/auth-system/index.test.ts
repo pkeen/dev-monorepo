@@ -3,6 +3,7 @@ import { AuthStrategy, KeyCards, AuthValidationResult } from "../types";
 import { Adapter, AdapterUser } from "../adapter";
 import { PasswordService } from "../password-service";
 import { MultiTransportLogger } from "@pete_keen/logger";
+import { AuthError, InvalidKeyCardError } from "../error";
 
 describe("AuthSystem Integration", () => {
 	// Mock dependencies
@@ -63,8 +64,8 @@ describe("AuthSystem Integration", () => {
 		authSystem = new AuthSystem(
 			mockStrategy,
 			mockAdapter,
-			mockPasswordService,
-			mockLogger
+			mockLogger,
+			mockPasswordService
 		);
 	});
 
@@ -82,7 +83,7 @@ describe("AuthSystem Integration", () => {
 
 			// Verify successful authentication
 			expect(result).toEqual({
-				isLoggedIn: true,
+				success: true,
 				keyCards: mockKeyCards,
 				user: mockUser,
 			});
@@ -127,7 +128,7 @@ describe("AuthSystem Integration", () => {
 			});
 
 			expect(result).toEqual({
-				isLoggedIn: false,
+				success: false,
 			});
 
 			expect(mockPasswordService.verify).not.toHaveBeenCalled();
@@ -135,34 +136,36 @@ describe("AuthSystem Integration", () => {
 		});
 	});
 
-	describe("refresh", () => {
-		it("successfully refreshes valid keyCards", async () => {
-			mockStrategy.validateRefresh.mockResolvedValue({
-				valid: true,
+	describe("validate", () => {
+		it("successfully refreshes validates keyCards", async () => {
+			mockStrategy.validate.mockResolvedValue({
+				success: true,
 				user: mockUser,
+				keyCards: mockKeyCards,
 			});
 			mockAdapter.getUser.mockResolvedValue(mockUser);
 			mockStrategy.createKeyCards.mockResolvedValue(mockKeyCards);
 
-			const result = await authSystem.refresh(mockKeyCards);
+			const result = await authSystem.validate(mockKeyCards);
 
 			expect(result).toEqual({
-				isLoggedIn: true,
+				success: true,
 				keyCards: mockKeyCards,
 				user: mockUser,
 			});
 		});
 
-		it("fails refresh with invalid keyCards", async () => {
-			mockStrategy.validateRefresh.mockResolvedValue({
-				valid: false,
-				user: null,
+		it("fails validation with invalid keyCards", async () => {
+			mockStrategy.validate.mockResolvedValue({
+				success: false,
+				error: new InvalidKeyCardError("Invalid keycard"),
 			});
 
-			const result = await authSystem.refresh(mockKeyCards);
+			const result = await authSystem.validate(mockKeyCards);
 
 			expect(result).toEqual({
-				isLoggedIn: false,
+				success: false,
+				error: new InvalidKeyCardError("Invalid keycard"),
 			});
 		});
 	});
@@ -205,7 +208,7 @@ describe("AuthSystem Integration", () => {
 				authSystem.signup({
 					email: "test@example.com",
 					password: "password",
-					name: "Test User",
+					// name: "Test User",
 				})
 			).rejects.toThrow(
 				"An account with that email is already registered"

@@ -2,7 +2,11 @@
 // 	return "hello world";
 // };
 
-import { AuthConfig, AuthSystem } from "@pete_keen/authentication-core";
+import {
+	AuthConfig,
+	AuthSystem,
+	AuthResult,
+} from "@pete_keen/authentication-core";
 import { redirect, type ActionFunctionArgs } from "react-router";
 import { commitSession, destroySession, getSession } from "./session.server";
 
@@ -30,67 +34,51 @@ export const RemixAuth = (config: RemixAuthConfig) => {
 			// const formData = await request.formData();
 			// ^ thats covered by formData now
 
+			// Step 1 Get Session and Form Data
 			let session = await getSession(request.headers.get("Cookie"));
 			const headers = new Headers();
-			// console.log("session data:", session.data);
-
 			const { email, password } = Object.fromEntries(formData);
 			// const email = entries.email;
 			// const password = entries.password;
-			// VALIDATION - could be moved to the auth system
-			if (typeof email !== "string" && typeof password !== "string") {
-				console.error(
-					"Expected email and password to be strings, but received non-string values."
-				);
-			}
 
-			const authState = await authSystem.authenticate({
+			// // VALIDATION - could be moved to the auth system
+			// if (typeof email !== "string" && typeof password !== "string") {
+			// 	console.error(
+			// 		"Expected email and password to be strings, but received non-string values."
+			// 	);
+			// }
+
+			// Call the auth system
+			const authResult: AuthResult = await authSystem.authenticate({
 				email: email as string,
 				password: password as string,
 			});
 
-			console.log("authState", authState);
+			// console.log("authResult", authResult);
 
-			if (!authState.isLoggedIn) {
-				return new Response(JSON.stringify(authState), {
-					success: false,
-					message: "Sign in failed",
+			if (!authResult.success) {
+				console.log("LOGIN FAILED");
+				return new Response(JSON.stringify({}), {
+					headers,
 				});
-			}
-
-			// Get or create a session
-			session = await getSession(request.headers.get("Cookie"));
-			// console.log("session", session);
-
-			// Store the keycards array in session
-			session.set("keyCards", authState.keyCards); // Can be any JSON array
-			session.set("user", authState.user);
-			session.set("isLoggedIn", authState.isLoggedIn);
-
-			// Commit session and set cookie header
-			const cookie = await commitSession(session);
-
-			// console.log("authState", authState);
-			// needs session storage
-
-			// If redirectTo is provided, redirect and set cookie
-			if (redirectTo) {
-				return redirect(redirectTo, {
-					headers: {
-						"Set-Cookie": cookie, // Properly set headers
-					},
-				});
-			}
-
-			// Otherwise, return a response and still set the cookie
-			return new Response(
-				JSON.stringify(authState), // Response body
-				{
-					headers: {
-						"Set-Cookie": cookie, // Properly set headers
-					},
+			} else {
+				console.log("LOGIN SUCCESSFUL", authResult);
+				// Store the keycards array in session
+				session.set("keyCards", authResult.keyCards); // Can be any JSON array
+				session.set("user", authResult.user);
+				session.set("isLoggedIn", authResult.success);
+				headers.append("Set-Cookie", await commitSession(session));
+				// If redirectTo is provided, redirect and set cookie
+				if (redirectTo) {
+					return redirect(redirectTo, {
+						headers,
+					});
 				}
-			);
+				// Otherwise, return a response and still set the cookie
+				return new Response(JSON.stringify(authResult), {
+					headers,
+				});
+			}
 		};
 	};
 	const createLogoutAction = (

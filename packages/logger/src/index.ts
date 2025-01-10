@@ -84,7 +84,7 @@ export function createLogContext<T extends Object>(context: T): T {
 
 export * from "./interfaces";
 export * from "./transports/console";
-export * from "./transports/file";
+// export * from "./transports/file";
 
 // // Example usage
 // const logger = new Logger("debug");

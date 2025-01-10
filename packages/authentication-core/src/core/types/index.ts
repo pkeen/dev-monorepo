@@ -81,6 +81,15 @@ export interface User {
 	image?: string | null;
 }
 
+export interface DatabaseUser {
+	id: string;
+	name?: string | null;
+	email: string;
+	emailVerified?: Date | null;
+	image?: string | null;
+	password?: string;
+}
+
 export interface Resource {
 	ownerId: string;
 	status: string;
@@ -107,14 +116,15 @@ export interface AuthStatus {
 }
 
 export interface AuthManager {
-	authenticate: (credentials: Credentials) => Promise<ImprovedAuthState>;
+	// authenticate: (credentials: Credentials) => Promise<ImprovedAuthState>;
+	authenticate: (credentials: Credentials) => Promise<AuthResult>;
 	// can: (user: User, action: string, resource: Resource) => boolean;
 	// storageAdapter: WebStorageAdapter;
 	signup: (credentials: SignupCredentials) => Promise<ImprovedAuthState>;
 	validate: (keyCards: KeyCards) => Promise<AuthResult>;
 	// refreshToken: (refreshToken: string) => Promise<AuthResult>;
 	logout: (keyCards: KeyCards) => Promise<void>;
-	refresh: (keyCards: KeyCards) => Promise<ImprovedAuthState>;
+	// refresh: (keyCards: KeyCards) => Promise<ImprovedAuthState>;
 }
 
 // Core interfaces that other components must implement

@@ -136,7 +136,7 @@ export class KeyCardMissingError extends KeyCardError {
 }
 
 export class InvalidCredentialsError extends AuthError {
-	constructor(message: string, code: AuthErrorCode) {
+	constructor(message: string = "Invalid credentials") {
 		super(message, AuthErrorCode.INVALID_CREDENTIALS);
 		this.name = "InvalidCredentialsError";
 	}

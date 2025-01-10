@@ -40,27 +40,14 @@ describe("JwtStrategy", () => {
 
 	it("should validate access and refresh tokens", async () => {
 		const keyCards = await jwtStrategy.createKeyCards(mockUser);
-		const result = await jwtStrategy.validateAll(keyCards);
-		expect(result.valid).toBe(true);
-		expect(result.user).toEqual(mockUser);
+		const result = await jwtStrategy.validate(keyCards);
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.user).toEqual(mockUser);
+		}
 	});
 
 	it("should support refresh tokens", async () => {
 		expect(jwtStrategy.supportsRefresh()).toBe(true);
 	});
-
-	it("should find and validate access token", async () => {
-		const keyCards = await jwtStrategy.createKeyCards(mockUser);
-		const result = await jwtStrategy.validate(keyCards);
-		expect(result.valid).toBe(true);
-		expect(result.user).toEqual(mockUser);
-	});
-
-	it("should find and validate refresh token", async () => {
-		const keyCards = await jwtStrategy.createKeyCards(mockUser);
-		const result = await jwtStrategy.validateRefresh(keyCards);
-		expect(result.valid).toBe(true);
-		expect(result.user).toEqual(mockUser);
-	});
-	// Additional tests can be added here
 });

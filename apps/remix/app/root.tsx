@@ -81,6 +81,7 @@ const parseLoaderData = (data: string | any) => {
 
 export default function App({ loaderData }: Route.ComponentProps) {
 	const { csrf, user, isLoggedIn } = parseLoaderData(loaderData);
+	// const { csrf, user, isLoggedIn } = loaderData;
 
 	return (
 		<Layout>

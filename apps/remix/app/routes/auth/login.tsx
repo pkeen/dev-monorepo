@@ -1,11 +1,18 @@
 import LogInForm from "~/components/LogInForm";
 import { useActionData, useNavigation } from "react-router";
 import { login } from "../../auth";
+import { withCsrf } from "~/lib/remix-auth/withAuth";
 
-export const action = login;
+export type LoginActionData = {
+	error?: string;
+	data?: { email: string; password: string };
+};
+
+export const action = withCsrf(login);
+// export const action = login;
 
 export default function Login() {
-	const actionData = useActionData<typeof action>();
+	const actionData = useActionData<LoginActionData>();
 	const navigation = useNavigation();
 	const isSubmitting = navigation.state === "submitting";
 	return (

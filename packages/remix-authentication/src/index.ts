@@ -15,20 +15,29 @@ export interface ExtendedAuthConfig {
 // Combined configuration for dependency injection
 export type RemixAuthConfig = AuthConfig & ExtendedAuthConfig;
 
+export interface ActionFormFunctionArgs extends ActionFunctionArgs {
+	formData: FormData;
+}
+
 export const RemixAuth = (config: RemixAuthConfig) => {
 	const authSystem = AuthSystem.create(config);
 
 	const createLoginAction = (authSystem: AuthSystem, redirectTo?: string) => {
-		return async function login({ request }: ActionFunctionArgs) {
-			const formData = await request.formData();
-			// console.log("form data", formData);
+		return async function login({
+			request,
+			formData,
+		}: ActionFormFunctionArgs) {
+			// const formData = await request.formData();
+			// ^ thats covered by formData now
 
 			let session = await getSession(request.headers.get("Cookie"));
+			const headers = new Headers();
 			// console.log("session data:", session.data);
 
-			const entries = Object.fromEntries(formData);
-			const email = entries.email;
-			const password = entries.password;
+			const { email, password } = Object.fromEntries(formData);
+			// const email = entries.email;
+			// const password = entries.password;
+			// VALIDATION - could be moved to the auth system
 			if (typeof email !== "string" && typeof password !== "string") {
 				console.error(
 					"Expected email and password to be strings, but received non-string values."

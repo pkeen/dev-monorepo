@@ -149,10 +149,10 @@ export function withValidation<T>(
 		// Step 3: Validate the keyCards
 		const keyCards = session.get("keyCards");
 		if (!keyCards) {
-			return Response.json(
-				{ user: null, isLoggedIn: false, keyCards: null },
-				{ headers }
-			);
+			// return Response.json(authStatus, { headers });
+			return new Response(JSON.stringify({ ...authStatus, csrf }), {
+				headers,
+			});
 		}
 
 		const authResult = await authSystem.validate(keyCards);
@@ -184,6 +184,7 @@ export function withValidation<T>(
 		// return data;
 		// Make sure cookie is actually set must return headers
 		return new Response(JSON.stringify(data), { headers });
+		// return Response.json(data, { headers });
 	};
 }
 
@@ -227,8 +228,18 @@ export const withCsrf = (handler: Function) => {
 	return async function (args: ActionFunctionArgs | LoaderFunctionArgs) {
 		const session = await getSession(args.request.headers.get("Cookie"));
 		const csrf = session.get("csrf");
+
+		// Read the body once
+		let formData = null;
+		if (!["GET", "HEAD", "OPTIONS"].includes(args.request.method)) {
+			formData = await args.request.formData();
+		}
+		console.log("with csrf - form data", formData);
 		// test it by setting it different
-		csrf && (await csrfMiddleware(args.request, csrf));
-		return handler(args);
+		if (csrf && formData) {
+			await csrfMiddleware(args.request, csrf, formData);
+		}
+
+		return handler({ ...args, formData });
 	};
 };

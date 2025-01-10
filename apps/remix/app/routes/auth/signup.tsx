@@ -2,10 +2,15 @@ import SignUpForm from "~/components/SignUpForm";
 import { useActionData, useNavigation } from "react-router";
 import { signup } from "../../auth";
 
+export type SignupActionData = {
+	error?: string;
+	data?: { email: string; password: string };
+};
+
 export const action = signup;
 
 export default function Signup() {
-	const actionData = useActionData<typeof action>();
+	const actionData = useActionData<SignupActionData>();
 	const navigation = useNavigation();
 	const isSubmitting = navigation.state === "submitting";
 	return (

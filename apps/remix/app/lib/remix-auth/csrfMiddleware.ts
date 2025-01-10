@@ -30,21 +30,26 @@ import { LoaderFunctionArgs } from "react-router";
 
 // Middleware function
 // Validate CSRF token
-export async function csrfMiddleware(request: Request, sessionCsrf?: string) {
+export async function csrfMiddleware(
+	request: Request,
+	sessionCsrf?: string,
+	formData?: FormData
+) {
 	//   if (!authConfig.csrf) return; // Skip validation if disabled - this wont work for now
+	console.log(
+		"csrfMiddleware - form data csrf: ",
+		formData?.get("csrfToken")
+	);
 
 	const safeMethods = ["GET", "HEAD", "OPTIONS"];
 	if (safeMethods.includes(request.method)) return; // Skip safe methods
 
 	// console.log("csrfCookieHeader: ", csrfCookieHeader);
 	const incomingCsrf =
-		request.headers.get("X-CSRF-Token") ||
-		(await request.formData()).get("csrfToken");
+		formData?.get("csrfToken") || request.headers.get("X-CSRF-Token");
 
 	console.log("csrfMiddleware - incomingCsrf: ", incomingCsrf);
 	console.log("csrfMiddleware - sessionCsrf: ", sessionCsrf);
-
-	// console.log("csrfToken: in middleware", csrfToken);
 
 	if (!incomingCsrf || incomingCsrf !== sessionCsrf) {
 		throw new Response(JSON.stringify({ error: "Invalid CSRF token" }), {

@@ -1,9 +1,11 @@
 import Navbar from "~/components/Navbar";
 import { Outlet } from "react-router";
-import { useAuth } from "~/lib/remix-auth/AuthContext";
+// import { useAuth } from "~/lib/remix-auth/AuthContext";
+
+
 
 export default function Layout() {
-	const { user } = useAuth();
+	// const { user } = useAuth();
 	return (
 		<div className="flex flex-col min-h-screen">
 			{/* Persistent Navbar */}

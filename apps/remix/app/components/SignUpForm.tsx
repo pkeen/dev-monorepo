@@ -1,7 +1,9 @@
 import { Form } from "react-router";
+import { CsrfHidden } from "~/lib/remix-auth/CsrfHidden";
+import { SignupActionData } from "~/routes/auth/signup";
 
 interface SignUpFormProps {
-	actionData?: { error?: string; data?: { email: string; password: string } };
+	actionData?: SignupActionData;
 	isSubmitting: boolean;
 }
 
@@ -11,6 +13,7 @@ export default function SignUpForm({
 }: SignUpFormProps) {
 	return (
 		<Form method="post" className="space-y-4">
+			<CsrfHidden />
 			{actionData?.error && (
 				<p className="text-red-500">{actionData.error}</p>
 			)}

@@ -336,6 +336,7 @@ export const withCsrf = (handler: Function) => {
 
 export const getSessionData = async (request: Request) => {
 	const session = await getSession(request.headers.get("Cookie"));
+	console.log("GETSESSIONDATA - session: ", session);
 	const user = session.get("user");
 	console.log("getSessionData - user: ", user);
 	const authenticated = session.get("authenticated");

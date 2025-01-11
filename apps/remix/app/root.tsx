@@ -1,18 +1,18 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import type { LinksFunction } from "react-router";
 // import { AuthProvider } from "~/lib/remix-auth/AuthContext";
-import { Route } from "./+types/root";
-import {
-	// withValidation,
-	WithValidationHandlerArgs,
-	HandlerFunction,
-} from "@pete_keen/remix-authentication";
-import { withValidation } from "~/auth";
-import {
-	AuthProvider,
-	useAuthState,
-} from "@pete_keen/remix-authentication/components";
-import { User, AuthState } from "@pete_keen/authentication-core";
+// import { Route } from "./+types/root";
+// import {
+// 	// withValidation,
+// 	WithValidationHandlerArgs,
+// 	HandlerFunction,
+// } from "@pete_keen/remix-authentication";
+// import { withValidation } from "~/auth";
+// import {
+// 	AuthProvider,
+// 	useAuthState,
+// } from "@pete_keen/remix-authentication/components";
+// import { User, AuthState } from "@pete_keen/authentication-core";
 
 import "./tailwind.css";
 
@@ -57,31 +57,39 @@ export function Layout({ children }: { children: React.ReactNode }) {
 // 	authenticated: boolean;
 // }
 
-const loaderHandler = async (args: WithValidationHandlerArgs) => {
-	console.log("ROOT LOADER CALLED");
-	// console.log("args: ", args);
-	return "hello";
-};
+// const loaderHandler = async (args: WithValidationHandlerArgs) => {
+// 	console.log("ROOT LOADER CALLED");
+// 	// console.log("args: ", args);
+// 	return "hello";
+// };
 
-export const loader = withValidation<string>(loaderHandler, {
-	csrf: true,
-});
+// export const loader = withValidation<string>(loaderHandler, {
+// 	csrf: true,
+// });
 
-const parseLoaderData = (data: string | any) => {
-	return JSON.parse(data);
-};
+// const parseLoaderData = (data: string | any) => {
+// 	return JSON.parse(data);
+// };
 
-export default function App({ loaderData }: Route.ComponentProps) {
-	console.log("ROOT LOADER DATA: ", loaderData);
-	const { csrf, authState, data } = parseLoaderData(loaderData);
-	// const { csrf, user, isLoggedIn } = loaderData;
-	console.log("ROOT LOADER CSRF: ", csrf);
+// export default function App({ loaderData }: Route.ComponentProps) {
+// 	console.log("ROOT LOADER DATA: ", loaderData);
+// 	const { csrf, authState, data } = parseLoaderData(loaderData);
+// 	// const { csrf, user, isLoggedIn } = loaderData;
+// 	console.log("ROOT LOADER CSRF: ", csrf);
 
+// 	return (
+// 		<Layout>
+// 			<AuthProvider csrf={csrf} authState={authState}>
+// 				<Outlet />
+// 			</AuthProvider>
+// 		</Layout>
+// 	);
+// }
+
+export default function App() {
 	return (
 		<Layout>
-			<AuthProvider csrf={csrf} authState={authState}>
-				<Outlet />
-			</AuthProvider>
+			<Outlet />
 		</Layout>
 	);
 }

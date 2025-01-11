@@ -1,5 +1,5 @@
 import { Form } from "react-router";
-import { CsrfHidden } from "~/lib/remix-auth/CsrfHidden";
+import { CsrfHidden } from "~/lib/remix-auth/irrelevant/CsrfHidden";
 import { SignupActionData } from "~/routes/auth/signup";
 
 interface SignUpFormProps {

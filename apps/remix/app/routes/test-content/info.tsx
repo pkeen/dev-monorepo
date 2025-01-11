@@ -1,11 +1,11 @@
 import { LoaderFunction, redirect } from "react-router";
-import { withAuth } from "~/lib/remix-auth/withAuth";
+import { withAuth } from "~/lib/remix-auth/irrelevant/withAuth";
 import { Form } from "react-router";
 // import { Route } from "react-router";
 
 import { User } from "@pete_keen/authentication-core";
-import { useAuth } from "~/lib/remix-auth/AuthContext";
-import { CsrfHidden } from "~/lib/remix-auth/CsrfHidden";
+import { useAuth } from "~/lib/remix-auth/irrelevant/AuthContext";
+import { CsrfHidden } from "~/lib/remix-auth/irrelevant/CsrfHidden";
 
 // export const loader: LoaderFunction = async () => {
 // 	return null;

@@ -1,7 +1,9 @@
 import LogInForm from "~/components/LogInForm";
 import { useActionData, useNavigation } from "react-router";
 import { login } from "../../auth";
-import { withCsrf } from "~/lib/remix-auth/withAuth";
+import { withCsrf } from "@pete_keen/remix-authentication";
+
+// import { withCsrf } from "~/lib/remix-auth/withAuth";
 
 export type LoginActionData = {
 	error?: string;

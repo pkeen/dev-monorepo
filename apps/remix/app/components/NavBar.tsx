@@ -1,18 +1,11 @@
-import { useLoaderData, Form, NavLink } from "react-router";
-import { getSession } from "~/lib/remix-auth/sessionStorage";
-import { useAuth } from "~/lib/remix-auth/AuthContext";
-
-// // Example loader to check session
-// export const loader = async ({ request }: { request: Request }) => {
-// 	const session = await getSession(request);
-// 	const isAuthenticated = !!session.get("keyCards");
-// 	return { isAuthenticated };
-// };
+import { Form, NavLink } from "react-router";
+import { useAuthState } from "@pete_keen/remix-authentication/components";
 
 // Navbar component
 export default function Navbar() {
-	// const { isAuthenticated } = useLoaderData();
-	const { user, isLoggedIn } = useAuth();
+	const {
+		authState: { user, authenticated },
+	} = useAuthState();
 
 	return (
 		<nav className="flex items-center justify-between p-4 bg-gray-800 text-white">
@@ -26,7 +19,7 @@ export default function Navbar() {
 			</div>
 
 			{/* Show logout button only if authenticated */}
-			{isLoggedIn ? (
+			{authenticated ? (
 				<>
 					<Form
 						method="post"
@@ -40,7 +33,7 @@ export default function Navbar() {
 							Logout
 						</button>
 					</Form>
-					-<p>{user?.email}</p>
+					-<p>{user.email}</p>
 				</>
 			) : (
 				<NavLink

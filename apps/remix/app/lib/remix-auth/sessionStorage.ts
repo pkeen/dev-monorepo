@@ -41,7 +41,7 @@ export interface SessionData {
 	user: User | null;
 	authenticated: boolean | undefined;
 	csrf: string | null;
-}
+}   
 
 // Create session storage
 export const { getSession, commitSession, destroySession } =

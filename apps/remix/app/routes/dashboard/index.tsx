@@ -1,20 +1,17 @@
 import { ActionFunctionArgs, LoaderFunction, redirect } from "react-router";
-import {
-	// withAuth,
-	// withRemixAuth,
-	// withSession,
-	getSessionData,
-} from "~/lib/remix-auth/withAuth";
+import { getSessionData } from "@pete_keen/remix-authentication";
 import { Form } from "react-router";
-import { CsrfHidden } from "~/lib/remix-auth/CsrfHidden";
-import { useAuth } from "~/lib/remix-auth/AuthContext";
+import {
+	CsrfHidden,
+	useAuthState,
+} from "@pete_keen/remix-authentication/components";
 import { useLoaderData } from "react-router";
 import { Route } from "./+types/index";
 import {
-	withValidation,
 	WithValidationHandlerArgs,
 	HandlerFunction,
-} from "~/lib/remix-auth/withAuth";
+} from "@pete_keen/remix-authentication";
+import { withValidation } from "~/auth";
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
 	console.log("DASHBOARD LOADER called");
@@ -26,14 +23,9 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
 	return { user };
 };
 
-const actionHandler = async (args: WithValidationHandlerArgs) => {
-	// console.log(" action user: ", user);
-	// console.log("action completed");
-	const hello = "hello";
-	return hello; //user;
-};
+const actionHandler = async (args: WithValidationHandlerArgs) => {};
 
-export const action = withValidation<string>(actionHandler, {
+export const action = withValidation<void>(actionHandler, {
 	csrf: true,
 });
 
@@ -48,8 +40,6 @@ export const action = withValidation<string>(actionHandler, {
 
 export default function Info({ loaderData }: Route.ComponentProps) {
 	const { user } = loaderData;
-	const { csrfToken } = useAuth();
-	console.log("csrfToken: ", csrfToken);
 	return (
 		<div>
 			<h1>Dashboard</h1>

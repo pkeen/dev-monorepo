@@ -1,12 +1,17 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import type { LinksFunction } from "react-router";
-import { AuthProvider } from "~/lib/remix-auth/AuthContext";
+// import { AuthProvider } from "~/lib/remix-auth/AuthContext";
 import { Route } from "./+types/root";
 import {
-	withValidation,
+	// withValidation,
 	WithValidationHandlerArgs,
 	HandlerFunction,
-} from "./lib/remix-auth/withAuth";
+} from "@pete_keen/remix-authentication";
+import { withValidation } from "~/auth";
+import {
+	AuthProvider,
+	useAuthState,
+} from "@pete_keen/remix-authentication/components";
 import { User, AuthState } from "@pete_keen/authentication-core";
 
 import "./tailwind.css";
@@ -67,17 +72,14 @@ const parseLoaderData = (data: string | any) => {
 };
 
 export default function App({ loaderData }: Route.ComponentProps) {
-	const { csrf, user, authenticated, data } = parseLoaderData(loaderData);
+	console.log("ROOT LOADER DATA: ", loaderData);
+	const { csrf, authState, data } = parseLoaderData(loaderData);
 	// const { csrf, user, isLoggedIn } = loaderData;
-	console.log("ROOT LOADER DATA: ", data);
+	console.log("ROOT LOADER CSRF: ", csrf);
 
 	return (
 		<Layout>
-			<AuthProvider
-				csrfToken={csrf}
-				user={user}
-				authenticated={authenticated}
-			>
+			<AuthProvider csrf={csrf} authState={authState}>
 				<Outlet />
 			</AuthProvider>
 		</Layout>

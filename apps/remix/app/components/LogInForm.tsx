@@ -1,7 +1,9 @@
 import { Form } from "react-router";
-import { CsrfHidden } from "~/lib/remix-auth/CsrfHidden";
 import { LoginActionData } from "~/routes/auth/login";
-import { useAuth } from "~/lib/remix-auth/AuthContext";
+import {
+	useAuthState,
+	CsrfHidden,
+} from "@pete_keen/remix-authentication/components";
 
 interface LogInFormProps {
 	actionData?: LoginActionData;
@@ -12,8 +14,8 @@ export default function LogInForm({
 	actionData,
 	isSubmitting,
 }: LogInFormProps) {
-	const { csrfToken } = useAuth();
-	console.log("csrfToken in login: ", csrfToken);
+	const { csrf } = useAuthState();
+	console.log("csrfToken in login: ", csrf);
 	return (
 		<Form method="post" className="space-y-4">
 			<CsrfHidden />

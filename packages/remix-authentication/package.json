@@ -9,6 +9,11 @@
 			"import": "./dist/index.mjs",
 			"default": "./dist/index.mjs",
 			"types": "./dist/index.d.ts"
+		},
+		"./components": {
+			"import": "./dist/components/index.mjs",
+			"default": "./dist/components/index.mjs",
+			"types": "./dist/components/index.d.ts"
 		}
 	},
 	"scripts": {

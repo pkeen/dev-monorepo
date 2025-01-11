@@ -1,5 +1,7 @@
 import { useAuth } from "./AuthContext";
 
+// TODO: Is this necessary?
+
 export function fetchWithAuth(url: string, options: RequestInit = {}) {
 	const { csrfToken } = useAuth();
 

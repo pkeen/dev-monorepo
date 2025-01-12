@@ -1,54 +1,44 @@
-import { LoaderFunction, redirect } from "react-router";
-import { withAuth } from "~/lib/remix-auth/irrelevant/withAuth";
+import { ActionFunctionArgs, LoaderFunction, redirect } from "react-router";
+import { getSessionData } from "@pete_keen/remix-authentication";
 import { Form } from "react-router";
-// import { Route } from "react-router";
+import {
+	CsrfHidden,
+	useAuthState,
+} from "@pete_keen/remix-authentication/components";
+import { useLoaderData } from "react-router";
+import { Route } from "./+types/info";
+import {
+	WithValidationHandlerArgs,
+	HandlerFunction,
+} from "@pete_keen/remix-authentication";
+import { withValidation } from "~/auth";
 
-import { User } from "@pete_keen/authentication-core";
-import { useAuth } from "~/lib/remix-auth/irrelevant/AuthContext";
-import { CsrfHidden } from "~/lib/remix-auth/irrelevant/CsrfHidden";
+export const loader = async ({ request }: Route.LoaderArgs) => {
+	const { user, authenticated } = await getSessionData(request);
+	if (!authenticated) {
+		return redirect("/auth/login");
+	}
+	return { user };
+};
 
-// export const loader: LoaderFunction = async () => {
-// 	return null;
-// };
+const actionHandler = async (args: WithValidationHandlerArgs) => {
+	console.log("INFO ACTION HANDLER");
+};
 
-// export const loader = withAuth(
-// 	async ({
-// 		request,
-// 		user,
-// 		isLoggedIn,
-// 	}: {
-// 		request: Request;
-// 		user: User;
-// 		isLoggedIn: boolean;
-// 	}) => {
-// 		console.log(" loader user: ", user);
-// 		if (!isLoggedIn) {
-// 			return redirect("/auth/login");
-// 		}
-// 		return user;
-// 	},
-// 	{ csrf: true }
-// );
+export const action = withValidation<void>(actionHandler, {
+	csrf: true,
+});
 
-// export const action = withAuth(
-// 	async ({ request, user }: { request: Request; user: User }) => {
-// 		console.log(" action user: ", user);
-// 		console.log("action completed");
-// 		return user;
-// 	},
-// 	{ csrf: true }
-// );
-
-export default function Info({ loaderData }: { loaderData: User }) {
+export default function Info({ loaderData }: Route.ComponentProps) {
 	// const user = loaderData.user;
 	console.log(loaderData);
-	const { csrfToken } = useAuth();
+	const { csrf } = useAuthState();
 	// console.log("csrfToken: ", csrfToken);
-	const { email } = loaderData;
+	const { user } = loaderData;
 	return (
 		<div>
 			<h1>Info</h1>
-			<p> hello {email}</p>
+			<p> hello {user?.email}</p>
 			<Form method="post">
 				<CsrfHidden />
 				<button type="submit">Test Csrf</button>

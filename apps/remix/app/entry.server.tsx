@@ -11,8 +11,6 @@ import { createReadableStreamFromReadable } from "@react-router/node";
 import { ServerRouter } from "react-router";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
-// import { csrfCookie } from "~/sessionStorage";
-// import { authSystem } from "./auth";
 
 const ABORT_DELAY = 5_000;
 
@@ -26,19 +24,6 @@ export default async function handleRequest(
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	loadContext: AppLoadContext
 ) {
-	// // --- CSRF TOKEN CHECK AND INITIALIZATION ---
-	// const cookieHeader = request.headers.get("Cookie");
-	// const csrfCookieHeader = await csrfCookie.parse(cookieHeader);
-
-	// if (!csrfCookieHeader) {
-	// 	const csrfToken = await authSystem.generateCsrfToken();
-	// 	responseHeaders.append(
-	// 		"Set-Cookie",
-	// 		await csrfCookie.serialize(csrfToken)
-	// 	);
-	// }
-	// // ------------------------------------------
-
 	return isbot(request.headers.get("user-agent") || "")
 		? handleBotRequest(
 				request,

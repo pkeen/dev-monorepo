@@ -16,7 +16,6 @@ import { withValidation } from "~/auth";
 export const loader = async ({ request }: Route.LoaderArgs) => {
 	console.log("DASHBOARD LOADER called");
 	const { user, authenticated } = await getSessionData(request);
-	console.log("loader - user: ", user);
 	if (!authenticated) {
 		return redirect("/auth/login");
 	}
@@ -38,7 +37,7 @@ export const action = withValidation<void>(actionHandler, {
 // 	{ csrf: true }
 // );
 
-export default function Info({ loaderData }: Route.ComponentProps) {
+export default function Index({ loaderData }: Route.ComponentProps) {
 	const { user } = loaderData;
 	return (
 		<div>

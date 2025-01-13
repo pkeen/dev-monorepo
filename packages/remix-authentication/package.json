@@ -2,6 +2,7 @@
 	"name": "@pete_keen/remix-authentication",
 	"version": "0.0.1",
 	"main": "dist/index.mjs",
+	"browser": "dist/client/index.mjs",
 	"types": "dist/index.d.ts",
 	"type": "module",
 	"exports": {
@@ -9,6 +10,11 @@
 			"import": "./dist/index.mjs",
 			"default": "./dist/index.mjs",
 			"types": "./dist/index.d.ts"
+		},
+		"./client": {
+			"import": "./dist/client/index.mjs",
+			"default": "./dist/client/index.mjs",
+			"types": "./dist/client/index.d.ts"
 		},
 		"./components": {
 			"import": "./dist/components/index.mjs",

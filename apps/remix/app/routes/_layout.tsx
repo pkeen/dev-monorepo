@@ -1,14 +1,35 @@
 // import Navbar from "~/components/Navbar";
 import Navbar from "~/components/NavBar";
 import { Outlet } from "react-router";
+import { redirect } from "react-router";
+import { Route } from "./+types/_layout";
+import { getSessionData } from "@pete_keen/remix-authentication";
 // import { useAuth } from "~/lib/remix-auth/AuthContext";
 
-export default function Layout() {
+export const loader = async ({ request }: Route.LoaderArgs) => {
+	// import here instead
+	// const { getSessionData } = await import(
+	// 	"@pete_keen/remix-authentication/server"
+	// );
+	// const user = {
+	// 	id: "1",
+	// 	email: "pkeen7@gmail.com",
+	// };
+	const { user, authenticated } = await getSessionData(request);
+	console.log("layout loader - user: ", user);
+	// if (!user) {
+	// 	return redirect("/auth/login");
+	// }
+	return { user };
+};
+
+export default function Layout({ loaderData }: Route.ComponentProps) {
+	const { user } = loaderData;
 	// const { user } = useAuth();
 	return (
 		<div className="flex flex-col min-h-screen">
 			{/* Persistent Navbar */}
-			<Navbar />
+			<Navbar user={user} />
 			<main className="flex-grow p-4">
 				<Outlet /> {/* Renders child routes */}
 			</main>

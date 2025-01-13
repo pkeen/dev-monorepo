@@ -13,7 +13,6 @@ import {
 import { commitSession, destroySession, getSession } from "./session.server";
 import { createLogger } from "@pete_keen/logger";
 import { csrfMiddleware } from "./middleware/csrfMiddleware";
-import { AuthProvider, useAuthState, CsrfHidden } from "./components";
 
 export interface RemixAuthState {
 	authState: AuthState;
@@ -208,6 +207,65 @@ export const RemixAuth = (config: RemixAuthConfig) => {
 		};
 	};
 
+	/*
+        The Job is to get and supply (and validate) the AuthState to cookies and AuthProvider
+    */
+	const authLoader = async ({ request }: LoaderFunctionArgs) => {
+		// Step 1 - load the session data
+		const session = await getSession(request.headers.get("Cookie"));
+		const headers = new Headers();
+		// initial state
+		const remixAuthState: RemixAuthState = {
+			authState: {
+				user: null,
+				authenticated: false,
+				keyCards: null,
+			},
+			csrf: null,
+		};
+
+		// Step 2: CSFR Protection -
+		// Step 2a: Get CSRF Token or create one if not present
+		let csrf = session.get("csrf");
+		// Step 2b: Check if csrf is present
+		if (!csrf) {
+			csrf = await authSystem.generateCsrfToken();
+			// session.set("csrf", csrf);
+			headers.append("Set-Cookie", await commitSession(session));
+		}
+
+		// This was my bug - needed to return the csrf in early exit
+		remixAuthState.csrf = csrf;
+
+		// Step 3: Validate the keyCards
+		const keyCards = session.get("keyCards");
+		console.log("RootLoader - keyCards: ", keyCards);
+
+		if (!keyCards) {
+			// return Response.json(authStatus, { headers });
+			return new Response(JSON.stringify(remixAuthState), {
+				headers,
+			});
+		}
+		console.log("this wont show on non-logged in yet");
+
+		// Step 4: Get the auth status and set the status and return object accordingly
+		// Or should we not bother doing validation? And just leave it routes to be protected manually
+		const authState = await authSystem.validate(keyCards);
+		remixAuthState.authState = authState;
+		remixAuthState.csrf = csrf;
+		session.set("keyCards", authState.keyCards);
+		session.set("user", authState.user);
+		session.set("authenticated", authState.authenticated);
+		headers.append("Set-Cookie", await commitSession(session));
+
+		// theres no handler to return so just the state
+		// Make sure cookie is actually set must return headers
+		return new Response(JSON.stringify(remixAuthState), {
+			headers,
+		});
+	};
+
 	const withValidation = <T>(
 		handler: HandlerFunction<T>,
 		options: WithValidationOptions = { csrf: true }
@@ -308,6 +366,7 @@ export const RemixAuth = (config: RemixAuthConfig) => {
 		logout: createLogoutAction(authSystem, config.redirectAfterLogout),
 		signup: createSignupAction(authSystem, config.redirectAfterLogin),
 		withValidation,
+		authLoader,
 		// withCsrf,
 		// useAuthState,
 		// AuthProvider,
@@ -336,9 +395,9 @@ export const withCsrf = (handler: Function) => {
 
 export const getSessionData = async (request: Request) => {
 	const session = await getSession(request.headers.get("Cookie"));
-	console.log("GETSESSIONDATA - session: ", session);
+	// console.log("GETSESSIONDATA - session: ", session);
 	const user = session.get("user");
-	console.log("getSessionData - user: ", user);
+	// console.log("getSessionData - user: ", user);
 	const authenticated = session.get("authenticated");
 	return { user, authenticated };
 };

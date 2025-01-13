@@ -61,6 +61,8 @@ export const {
 	logout,
 	signup,
 	withValidation,
+	authLoader,
+	// withCsrf,
 	// useAuthState,
 	// AuthProvider,
 } = RemixAuth(remixAuthConfig);

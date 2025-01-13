@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 import { AuthState } from "@pete_keen/authentication-core";
-import { RemixAuthState } from "../index";
+import { RemixAuthState } from "..";
 
 const AuthContext = createContext<RemixAuthState>({
 	csrf: null,

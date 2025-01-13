@@ -5,7 +5,7 @@ import { defineConfig } from "rollup";
 import preserveDirectives from "rollup-plugin-preserve-directives";
 
 export default defineConfig({
-	input: ["src/index.ts", "src/components/index.ts"],
+	input: ["src/index.ts", "src/client/index.ts", "src/components/index.ts"],
 	output: {
 		dir: "dist",
 		format: "esm",

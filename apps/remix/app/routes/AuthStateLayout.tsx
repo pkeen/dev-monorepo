@@ -1,15 +1,19 @@
 import { Outlet, LoaderFunctionArgs, useLoaderData } from "react-router";
-import { withValidation } from "~/auth";
-import { AuthProvider } from "@pete_keen/remix-authentication/components";
+// import { withValidation, authLoader } from "~/auth";
+// import { AuthProvider } from "@pete_keen/remix-authentication/components";
+import { AuthProvider } from "@pete_keen/remix-authentication/client";
 import type { WithValidationHandlerArgs } from "@pete_keen/remix-authentication";
 
-const loaderHandler = async (args: WithValidationHandlerArgs) => {
-	console.log("AUTH STATE LOADER SUCCESSS");
-	return "hello";
-};
-export const loader = withValidation<string>(loaderHandler, {
-	csrf: true,
-});
+// const loaderHandler = async (args: WithValidationHandlerArgs) => {
+// 	console.log("AUTH STATE LOADER SUCCESSS");
+// 	return "hello";
+// };
+// export const loader = withValidation<string>(loaderHandler, {
+// 	csrf: true,
+// });
+
+// export const loader = authLoader;
+export { authLoader as loader } from "~/auth";
 
 const parseLoaderData = (data: string | any) => {
 	return JSON.parse(data);

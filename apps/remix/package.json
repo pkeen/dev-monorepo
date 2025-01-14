@@ -12,10 +12,14 @@
 		"db:push": "pnpm drizzle-kit push --verbose"
 	},
 	"dependencies": {
+		"@mantine/core": "^7.15.3",
+		"@mantine/hooks": "^7.15.3",
+		"@mantinex/mantine-logo": "^1.1.0",
 		"@pete_keen/authentication-core": "workspace:*",
 		"@pete_keen/remix-authentication": "workspace:*",
 		"@react-router/node": "^7.0.0",
 		"@react-router/serve": "^7.0.0",
+		"@tabler/icons-react": "^3.28.1",
 		"drizzle-orm": "^0.36.3",
 		"isbot": "^4.1.0",
 		"react": "^18.2.0",
@@ -28,19 +32,21 @@
 		"@typescript-eslint/eslint-plugin": "^6.7.4",
 		"@typescript-eslint/parser": "^6.7.4",
 		"autoprefixer": "^10.4.19",
+		"drizzle-kit": "^0.28.1",
 		"eslint": "^8.38.0",
 		"eslint-import-resolver-typescript": "^3.6.1",
 		"eslint-plugin-import": "^2.28.1",
 		"eslint-plugin-jsx-a11y": "^6.7.1",
 		"eslint-plugin-react": "^7.33.2",
 		"eslint-plugin-react-hooks": "^4.6.0",
-		"postcss": "^8.4.38",
+		"postcss": "^8.4.49",
+		"postcss-preset-mantine": "^1.17.0",
+		"postcss-simple-vars": "^7.0.1",
 		"react-router": "^7.1.0",
 		"tailwindcss": "^3.4.4",
 		"typescript": "^5.1.6",
 		"vite": "^5.1.0",
-		"vite-tsconfig-paths": "^4.2.1",
-		"drizzle-kit": "^0.28.1"
+		"vite-tsconfig-paths": "^4.2.1"
 	},
 	"engines": {
 		"node": ">=20.0.0"

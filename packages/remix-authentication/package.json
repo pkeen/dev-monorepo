@@ -25,7 +25,8 @@
 	"scripts": {
 		"build": "rollup -c",
 		"dev": "rollup -c -w",
-		"test": "jest"
+		"test": "jest",
+		"types": "tsc"
 	},
 	"dependencies": {
 		"@pete_keen/authentication-core": "workspace:*",

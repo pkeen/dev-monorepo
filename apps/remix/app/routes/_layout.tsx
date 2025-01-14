@@ -1,5 +1,6 @@
 // import Navbar from "~/components/Navbar";
 import Navbar from "~/components/NavBar";
+import NavMenu from "~/components/NavMenu";
 import { Outlet } from "react-router";
 import { redirect } from "react-router";
 import { Route } from "./+types/_layout";
@@ -29,6 +30,7 @@ export default function Layout({ loaderData }: Route.ComponentProps) {
 	return (
 		<div className="flex flex-col min-h-screen">
 			{/* Persistent Navbar */}
+			<NavMenu user={user} />
 			<Navbar user={user} />
 			<main className="flex-grow p-4">
 				<Outlet /> {/* Renders child routes */}

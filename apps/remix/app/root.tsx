@@ -1,5 +1,7 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import type { LinksFunction } from "react-router";
+import "@mantine/core/styles.css";
+import { ColorSchemeScript, MantineProvider } from "@mantine/core";
 // import { AuthProvider } from "~/lib/remix-auth/AuthContext";
 // import { Route } from "./+types/root";
 // import {
@@ -40,9 +42,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 				/>
 				<Meta />
 				<Links />
+				<ColorSchemeScript />
 			</head>
 			<body>
-				{children}
+				<MantineProvider>{children}</MantineProvider>
 				<ScrollRestoration />
 				<Scripts />
 			</body>
@@ -87,9 +90,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 // }
 
 export default function App() {
+	// Not sure if layout should be wrapped here
 	return (
-		<Layout>
-			<Outlet />
-		</Layout>
+		// <Layout>
+		<Outlet />
+		// </Layout>
 	);
 }

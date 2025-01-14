@@ -365,11 +365,8 @@ export const RemixAuth = (config: RemixAuthConfig) => {
 		login: createLoginAction(authSystem, config.redirectAfterLogin),
 		logout: createLogoutAction(authSystem, config.redirectAfterLogout),
 		signup: createSignupAction(authSystem, config.redirectAfterLogin),
-		withValidation,
 		authLoader,
-		// withCsrf,
-		// useAuthState,
-		// AuthProvider,
+		withValidation,
 	};
 };
 

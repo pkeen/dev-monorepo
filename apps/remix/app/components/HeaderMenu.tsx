@@ -121,24 +121,6 @@ export default function NavMenu({ user }: { user: any }) {
 	const [linksOpened, { toggle: toggleLinks }] = useDisclosure(false);
 	const theme = useMantineTheme();
 
-	// const links = mockdata.map((item) => (
-	// 	<UnstyledButton className={classes.subLink} key={item.title}>
-	// 		<Group wrap="nowrap" align="flex-start">
-	// 			<ThemeIcon size={34} variant="default" radius="md">
-	// 				<item.icon size={22} color={theme.colors.blue[6]} />
-	// 			</ThemeIcon>
-	// 			<div>
-	// 				<Text size="sm" fw={500}>
-	// 					{item.title}
-	// 				</Text>
-	// 				<Text size="xs" c="dimmed">
-	// 					{item.description}
-	// 				</Text>
-	// 			</div>
-	// 		</Group>
-	// 	</UnstyledButton>
-	// ));
-
 	return (
 		<Box pb={120}>
 			<header className={classes.header}>

@@ -93,7 +93,7 @@ export default function App() {
 	// Not sure if layout should be wrapped here
 	return (
 		// <Layout>
-		<Outlet />
-		// </Layout>
+			<Outlet />
+		// {/* </Layout> */}
 	);
 }

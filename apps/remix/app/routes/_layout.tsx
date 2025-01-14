@@ -5,6 +5,8 @@ import { Outlet } from "react-router";
 import { redirect } from "react-router";
 import { Route } from "./+types/_layout";
 import { getSessionData } from "@pete_keen/remix-authentication";
+import { Container, AppShell } from "@mantine/core";
+import HeaderMenu from "~/components/HeaderMenu";
 // import { useAuth } from "~/lib/remix-auth/AuthContext";
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
@@ -28,16 +30,29 @@ export default function Layout({ loaderData }: Route.ComponentProps) {
 	const { user } = loaderData;
 	// const { user } = useAuth();
 	return (
-		<div className="flex flex-col min-h-screen">
-			{/* Persistent Navbar */}
-			<NavMenu user={user} />
-			<Navbar user={user} />
-			<main className="flex-grow p-4">
+		<AppShell header={{ height: 60, offset: true }} padding="md">
+			<AppShell.Header>
+				<HeaderMenu user={user} />
+				{/* <Navbar user={user} /> */}
+				{/* <NavMenu user={user} /> */}
+			</AppShell.Header>
+			<AppShell.Main>
 				<Outlet /> {/* Renders child routes */}
-			</main>
-			<footer className="p-4 text-center text-gray-500">
-				© {new Date().getFullYear()} My Remix App
-			</footer>
-		</div>
+			</AppShell.Main>
+			{/* Persistent Navbar */}
+			{/* <NavMenu user={user} /> */}
+			{/* <main className="flex-grow p-4">
+				<Container size="xl">
+				</Container>
+			</main> */}
+			<AppShell.Footer>
+				© {new Date().getFullYear()} Remix Auth Starter
+			</AppShell.Footer>
+			{/* <footer className="p-4 text-center text-gray-500">
+				<Container size="xl">
+					© {new Date().getFullYear()} Remix Auth Starter
+				</Container>
+			</footer> */}
+		</AppShell>
 	);
 }

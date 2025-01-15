@@ -6,8 +6,9 @@ import {
 	AuthError,
 	TokenError,
 	AuthErrorCode,
-} from "../error";
-import { User, JwtOptions, DatabaseUser } from "../types";
+} from "../../../error";
+import { UserPublic as User, DatabaseUser } from "../../../types";
+import { JwtOptions } from "./index.types";
 
 describe("JwtTokenService", () => {
 	let tokenService: JwtTokenService;

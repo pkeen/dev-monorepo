@@ -1,18 +1,24 @@
 import {
 	AuthStrategy,
-	JwtConfig,
-	Credentials,
-	AuthTokens,
+	UserPublic as User,
+	AuthState,
 	KeyCards,
 	KeyCard,
-	User,
-	AuthState,
-	TokenService,
-	VerifiedToken,
+	// JwtConfig,
+	// Credentials,
+	// AuthTokens,
+	// KeyCards,
+	// KeyCard,
+	// User,
+	// AuthState,
+	// TokenService,
+	// VerifiedToken,
 	// AuthResult,
 } from "../../types";
+import { JwtConfig } from "./index.types";
+// import { User } from "../../../auth-system/index.types";
 // import { JwtTokenService } from "../../token-service";
-import { JwtTokenService } from "../../token-service";
+import { JwtTokenService, TokenService } from "./token-service";
 import { expiresInToSeconds } from "../../utils";
 import {
 	ExpiredKeyCardError,

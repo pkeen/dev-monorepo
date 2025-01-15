@@ -1,29 +1,15 @@
 // packages/auth-core/src/services/AuthenticationService.ts
+import { AuthState, AuthStrategy, KeyCards } from "../types";
+import { IAuthSystem } from "./index.types";
 import {
-	AuthManager,
-	AuthState,
-	AuthStrategy,
-	DatabaseUser,
-	JwtConfig,
-	JwtOptions,
-	KeyCards,
-	SessionConfig,
-} from "../types";
-import { Credentials, SignupCredentials } from "../types";
+	Credentials,
+	SignupCredentials,
+} from "../providers/credentials/index.types";
+
 // import { WebStorageAdapter } from "../types";
-import { User } from "../types";
-import { UserRepository } from "../types";
 import { Adapter, AdapterUser } from "../adapter";
 import { DefaultPasswordService, PasswordService } from "../password-service";
-import {
-	createLogger,
-	LogLevel,
-	Logger,
-	MultiTransportLogger,
-	ConsoleTransport,
-	// FileTransport,
-	createLogContext,
-} from "@pete_keen/logger";
+import { createLogger, Logger, createLogContext } from "@pete_keen/logger";
 import {
 	safeExecute,
 	UserNotFoundError,
@@ -38,10 +24,9 @@ import {
 import { JwtStrategy } from "../strategy";
 import crypto from "crypto";
 
-export class AuthSystem implements AuthManager {
+export class AuthSystem implements IAuthSystem {
 	public logger?: Logger;
 	public strategy: AuthStrategy;
-	// public userRepository: UserRepository;
 	public adapter: Adapter;
 	public passwordService: PasswordService;
 
@@ -355,6 +340,10 @@ export class AuthSystem implements AuthManager {
 		return crypto.randomBytes(32).toString("hex");
 	}
 
+	static generateCsrfToken(): Promise<string> | string {
+		return crypto.randomBytes(32).toString("hex");
+	}
+
 	// Validate a CSRF token
 	async validateCsrfToken(
 		requestToken: string,
@@ -384,41 +373,3 @@ export class AuthSystem implements AuthManager {
 		return new AuthSystem(strategy, config.adapter, logger);
 	}
 }
-
-export interface LoggerOptions {
-	level?: LogLevel;
-	filepath?: string; // If they want file logging
-	silent?: boolean; // Disable console logging
-	// format?: LogFormat; // Log format
-}
-
-export interface AuthConfigBase {
-	adapter?: Adapter;
-	// passwordService?: string;
-	logger?: LoggerOptions;
-	providers: ProviderConfig[];
-}
-
-export type AuthConfig =
-	| (AuthConfigBase & { strategy: "jwt"; jwtConfig: JwtConfig })
-	| (AuthConfigBase & { strategy: "session"; sessionConfig: SessionConfig });
-// | (AuthConfigBase & { strategy: "hybrid"; hybridConfig: HybridConfig });
-
-// export const createAuthSystem = (config: AuthConfig): AuthSystem => {
-// 	let strategy: AuthStrategy;
-// 	if (config.strategy === "jwt") {
-// 		strategy = new JwtStrategy(config.jwtConfig);
-// 	} else if (config.strategy === "session") {
-// 		throw new Error("Session strategy not implemented yet");
-// 	} else {
-// 		throw new Error("Invalid strategy");
-// 	}
-
-// 	const logger = createLogger(config.logger);
-
-// 	if (!config.adapter) {
-// 		logger.warn("You will be using no persistence adapter");
-// 	}
-
-// 	return new AuthSystem(strategy, config.adapter, logger);
-// };

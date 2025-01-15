@@ -78,7 +78,11 @@ export const RemixAuth = (config: RemixAuthConfig) => {
 			let session = await getSession(request.headers.get("Cookie"));
 			const headers = new Headers();
 			// TO-DO: Provide optional credentials type
-			const { email, password } = Object.fromEntries(formData);
+			const formDataObject = Object.fromEntries(formData);
+			const { email, password, action } = formDataObject;
+			console.log("provider: ", action);
+			// TO-DO: pass correct provider type to auth system
+			// const { email, password } = Object.fromEntries(formData);
 
 			// TO-DO: ensure type validation
 

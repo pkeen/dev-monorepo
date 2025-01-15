@@ -37,11 +37,13 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { MantineLogo } from "@mantinex/mantine-logo";
 import classes from "./HeaderMegaMenu.module.css";
+import { useFetcher } from "react-router";
 // import SignIn from "../SignIn";
 // import { Sign } from "crypto";
 // import AvatarOrSignin from "./AvatarOrSignIn";
 
 const AvatarOrSignin = ({ user }: { user: any }) => {
+	const fetcher = useFetcher();
 	return (
 		// <Group style={{ border: "1px solid red" }} justify="space-between">
 		<>
@@ -52,7 +54,16 @@ const AvatarOrSignin = ({ user }: { user: any }) => {
 					</Menu.Target>
 					<Menu.Dropdown>
 						<Menu.Item>Profile</Menu.Item>
-						<Menu.Item>Logout</Menu.Item>
+						<Menu.Item
+							onClick={() =>
+								fetcher.submit(null, {
+									method: "post",
+									action: "/auth/logout",
+								})
+							}
+						>
+							Logout
+						</Menu.Item>
 					</Menu.Dropdown>
 				</Menu>
 			) : (
@@ -113,7 +124,6 @@ const ColorSchemeSelector = () => {
 		</>
 	);
 };
-
 
 export default function NavMenu({ user }: { user: any }) {
 	const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =

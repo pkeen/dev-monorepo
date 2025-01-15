@@ -1,10 +1,8 @@
-// import LogInForm from "~/components/LogInForm";
-import LoginFormNew from "~/components/LogInFormNew";
-import { useActionData, useNavigation } from "react-router";
+import LogInForm from "~/components/LogInForm";
+import { useActionData, useNavigation, Form } from "react-router";
 import { login } from "../../auth";
 import { withCsrf } from "@pete_keen/remix-authentication";
-
-// import { withCsrf } from "~/lib/remix-auth/withAuth";
+import { Container, Button, Group } from "@mantine/core";
 
 export type LoginActionData = {
 	error?: string;
@@ -12,15 +10,21 @@ export type LoginActionData = {
 };
 
 export const action = withCsrf(login);
-// export const action = login;
 
 export default function Login() {
 	const actionData = useActionData<LoginActionData>();
 	const navigation = useNavigation();
 	const isSubmitting = navigation.state === "submitting";
 	return (
-		<main className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
-			<LoginFormNew actionData={actionData} isSubmitting={isSubmitting} />
-		</main>
+		<Container>
+			<LogInForm actionData={actionData} isSubmitting={isSubmitting} />
+			<Group>
+				<Form method="post">
+					<Button type="submit" value="google">
+						Login with Google
+					</Button>
+				</Form>
+			</Group>
+		</Container>
 	);
 }

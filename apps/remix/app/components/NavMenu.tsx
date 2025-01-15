@@ -37,11 +37,13 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { MantineLogo } from "@mantinex/mantine-logo";
 import classes from "./HeaderMegaMenu.module.css";
+import { useFetcher } from "react-router";
 // import SignIn from "../SignIn";
 // import { Sign } from "crypto";
 // import AvatarOrSignin from "./AvatarOrSignIn";
 
 const AvatarOrSignin = ({ user }: { user: any }) => {
+	const fetcher = useFetcher();
 	return (
 		// <Group style={{ border: "1px solid red" }} justify="space-between">
 		<>
@@ -52,7 +54,16 @@ const AvatarOrSignin = ({ user }: { user: any }) => {
 					</Menu.Target>
 					<Menu.Dropdown>
 						<Menu.Item>Profile</Menu.Item>
-						<Menu.Item>Logout</Menu.Item>
+						<Menu.Item
+							onClick={() =>
+								fetcher.submit(null, {
+									method: "post",
+									action: "/auth/logout",
+								})
+							}
+						>
+							Logout
+						</Menu.Item>
 					</Menu.Dropdown>
 				</Menu>
 			) : (
@@ -175,14 +186,14 @@ export default function NavMenu({ user }: { user: any }) {
 		<Box pb={120}>
 			<header className={classes.header}>
 				{/* <Container size="xl"> */}
-					<Group justify="space-between" h="100%">
-						<MantineLogo size={30} />
+				<Group justify="space-between" h="100%">
+					<MantineLogo size={30} />
 
-						<Group h="100%" gap={0} visibleFrom="sm">
-							<a href="#" className={classes.link}>
-								About
-							</a>
-							{/* <HoverCard
+					<Group h="100%" gap={0} visibleFrom="sm">
+						<a href="#" className={classes.link}>
+							About
+						</a>
+						{/* <HoverCard
 							width={600}
 							position="bottom"
 							radius="md"
@@ -235,29 +246,29 @@ export default function NavMenu({ user }: { user: any }) {
 								</div>
 							</HoverCard.Dropdown>
 						</HoverCard> */}
-							<a href="#" className={classes.link}>
-								Courses
-							</a>
-							<a href="#" className={classes.link}>
-								Academy
-							</a>
-						</Group>
-
-						<Group visibleFrom="sm">
-							<ColorSchemeSelector />
-							<AvatarOrSignin user={user} />
-							{/* <AvatarOrSignin /> */}
-							{/* <Button variant="default">Log in</Button> */}
-							{/* <SignIn>Login</SignIn>
-						<Button>Sign up</Button> */}
-						</Group>
-
-						<Burger
-							opened={drawerOpened}
-							onClick={toggleDrawer}
-							hiddenFrom="sm"
-						/>
+						<a href="#" className={classes.link}>
+							Courses
+						</a>
+						<a href="#" className={classes.link}>
+							Academy
+						</a>
 					</Group>
+
+					<Group visibleFrom="sm">
+						<ColorSchemeSelector />
+						<AvatarOrSignin user={user} />
+						{/* <AvatarOrSignin /> */}
+						{/* <Button variant="default">Log in</Button> */}
+						{/* <SignIn>Login</SignIn>
+						<Button>Sign up</Button> */}
+					</Group>
+
+					<Burger
+						opened={drawerOpened}
+						onClick={toggleDrawer}
+						hiddenFrom="sm"
+					/>
+				</Group>
 				{/* </Container> */}
 			</header>
 

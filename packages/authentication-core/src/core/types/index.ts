@@ -222,4 +222,25 @@ export interface VerifiedToken {
 	expiresAt: number;
 }
 
+export type ProviderType = "oidc" | "oauth" | "email" | "credentials";
+// | WebAuthnProviderType;
+
+export interface CommonProviderOptions {
+	/**
+	 * Uniquely identifies the provider in {@link AuthConfig.providers}
+	 * It's also part of the URL
+	 */
+	id: string;
+	/**
+	 * The provider name used on the default sign-in page's sign-in button.
+	 * For example if it's "Google", the corresponding button will say:
+	 * "Sign in with Google"
+	 */
+	name: string;
+	/** See {@link ProviderType} */
+	type: ProviderType;
+}
+
+
+
 export * from "./UserRegistry";

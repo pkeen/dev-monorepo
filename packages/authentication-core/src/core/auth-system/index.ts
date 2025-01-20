@@ -21,6 +21,7 @@ import {
 	UnknownAuthError,
 	AccountAlreadyExistsError,
 } from "../error";
+import { AbstractOAuthProvider } from "../providers/OAuth/oauth-provider";
 import { JwtStrategy } from "../strategy";
 import crypto from "crypto";
 
@@ -29,6 +30,8 @@ export class AuthSystem implements IAuthSystem {
 	public strategy: AuthStrategy;
 	public adapter: Adapter;
 	public passwordService: PasswordService;
+	/* this is currently OAuth only */
+	public providers: { [key: string]: AbstractOAuthProvider<any> } = {};
 
 	// storageAdapter: WebStorageAdapter; // Declare the storageAdapter property
 
@@ -252,6 +255,23 @@ export class AuthSystem implements IAuthSystem {
 		return await this.strategy.logout(keyCards);
 	}
 
+	/**
+	 * Registers a new OAuth provider.
+	 * @param name Unique name/key for the provider.
+	 * @param provider Instance of a class extending AbstractOAuthProvider.
+	 */
+	public registerProvider(
+		name: string,
+		provider: AbstractOAuthProvider<any>
+	): void {
+		if (this.providers[name]) {
+			throw new Error(
+				`Provider with name "${name}" is already registered.`
+			);
+		}
+		this.providers[name] = provider;
+	}
+
 	// async refresh(keyCards: KeyCards): Promise<ImprovedAuthState> {
 	// 	// // optional supports refresh?
 	// 	// if (!this.strategy.supportsRefresh())
@@ -334,6 +354,20 @@ export class AuthSystem implements IAuthSystem {
 			});
 			return { authenticated: false, keyCards: null, user: null, error };
 		}
+	}
+
+	/**
+	 * Registers a new OAuth provider.
+	 * @param provider Instance of a class extending AbstractOAuthProvider.
+	 */
+	public addProvider(provider: AbstractOAuthProvider<any>): void {
+		const name = provider.name;
+		if (this.providers[name]) {
+			throw new Error(
+				`Provider with name "${name}" is already registered.`
+			);
+		}
+		this.providers[name] = provider;
 	}
 
 	async generateCsrfToken(): Promise<string> {

@@ -3,18 +3,16 @@ import {
 	codeVerifierCookie,
 	commitSession,
 } from "~/session.server";
-import { GoogleClient } from "./googleClient";
+import { GoogleClient } from "~/own/googleClient";
 // import * as oslo from "oslo/oauth2";
 import { redirect } from "react-router";
 import type { LoaderFunctionArgs } from "react-router";
 
-export const redirectAction = async ({ request }: LoaderFunctionArgs) => {
-	// With Oslo
-
+export const loader = async ({ request }: LoaderFunctionArgs) => {
 	// Retrieve the stored state and codeVerifier from cookies
 	const cookieHeader = request.headers.get("Cookie");
 	const storedState = await stateCookie.parse(cookieHeader);
-	const codeVerifier = await codeVerifierCookie.parse(cookieHeader);
+	// const codeVerifier = await codeVerifierCookie.parse(cookieHeader);
 	const url = new URL(request.url);
 	const code = url.searchParams.get("code");
 	const returnedState = url.searchParams.get("state");
@@ -36,14 +34,15 @@ export const redirectAction = async ({ request }: LoaderFunctionArgs) => {
 	try {
 		// Getting here
 		console.log("GETTING HERE");
-		const tokens = await new GoogleClient(
-			process.env.GOOGLE_CLIENT_ID!,
-			process.env.GOOGLE_CLIENT_SECRET!
-		).validateAuthorizationCode(code);
+		const tokens = await new GoogleClient({
+			clientId: process.env.GOOGLE_CLIENT_ID!,
+			clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+			redirectUri: "http://localhost:5173/auth/redirect/google",
+		}).validateAuthorizationCode(code);
 
-        // TODO: I want to see it look like this:
-        // const tokens = await AuthSystem.google.validateAuthorizationCode(code);
-        // or t make general await AuthSystem[provider].validateAuthorizationCode(code);
+		// TODO: I want to see it look like this:
+		// const tokens = await AuthSystem.google.validateAuthorizationCode(code);
+		// or t make general await AuthSystem[provider].validateAuthorizationCode(code);
 
 		console.log("TOKENS:", tokens);
 		// const accessToken = tokens.accessToken();
@@ -55,9 +54,8 @@ export const redirectAction = async ({ request }: LoaderFunctionArgs) => {
 		// console.log("Access Token:", accessToken);
 		// console.log("Access Token Expires At:", accessTokenExpiresAt);
 		// console.log("Claims:", claims);
-        
 
-        // TODO: Store in database
+		// TODO: Store in database
 
 		const headers = new Headers();
 		headers.append(

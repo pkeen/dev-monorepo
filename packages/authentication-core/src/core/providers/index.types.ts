@@ -22,10 +22,30 @@ export interface CommonProviderOptions {
 }
 
 export interface OAuthProviderOptions extends CommonProviderOptions {
+	clientId: string;
+	clientSecret?: string;
 	/** The URL to the provider's sign-in page */
 	signinUrl: string;
 	/** The URL to the provider's sign-out page */
 	signoutUrl: string;
+	authorizationOptions?: {
+		state: string;
+		codeVerifier: string;
+		scope: string;
+		prompt: string;
+		access_type: string;
+	};
+	// all OAuth Providers have an authorizationUrl - this might be the same as the signinUrl we said above but authorizationUrl is a better name
+	authorizationEndpoint: string;
+	tokenEndpoint: string;
+	redirectUri: string;
+	createAuthorizationUrl: (authorizationOptions: {
+		state: string;
+		codeVerifier: string;
+		scope: string;
+		prompt: string;
+		access_type: string;
+	}) => URL;
 }
 
 export type CredentialsProviderOptions = CommonProviderOptions & {
@@ -42,5 +62,11 @@ export type CredentialsProviderOptions = CommonProviderOptions & {
 		name?: string;
 	};
 };
+
+export interface Provider {
+	type: ProviderType;
+	options: ProviderOptions;
+	login: () => Promise<void>;
+}
 
 export type ProviderOptions = OAuthProviderOptions | CredentialsProviderOptions;

@@ -100,4 +100,6 @@ export interface VerifyResult {
 	code?: string; // Machine-readable error code (e.g., "expired_token", "invalid_signature")
 }
 
+export type ProviderName = "google" | "github" | "facebook";
+
 export * from "./UserRegistry";

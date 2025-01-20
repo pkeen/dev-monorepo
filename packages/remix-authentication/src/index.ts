@@ -60,12 +60,56 @@ export interface ActionFormFunctionArgs extends ActionFunctionArgs {
 	formData: FormData;
 }
 
+// // 2. OAuth Provider Interface
+// // This defines what OAuth providers must implement
+// interface OAuthProvider {
+// 	// These methods are used by the framework adapter
+// 	getAuthorizationUrl(): string;
+// 	handleCallback(code: string): Promise<OAuthProviderData>;
+
+// 	// This is used by the core auth system
+// 	validateProviderToken(token: string): Promise<boolean>;
+// }
+
 export const RemixAuth = (config: RemixAuthConfig) => {
 	const authSystem = AuthSystem.create(config);
 
 	// TO-DO: incorperate logger into config somehow
 	const logger = createLogger({ prefix: "Remix-Auth" });
 
+	const providers = {
+		google: {
+			clientId: "123",
+			clientSecret: "123",
+		},
+	};
+	// Initialize OAuth flow
+	const initializeOAuth = async (provider: string, request: Request) => {
+		// const oauthProvider = providers[provider];
+		// const oauthProvider = providers[provider];
+
+		// if (!oauthProvider) {
+		// 	throw new Error(`Unknown OAuth provider: ${provider}`);
+		// }
+
+        console.log("PROVIDER", provider);
+        // console.log("oauthProvider", oauthProvider);
+
+		// // Generate and store OAuth state
+		// const state = crypto.randomUUID();
+		// const session = await sessionStorage.getSession();
+		// session.set("oauth_state", state);
+
+		// // Get authorization URL with state
+		// const url = await oauthProvider.getAuthorizationUrl(state);
+
+		// // Redirect to provider's auth page
+		// return redirect(url, {
+		// 	headers: {
+		// 		"Set-Cookie": await sessionStorage.commitSession(session),
+		// 	},
+		// });
+	};
 	const createLoginAction = (authSystem: AuthSystem, redirectTo?: string) => {
 		return async function login({
 			request,
@@ -84,38 +128,90 @@ export const RemixAuth = (config: RemixAuthConfig) => {
 			// TO-DO: pass correct provider type to auth system
 			// const { email, password } = Object.fromEntries(formData);
 
+			return initializeOAuth(action, request);
 			// TO-DO: ensure type validation
 
-			// Call the auth system
-			const authState = await authSystem.authenticate({
-				email: email as string,
-				password: password as string,
-			});
+			// // Call the auth system
+			// const authState = await authSystem.authenticate({
+			// 	email: email as string,
+			// 	password: password as string,
+			// });
 
-			if (!authState.authenticated) {
-				logger.info("LOGIN FAILED", { ...authState.error });
-				return new Response(JSON.stringify({ ...authState }), {
-					headers,
-				});
-			} else {
-				logger.info("LOGIN SUCCESSFUL", { ...authState.user });
+			// if (!authState.authenticated) {
+			// 	logger.info("LOGIN FAILED", { ...authState.error });
+			// 	return new Response(JSON.stringify({ ...authState }), {
+			// 		headers,
+			// 	});
+			// } else {
+			// 	logger.info("LOGIN SUCCESSFUL", { ...authState.user });
 
-				// Store the keycards array in session
-				session.set("keyCards", authState.keyCards); // Can be any JSON array
-				session.set("user", authState.user);
-				session.set("authenticated", authState.authenticated);
-				headers.append("Set-Cookie", await commitSession(session));
-				// If redirectTo is provided, redirect and set cookie
-				if (redirectTo) {
-					return redirect(redirectTo, { headers });
-				}
-				// Otherwise, return a response and still set the cookie
-				return new Response(JSON.stringify({ ...authState }), {
-					headers,
-				});
-			}
+			// 	// Store the keycards array in session
+			// 	session.set("keyCards", authState.keyCards); // Can be any JSON array
+			// 	session.set("user", authState.user);
+			// 	session.set("authenticated", authState.authenticated);
+			// 	headers.append("Set-Cookie", await commitSession(session));
+			// 	// If redirectTo is provided, redirect and set cookie
+			// 	if (redirectTo) {
+			// 		return redirect(redirectTo, { headers });
+			// 	}
+			// 	// Otherwise, return a response and still set the cookie
+			// 	return new Response(JSON.stringify({ ...authState }), {
+			// 		headers,
+			// 	});
+			// }
 		};
 	};
+	// const createLoginAction = (authSystem: AuthSystem, redirectTo?: string) => {
+	// 	return async function login({
+	// 		request,
+	// 		formData,
+	// 	}: ActionFormFunctionArgs) {
+	// 		// const formData = await request.formData();
+	// 		// ^ thats covered by formData now
+
+	// 		// Step 1 Get Session and Form Data
+	// 		let session = await getSession(request.headers.get("Cookie"));
+	// 		const headers = new Headers();
+	// 		// TO-DO: Provide optional credentials type
+	// 		const formDataObject = Object.fromEntries(formData);
+	// 		const { email, password, action } = formDataObject;
+	// 		console.log("provider: ", action);
+	// 		// TO-DO: pass correct provider type to auth system
+	// 		// const { email, password } = Object.fromEntries(formData);
+
+	// 		// TO-DO: ensure type validation
+
+	// 		// Call the auth system
+	// 		const authState = await authSystem.authenticate({
+	// 			email: email as string,
+	// 			password: password as string,
+	// 		});
+
+	// 		if (!authState.authenticated) {
+	// 			logger.info("LOGIN FAILED", { ...authState.error });
+	// 			return new Response(JSON.stringify({ ...authState }), {
+	// 				headers,
+	// 			});
+	// 		} else {
+	// 			logger.info("LOGIN SUCCESSFUL", { ...authState.user });
+
+	// 			// Store the keycards array in session
+	// 			session.set("keyCards", authState.keyCards); // Can be any JSON array
+	// 			session.set("user", authState.user);
+	// 			session.set("authenticated", authState.authenticated);
+	// 			headers.append("Set-Cookie", await commitSession(session));
+	// 			// If redirectTo is provided, redirect and set cookie
+	// 			if (redirectTo) {
+	// 				return redirect(redirectTo, { headers });
+	// 			}
+	// 			// Otherwise, return a response and still set the cookie
+	// 			return new Response(JSON.stringify({ ...authState }), {
+	// 				headers,
+	// 			});
+	// 		}
+	// 	};
+	// };
+
 	const createLogoutAction = (
 		authSystem: AuthSystem,
 		redirectTo?: string

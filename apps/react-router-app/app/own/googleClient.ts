@@ -11,9 +11,6 @@ type Scope =
 
 const ScopeMap: Record<Scope, string> = {
 	openid: "openid", // OIDC scope
-	// profile: "profile", // OIDC scope
-	// email: "email", // OIDC scope
-	// openid: "openid",
 	profile: "https://www.googleapis.com/auth/userinfo.profile",
 	email: "https://www.googleapis.com/auth/userinfo.email",
 	driveMetadataReadonly:
@@ -78,15 +75,22 @@ const ScopeMap: Record<Scope, string> = {
 export class GoogleClient {
 	private clientId: string;
 	private clientSecret: string;
+	private redirectUri: string;
 	private authorizeEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
 	private tokenEndpoint = "https://oauth2.googleapis.com/token";
-	private redirectUri = "http://localhost:5173/auth/callback/google";
 	private scopes: Scope[] = ["openid", "profile", "email"];
 	private state = crypto.randomBytes(32).toString("hex");
+	public name = "Google";
 
-	constructor(clientId: string, clientSecret: string) {
+	constructor(config: {
+		clientId: string;
+		clientSecret: string;
+		redirectUri: string;
+	}) {
+		const { clientId, clientSecret, redirectUri } = config;
 		this.clientId = clientId;
 		this.clientSecret = clientSecret;
+		this.redirectUri = redirectUri;
 	}
 
 	createAuthorizationUrl(): string {

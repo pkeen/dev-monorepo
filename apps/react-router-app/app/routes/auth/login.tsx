@@ -3,15 +3,27 @@
 // import { stateCookie, codeVerifierCookie } from "~/session.server";
 // import { requestAuthorization } from "~/arctic/requestAuthorization";
 // import { requestAuthorization } from "~/oslo/requestAuthorization";
-import { requestAuthorization } from "~/own/requestAuthorization";
+// import { requestAuthorization } from "~/own/requestAuthorization";
+// import { requestAuthorization } from "~/own/github/requestAuthorization";
+// import { GitHub } from "~/own/github/github-client";
+// import { GoogleClient } from "~/own/googleClient";
 
-export const action = requestAuthorization;
+import { login } from "~/own/login";
+
+// const providers = { github: GitHub, google: GoogleClient };
+
+export const action = login;
 
 export default function Login() {
 	return (
 		<div>
 			<form method="post">
-				<button type="submit">Login with Google</button>
+				<button type="submit" value="google" name="provider">
+					Login with Google
+				</button>
+				<button type="submit" value="github" name="provider">
+					Login with GitHub
+				</button>
 			</form>
 		</div>
 	);

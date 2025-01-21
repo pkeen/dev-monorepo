@@ -3,7 +3,7 @@ import {
 	codeVerifierCookie,
 	commitSession,
 } from "~/session.server";
-import { GitHub } from "~/own/github/github-client";
+import { GitHub } from "@pete_keen/authentication-core/providers";
 // import * as oslo from "oslo/oauth2";
 import { redirect } from "react-router";
 import type { LoaderFunctionArgs } from "react-router";
@@ -12,6 +12,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 	// Retrieve the stored state and codeVerifier from cookies
 	const cookieHeader = request.headers.get("Cookie");
 	const storedState = await stateCookie.parse(cookieHeader);
+	console.log("STORED STATE:", storedState);
 	// const codeVerifier = await codeVerifierCookie.parse(cookieHeader);
 	const url = new URL(request.url);
 	const code = url.searchParams.get("code");
@@ -40,7 +41,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 			clientId: process.env.GITHUB_CLIENT_ID!,
 			clientSecret: process.env.GITHUB_CLIENT_SECRET!,
 			redirectUri: "http://localhost:5173/auth/redirect/github",
-		}).validateAuthorizationCode(code);
+		}).handleRedirect(code);
 
 		// TODO: I want to see it look like this:
 		// const tokens = await AuthSystem.google.validateAuthorizationCode(code);

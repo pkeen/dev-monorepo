@@ -1,6 +1,7 @@
 import { createCookie, redirect, type ActionFunctionArgs } from "react-router";
 import { stateCookie, codeVerifierCookie } from "~/session.server";
-import { GitHub } from "~/own/github/github-client";
+// import { GitHub } from "~/own/github/github-client";
+import { GitHub } from "@pete_keen/authentication-core/providers";
 import { GoogleClient } from "~/own/googleClient";
 
 const providers = {

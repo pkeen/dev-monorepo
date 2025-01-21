@@ -17,7 +17,7 @@ export abstract class AbstractOAuthProvider<ScopeType extends string>
 	protected state = crypto.randomBytes(32).toString("hex");
 
 	// Minimum scopes required by the application
-	protected abstract minimumScopes: ScopeType[];
+	protected abstract defaultScopes: ScopeType[];
 
 	protected constructor(config: OAuthProviderConfig<ScopeType>) {
 		this.clientId = config.clientId;
@@ -46,7 +46,7 @@ export abstract class AbstractOAuthProvider<ScopeType extends string>
 		// const scopeMap = this.getScopeMap();
 
 		// Combine minimum and additional scopes
-		const combinedScopes = [...this.minimumScopes, ...scopes];
+		const combinedScopes = [...this.defaultScopes, ...scopes];
 
 		// Remove duplicates
 		const uniqueScopes = Array.from(new Set(combinedScopes));
@@ -74,13 +74,14 @@ export abstract class AbstractOAuthProvider<ScopeType extends string>
 			redirect_uri: this.redirectUri,
 			response_type: "code",
 			scope: scopeString,
+			state: this.state,
 			// Add other common parameters as needed
 		});
 		return `${this.authorizeEndpoint}?${params.toString()}`;
 	}
 
 	// Handle callback - to be implemented by subclasses
-	abstract validateAuthorizationCode(
+	abstract exchangeCodeForTokens(
 		authorizationCode: string
 	): Promise<Record<string, any>>;
 }

@@ -15,25 +15,10 @@
 			"default": "./dist/adapters/index.mjs",
 			"types": "./dist/adapters/index.d.ts"
 		},
-		"./tokens": {
-			"import": "./dist/tokens-service/index.mjs",
-			"default": "./dist/tokens-service/index.mjs",
-			"types": "./dist/tokens-service/index.d.ts"
-		},
-		"./core": {
-			"import": "./dist/core/index.mjs",
-			"default": "./dist/core/index.mjs",
-			"types": "./dist/core/index.d.ts"
-		},
-		"./session-state-storage": {
-			"import": "./dist/session-state-storage/index.mjs",
-			"default": "./dist/session-state-storage/index.mjs",
-			"types": "./dist/session-state-storage/index.d.ts"
-		},
-		"./transporters": {
-			"import": "./dist/transporters/index.mjs",
-			"default": "./dist/transporters/index.mjs",
-			"types": "./dist/transporters/index.d.ts"
+		"./providers": {
+			"import": "./dist/core/providers/index.mjs",
+			"default": "./dist/core/providers/index.mjs",
+			"types": "./dist/core/providers/index.d.ts"
 		},
 		"./types": {
 			"import": "./dist/types/index.mjs",

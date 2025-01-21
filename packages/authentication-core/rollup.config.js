@@ -5,7 +5,11 @@ import { defineConfig } from "rollup";
 import multi from "@rollup/plugin-multi-entry";
 
 export default defineConfig({
-	input: ["src/index.ts", "src/adapters/index.ts"],
+	input: [
+		"src/index.ts",
+		"src/adapters/index.ts",
+		"src/core/providers/index.ts",
+	],
 	output: {
 		dir: "dist",
 		format: "esm",

@@ -9,7 +9,7 @@ export interface OAuthProviderConfig<ScopeType extends string> {
 
 export interface IOAuthProvider {
 	createAuthorizationUrl(): string;
-	validateAuthorizationCode(
+	exchangeCodeForTokens(
 		authorizationCode: string
 	): Promise<Record<string, any>>;
 	getState(): string;

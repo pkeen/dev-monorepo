@@ -21,7 +21,7 @@ export enum AuthErrorCode {
 	TOKEN_EXPIRED = "TOKEN_EXPIRED",
 	INVALID_SIGNATURE = "INVALID_SIGNATURE",
 
-	// Strategy Level Errors
+	// Validation Strategy Errors
 	INVALID_KEYCARD = "INVALID_KEYCARD",
 	EXPIRED_KEYCARD = "EXPIRED_KEYCARD",
 	KEYCARD_CREATION_FAILED = "KEYCARD_CREATION_FAILED",
@@ -44,6 +44,10 @@ export enum AuthErrorCode {
 	// Authorization Errors (403s)
 	INSUFFICIENT_PERMISSIONS = "INSUFFICIENT_PERMISSIONS",
 	INVALID_SCOPE = "INVALID_SCOPE",
+
+	// Login Errors (400s)
+	PROVIDER_NOT_FOUND = "PROVIDER_NOT_FOUND",
+	PROVIDER_NOT_GIVEN = "PROVIDER_NOT_GIVEN",
 }
 
 // // Specific error classes for different categories
@@ -163,6 +167,13 @@ export class CsrfError extends AuthError {
 	constructor(message: string) {
 		super(message, AuthErrorCode.CSRF_ERROR);
 		this.name = "CsrfError";
+	}
+}
+
+export class ProviderNotGivenError extends AuthError {
+	constructor(message: string) {
+		super(message, AuthErrorCode.PROVIDER_NOT_GIVEN);
+		this.name = "ProviderNotGivenError";
 	}
 }
 

@@ -1,9 +1,9 @@
 import { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
-import { Adapter, AdapterUser } from "../../../core/adapter";
+import { Adapter, AdapterUser, CreateUser } from "../../../core/adapter";
 import { DefaultPostgresSchema, defineTables } from "./schema";
 import { getTableColumns } from "drizzle-orm";
 import { eq, sql } from "drizzle-orm";
-import { SignupCredentials } from "../../../core/types";
+import { SignupCredentials } from "../../../core/providers/credentials/index.types";
 
 export function PostgresDrizzleAdapter(
 	client: PgDatabase<PgQueryResultHKT, any>,
@@ -62,6 +62,13 @@ export function PostgresDrizzleAdapter(
 				console.error("Error in getUserByEmail:", error);
 				return null;
 			}
+		},
+		async createUserFromAccount(user: CreateUser) {
+			return client
+				.insert(usersTable)
+				.values(user)
+				.returning()
+				.then((res) => res[0]) as Promise<AdapterUser>;
 		},
 		// async createSession(data: {
 		// 	sessionToken: string;

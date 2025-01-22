@@ -2,6 +2,7 @@
 // import { AbstractOAuthProvider, OAuthProviderConfig } from "../index.types";
 import { AbstractOAuthProvider } from "./oauth-provider";
 import { OAuthProviderConfig } from "./index.types";
+import { UserProfile } from "../../types";
 
 type ScopeType = "repo" | "repo_status" | "public_repo" | "repo_deployment";
 
@@ -53,10 +54,15 @@ export class GitHub extends AbstractOAuthProvider<ScopeType> {
 
 	async handleRedirect(code: string): Promise<Record<string, any>> {
 		const tokens = await this.exchangeCodeForTokens(code);
-		return await this.getUserProfile(tokens.access_token);
+		const userProfile = this.convertToUserProfile(
+			await this.getUserProfile(tokens.access_token)
+		);
+		return { tokens, userProfile };
 	}
 
-	async getUserProfile(accessToken: string): Promise<GitHubUserProfile> {
+	private async getUserProfile(
+		accessToken: string
+	): Promise<GitHubUserProfile> {
 		const url = new URL(`${this.apiBaseUrl}/user`);
 		const headers = new Headers();
 		headers.append("Authorization", `Bearer ${accessToken}`);
@@ -64,6 +70,15 @@ export class GitHub extends AbstractOAuthProvider<ScopeType> {
 			headers,
 		});
 		return await response.json();
+	}
+
+	private convertToUserProfile(userProfile: GitHubUserProfile): UserProfile {
+		return {
+			id: userProfile.id.toString(),
+			name: userProfile.name ?? userProfile.login,
+			email: userProfile.email,
+			image: userProfile.avatar_url,
+		};
 	}
 }
 

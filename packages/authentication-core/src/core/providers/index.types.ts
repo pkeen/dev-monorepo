@@ -1,4 +1,5 @@
 export * from "./credentials/index.types";
+export * from "./oauth/index.types";
 // export * from "./email/index.types";
 // export * from "./oidc/index.types";
 

@@ -48,6 +48,12 @@ export interface UserPublic {
 	// TODO: add roles
 }
 
+export interface UserProfile {
+	id: string;
+	name?: string | null;
+	email: string;
+	image?: string | null;
+}
 // export interface SessionElement {
 // 	name: string;
 // 	value: string;

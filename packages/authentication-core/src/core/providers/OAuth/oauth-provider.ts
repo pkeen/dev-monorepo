@@ -84,4 +84,6 @@ export abstract class AbstractOAuthProvider<ScopeType extends string>
 	abstract exchangeCodeForTokens(
 		authorizationCode: string
 	): Promise<Record<string, any>>;
+
+	abstract handleRedirect(code: string): Promise<Record<string, any>>;
 }

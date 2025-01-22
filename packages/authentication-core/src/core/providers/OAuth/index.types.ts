@@ -12,6 +12,7 @@ export interface IOAuthProvider {
 	exchangeCodeForTokens(
 		authorizationCode: string
 	): Promise<Record<string, any>>;
+	handleRedirect(code: string): Promise<Record<string, any>>;
 	getState(): string;
 	getScopes(): string;
 }

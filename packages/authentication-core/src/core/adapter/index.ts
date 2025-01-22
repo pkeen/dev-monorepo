@@ -1,5 +1,5 @@
-import { User } from "../types";
-import { SignupCredentials } from "../types";
+import { UserProfile } from "../types";
+import { SignupCredentials } from "../providers/credentials/index.types";
 /**
  * WARNING: This module takes heavy influence from next auth.
  * Give credit to next auth.
@@ -11,7 +11,7 @@ import { SignupCredentials } from "../types";
  * using the information (profile data) returned by the identity provider.
  * A corresponding account is also created and linked to the user.
  */
-export interface AdapterUser extends User {
+export interface AdapterUser extends UserProfile {
 	/** A unique identifier for the user. */
 	id: string;
 	/** The user's email address. */
@@ -24,9 +24,16 @@ export interface AdapterUser extends User {
 
 	/**
 	 * Password - this may be used for credential based sign in only - for now thats the only way
-	 * Should be optional but for now its required
+	 * Should be optional
+	 * Or COMPLETELY UNUSED
 	 */
-	password: string;
+	password?: string;
+}
+
+export interface CreateUser {
+	email: string;
+	name?: string;
+	image?: string;
 }
 
 // From next auth
@@ -62,6 +69,13 @@ export interface Adapter {
 	 *
 	 */
 	createUserWithoutId(user: SignupCredentials): Promise<AdapterUser>;
+
+	/**
+	 *
+	 * @param user: UserProfile
+	 * This method creates a user from an account that has been authenticated with an identity provider
+	 */
+	createUserFromAccount(user: CreateUser): Promise<AdapterUser>;
 	/**
 	 * Returns a user from the database via the user id.
 	 *

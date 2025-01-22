@@ -21,7 +21,7 @@ import {
 	UnknownAuthError,
 	AccountAlreadyExistsError,
 } from "../error";
-import { AbstractOAuthProvider } from "../providers/OAuth/oauth-provider";
+import { AbstractOAuthProvider } from "../providers/oauth/oauth-provider";
 import { JwtStrategy } from "../strategy";
 import crypto from "crypto";
 
@@ -54,6 +54,46 @@ export class AuthSystem implements IAuthSystem {
 			adapter: adapter.constructor.name,
 			passwordService: passwordService.constructor.name,
 		});
+	}
+
+	async login(
+		provider?: string,
+		code?: string
+	): Promise<AuthState> | string | null {
+		try {
+			if (!provider) throw new Error("Provider not specified");
+			const p = this.providers[provider];
+			if (!p) {
+				throw new Error(`Unknown OAuth provider: ${provider}`);
+			}
+			if (!code) {
+				return p.createAuthorizationUrl();
+			}
+
+			// Step 1: OAuth callback (with code)
+			const { userProfile, tokens } = await p.handleRedirect(code);
+			// Step 2: Check if user already exists
+			const existingUser = await this.adapter.getUserByEmail(
+				userProfile.email
+			);
+			// if not existing user create new one
+			if (!existingUser) {
+				const user = await this.adapter.createUserFromAccount({
+					email: userProfile.email,
+					name: userProfile.name,
+					image: userProfile.image,
+				});
+				// TODO: create account if not exists
+				const keyCards = await this.createKeyCardsForUser(user);
+				return { authenticated: true, keyCards, user };
+			}
+
+			// const keyCards = await this.createKeyCardsForUser(user);
+			return { authenticated: true, keyCards, user };
+		} catch (error) {
+			console.log(error);
+			return null;
+		}
 	}
 
 	async authenticate(credentials: Credentials): Promise<AuthState> {
@@ -111,62 +151,62 @@ export class AuthSystem implements IAuthSystem {
 			}
 		}
 	}
-	async signin(provider: string): Promise<AuthState> {
-		// Authenticate with different providers
+	// async signin(provider: string): Promise<AuthState> {
+	// 	// Authenticate with different providers
 
-		try {
-			// Step 1: Validate input
-			if (!this.validateCredentials(credentials))
-				throw new InvalidCredentialsError();
+	// 	try {
+	// 		// Step 1: Validate input
+	// 		if (!this.validateCredentials(credentials))
+	// 			throw new InvalidCredentialsError();
 
-			// Step 2: Find user
-			const user = await this.findUser(credentials.email);
-			if (!user) {
-				throw new UserNotFoundError(credentials.email);
-			}
+	// 		// Step 2: Find user
+	// 		const user = await this.findUser(credentials.email);
+	// 		if (!user) {
+	// 			throw new UserNotFoundError(credentials.email);
+	// 		}
 
-			// Step 3: Verify password
-			const isAuthenticated = await this.verifyPassword(
-				credentials.password,
-				user
-			);
-			if (!isAuthenticated) {
-				throw new InvalidCredentialsError();
-			}
-			// Step 4: Create auth state
-			const keyCards = await this.createKeyCardsForUser(user);
+	// 		// Step 3: Verify password
+	// 		const isAuthenticated = await this.verifyPassword(
+	// 			credentials.password,
+	// 			user
+	// 		);
+	// 		if (!isAuthenticated) {
+	// 			throw new InvalidCredentialsError();
+	// 		}
+	// 		// Step 4: Create auth state
+	// 		const keyCards = await this.createKeyCardsForUser(user);
 
-			this.logger.info(
-				"Authentication successful",
-				createLogContext({
-					userId: user.id,
-					email: user.email,
-				})
-			);
-			return { authenticated: true, keyCards, user };
-		} catch (error) {
-			this.logger.error("Error while signing in: ", {
-				error,
-			});
-			if (error instanceof AuthError) {
-				return {
-					authenticated: false,
-					error,
-					user: null,
-					keyCards: null,
-				};
-			} else {
-				return {
-					authenticated: false,
-					user: null,
-					keyCards: null,
-					error: new UnknownAuthError(
-						"An unknown error occurred while signing in"
-					),
-				};
-			}
-		}
-	}
+	// 		this.logger.info(
+	// 			"Authentication successful",
+	// 			createLogContext({
+	// 				userId: user.id,
+	// 				email: user.email,
+	// 			})
+	// 		);
+	// 		return { authenticated: true, keyCards, user };
+	// 	} catch (error) {
+	// 		this.logger.error("Error while signing in: ", {
+	// 			error,
+	// 		});
+	// 		if (error instanceof AuthError) {
+	// 			return {
+	// 				authenticated: false,
+	// 				error,
+	// 				user: null,
+	// 				keyCards: null,
+	// 			};
+	// 		} else {
+	// 			return {
+	// 				authenticated: false,
+	// 				user: null,
+	// 				keyCards: null,
+	// 				error: new UnknownAuthError(
+	// 					"An unknown error occurred while signing in"
+	// 				),
+	// 			};
+	// 		}
+	// 	}
+	// }
 	private validateCredentials(credentials: Credentials): boolean {
 		if (!credentials.email || !credentials.password) {
 			this.logger.warn("Invalid credentials provided", {

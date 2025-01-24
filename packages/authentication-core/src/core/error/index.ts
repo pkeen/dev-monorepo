@@ -177,6 +177,16 @@ export class ProviderNotGivenError extends AuthError {
 	}
 }
 
+export class ProviderNotFoundError extends AuthError {
+	constructor(provider: string) {
+		super(
+			`Provider not found: ${provider}`,
+			AuthErrorCode.PROVIDER_NOT_FOUND
+		);
+		this.name = "ProviderNotFoundError";
+	}
+}
+
 // Utility type to ensure error has required properties
 type ErrorType = AuthError | Error;
 

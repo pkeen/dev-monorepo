@@ -9,7 +9,7 @@ import { createCookieSessionStorage, createCookie } from "react-router";
 
 // Create session storage
 export const { getSession, commitSession, destroySession } =
-	createCookieSessionStorage({
+	createCookieSessionStorage<SessionData>({
 		cookie: {
 			name: "__session", // Name of the cookie
 			// secrets: ["your-secret-key"], // Replace with a secure key
@@ -34,3 +34,12 @@ export const codeVerifierCookie = createCookie("codeVerifier", {
 	secure: process.env.NODE_ENV === "production",
 	sameSite: "lax",
 });
+
+import type { KeyCard, UserProfile } from "@pete_keen/authentication-core";
+
+export interface SessionData {
+	keyCards: KeyCard[] | null;
+	user: UserProfile | null;
+	authenticated: boolean;
+	csrf: string | null;
+}

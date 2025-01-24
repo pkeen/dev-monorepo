@@ -10,6 +10,25 @@ export type AuthState =
 	| { authenticated: true; user: User; keyCards: KeyCards }
 	| { authenticated: false; user: null; keyCards: null; error?: AuthError };
 
+// Define specific result types
+export type RedirectResult = {
+	type: "redirect";
+	url: string;
+	state?: string;
+};
+
+export type SuccessResult = {
+	type: "success";
+	authState: AuthState;
+};
+
+export type ErrorResult = {
+	type: "error";
+	error: AuthError;
+};
+
+export type AuthResult = SuccessResult | ErrorResult | RedirectResult;
+
 export interface AuthStrategy {
 	createKeyCards(user: User): Promise<KeyCards>;
 	logout(keyCards: KeyCards): Promise<AuthState>;

@@ -1,5 +1,5 @@
 // packages/auth-core/src/services/AuthenticationService.ts
-import { AuthState, AuthStrategy, KeyCards } from "../types";
+import { AuthState, AuthStrategy, KeyCards, AuthResult } from "../types";
 import { IAuthSystem } from "./index.types";
 import {
 	Credentials,
@@ -20,6 +20,8 @@ import {
 	AuthError,
 	UnknownAuthError,
 	AccountAlreadyExistsError,
+	ProviderNotGivenError,
+	ProviderNotFoundError,
 } from "../error";
 import { AbstractOAuthProvider } from "../providers/oauth/oauth-provider";
 import { JwtStrategy } from "../strategy";
@@ -56,43 +58,53 @@ export class AuthSystem implements IAuthSystem {
 		});
 	}
 
-	async login(
-		provider?: string,
-		code?: string
-	): Promise<AuthState> | string | null {
+	async login(provider?: string, code?: string): Promise<AuthResult> {
 		try {
-			if (!provider) throw new Error("Provider not specified");
+			// Check for provider
+			if (!provider)
+				throw new ProviderNotGivenError("Provider not specified");
 			const p = this.providers[provider];
 			if (!p) {
-				throw new Error(`Unknown OAuth provider: ${provider}`);
+				throw new ProviderNotFoundError(provider);
 			}
+
+			// If no code return authorization url
 			if (!code) {
-				return p.createAuthorizationUrl();
+				const url = p.createAuthorizationUrl();
+				return { type: "redirect", url, state: p.getState() };
 			}
 
 			// Step 1: OAuth callback (with code)
 			const { userProfile, tokens } = await p.handleRedirect(code);
 			// Step 2: Check if user already exists
-			const existingUser = await this.adapter.getUserByEmail(
-				userProfile.email
-			);
+			let user = await this.adapter.getUserByEmail(userProfile.email);
 			// if not existing user create new one
-			if (!existingUser) {
-				const user = await this.adapter.createUserFromAccount({
+			if (!user) {
+				this.logger.info("User not found, creating new user", {
+					email: userProfile.email,
+				});
+				user = await this.adapter.createUserFromAccount({
 					email: userProfile.email,
 					name: userProfile.name,
 					image: userProfile.image,
 				});
-				// TODO: create account if not exists
-				const keyCards = await this.createKeyCardsForUser(user);
-				return { authenticated: true, keyCards, user };
+				// TODO: create user account if not exists
+			} else {
+				this.logger.info("User found", {
+					email: userProfile.email,
+				});
+				// TODO: create user account if not exists
 			}
 
-			// const keyCards = await this.createKeyCardsForUser(user);
-			return { authenticated: true, keyCards, user };
+			// Step 3: Create auth state
+			const keyCards = await this.createKeyCardsForUser(user);
+			return {
+				type: "success",
+				authState: { authenticated: true, keyCards, user },
+			};
 		} catch (error) {
 			console.log(error);
-			return null;
+			return { type: "error", error };
 		}
 	}
 

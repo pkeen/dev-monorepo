@@ -9,6 +9,7 @@ import {
 	uniqueIndex,
 	AnyPgColumn,
 	pgSchema,
+	primaryKey,
 } from "drizzle-orm/pg-core";
 import {
 	GeneratedColumnConfig,
@@ -18,6 +19,11 @@ import {
 	SQL,
 	sql,
 } from "drizzle-orm";
+
+/**
+ * The type of account.
+ */
+export type ProviderType = "oauth" | "oidc" | "email" | "webauthn";
 
 export function lower(email: AnyPgColumn): SQL {
 	return sql`lower(${email})`;
@@ -50,31 +56,31 @@ export function defineTables(
 			})
 		) satisfies DefaultPostgresUsersTable);
 
-	// const accountsTable =
-	// 	schema.accountsTable ??
-	// 	(pgTable(
-	// 		"account",
-	// 		{
-	// 			userId: text("userId")
-	// 				.notNull()
-	// 				.references(() => usersTable.id, { onDelete: "cascade" }),
-	// 			type: text("type").$type<AdapterAccountType>().notNull(),
-	// 			provider: text("provider").notNull(),
-	// 			providerAccountId: text("providerAccountId").notNull(),
-	// 			refresh_token: text("refresh_token"),
-	// 			access_token: text("access_token"),
-	// 			expires_at: integer("expires_at"),
-	// 			token_type: text("token_type"),
-	// 			scope: text("scope"),
-	// 			id_token: text("id_token"),
-	// 			session_state: text("session_state"),
-	// 		},
-	// 		(account) => ({
-	// 			compositePk: primaryKey({
-	// 				columns: [account.provider, account.providerAccountId],
-	// 			}),
-	// 		})
-	// 	) satisfies DefaultPostgresAccountsTable);
+	const accountsTable =
+		schema.accountsTable ??
+		(authSchema.table(
+			"account",
+			{
+				userId: text("userId")
+					.notNull()
+					.references(() => usersTable.id, { onDelete: "cascade" }),
+				type: text("type").$type<ProviderType>().notNull(),
+				provider: text("provider").notNull(),
+				providerAccountId: text("providerAccountId").notNull(),
+				refresh_token: text("refresh_token"),
+				access_token: text("access_token"),
+				expires_at: integer("expires_at"),
+				token_type: text("token_type"),
+				scope: text("scope"),
+				id_token: text("id_token"),
+				session_state: text("session_state"),
+			},
+			(account) => ({
+				compositePk: primaryKey({
+					columns: [account.provider, account.providerAccountId],
+				}),
+			})
+		) satisfies DefaultPostgresAccountsTable);
 
 	// const sessionsTable =
 	// 	schema.sessionsTable ??
@@ -131,7 +137,7 @@ export function defineTables(
 	return {
 		usersTable,
 		authSchema,
-		// accountsTable,
+		accountsTable,
 		// sessionsTable,
 		// verificationTokensTable,
 		// authenticatorsTable,
@@ -207,11 +213,85 @@ export type DefaultPostgresUsersTable = PgTableWithColumns<{
 	schema: string | undefined;
 }>;
 
+export type DefaultPostgresAccountsTable = PgTableWithColumns<{
+	name: string;
+	columns: {
+		userId: DefaultPostgresColumn<{
+			columnType: "PgVarchar" | "PgText" | "PgUUID";
+			data: string;
+			notNull: true;
+			dataType: "string";
+		}>;
+		type: DefaultPostgresColumn<{
+			columnType: "PgVarchar" | "PgText";
+			data: string;
+			notNull: true;
+			dataType: "string";
+		}>;
+		provider: DefaultPostgresColumn<{
+			columnType: "PgVarchar" | "PgText";
+			data: string;
+			notNull: true;
+			dataType: "string";
+		}>;
+		providerAccountId: DefaultPostgresColumn<{
+			dataType: "string";
+			columnType: "PgVarchar" | "PgText";
+			data: string;
+			notNull: true;
+		}>;
+		refresh_token: DefaultPostgresColumn<{
+			dataType: "string";
+			columnType: "PgVarchar" | "PgText";
+			data: string;
+			notNull: boolean;
+		}>;
+		access_token: DefaultPostgresColumn<{
+			dataType: "string";
+			columnType: "PgVarchar" | "PgText";
+			data: string;
+			notNull: boolean;
+		}>;
+		expires_at: DefaultPostgresColumn<{
+			dataType: "number";
+			columnType: "PgInteger";
+			data: number;
+			notNull: boolean;
+		}>;
+		token_type: DefaultPostgresColumn<{
+			dataType: "string";
+			columnType: "PgVarchar" | "PgText";
+			data: string;
+			notNull: boolean;
+		}>;
+		scope: DefaultPostgresColumn<{
+			dataType: "string";
+			columnType: "PgVarchar" | "PgText";
+			data: string;
+			notNull: boolean;
+		}>;
+		id_token: DefaultPostgresColumn<{
+			dataType: "string";
+			columnType: "PgVarchar" | "PgText";
+			data: string;
+			notNull: boolean;
+		}>;
+		session_state: DefaultPostgresColumn<{
+			dataType: "string";
+			columnType: "PgVarchar" | "PgText";
+			data: string;
+			notNull: boolean;
+		}>;
+	};
+	dialect: "pg";
+	schema: string | undefined;
+}>;
+
 export type DefaultPostgresSchema = {
 	usersTable: DefaultPostgresUsersTable;
 	authSchema: any;
 	// Simplified version for now
-	// accountsTable: DefaultPostgresAccountsTable;
+	accountsTable: DefaultPostgresAccountsTable;
 	// sessionsTable?: DefaultPostgresSessionsTable;
 	// verificationTokensTable?: DefaultPostgresVerificationTokenTable;
 	// authenticatorsTable?: DefaultPostgresAuthenticatorTable;

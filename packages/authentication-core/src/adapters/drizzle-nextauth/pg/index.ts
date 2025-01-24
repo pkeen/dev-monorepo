@@ -11,8 +11,8 @@ export function PostgresDrizzleAdapter(
 ): Adapter {
 	const {
 		usersTable,
+		accountsTable,
 		// simplified for now
-		// accountsTable,
 		// sessionsTable,
 		// verificationTokensTable,
 		// authenticatorsTable,

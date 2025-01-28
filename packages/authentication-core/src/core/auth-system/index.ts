@@ -75,7 +75,9 @@ export class AuthSystem implements IAuthSystem {
 			}
 
 			// Step 1: OAuth callback (with code)
-			const { userProfile, tokens } = await p.handleRedirect(code);
+			const { userProfile, adapterAccount } = await p.handleRedirect(
+				code
+			);
 			// Step 2: Check if user already exists
 			let user = await this.adapter.getUserByEmail(userProfile.email);
 			// if not existing user create new one
@@ -83,17 +85,19 @@ export class AuthSystem implements IAuthSystem {
 				this.logger.info("User not found, creating new user", {
 					email: userProfile.email,
 				});
-				user = await this.adapter.createUserFromAccount({
+				user = await this.adapter.createUser({
 					email: userProfile.email,
 					name: userProfile.name,
 					image: userProfile.image,
 				});
 				// TODO: create user account if not exists
+				await this.adapter.createAccountForUser(user, adapterAccount);
 			} else {
 				this.logger.info("User found", {
 					email: userProfile.email,
 				});
 				// TODO: create user account if not exists
+				await this.adapter.createAccountForUser(user, adapterAccount);
 			}
 
 			// Step 3: Create auth state

@@ -1,5 +1,7 @@
 import crypto from "crypto";
 import { IOAuthProvider, OAuthProviderConfig } from "./index.types";
+import { UserProfile } from "core/types";
+import { AdapterAccount } from "core/adapter";
 
 export abstract class AbstractOAuthProvider<ScopeType extends string>
 	implements IOAuthProvider
@@ -43,8 +45,6 @@ export abstract class AbstractOAuthProvider<ScopeType extends string>
 	 * @returns A space-separated string of mapped scopes.
 	 */
 	protected transformScopes(scopes: ScopeType[]): string {
-		// const scopeMap = this.getScopeMap();
-
 		// Combine minimum and additional scopes
 		const combinedScopes = [...this.defaultScopes, ...scopes];
 
@@ -85,5 +85,13 @@ export abstract class AbstractOAuthProvider<ScopeType extends string>
 		authorizationCode: string
 	): Promise<Record<string, any>>;
 
-	abstract handleRedirect(code: string): Promise<Record<string, any>>;
+	abstract handleRedirect(code: string): Promise<OAuthProviderResponse>;
 }
+
+export interface OAuthProviderResponse {
+	userProfile: UserProfile;
+	adapterAccount: AdapterAccount;
+	// tokens: Record<string, any>;
+}
+
+// | WebAuthnProviderType;

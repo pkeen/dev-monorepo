@@ -1,13 +1,14 @@
 // import crypto from "node:crypto";
 // import { AbstractOAuthProvider, OAuthProviderConfig } from "../index.types";
-import { AbstractOAuthProvider } from "./oauth-provider";
+import { AbstractOAuthProvider, OAuthProviderResponse } from "./oauth-provider";
 import { OAuthProviderConfig } from "./index.types";
 import { UserProfile } from "../../types";
+import { AdapterAccount } from "core/adapter";
 
 type ScopeType = "repo" | "repo_status" | "public_repo" | "repo_deployment";
 
 export class GitHub extends AbstractOAuthProvider<ScopeType> {
-	readonly type = "oauth2";
+	readonly type = "oauth";
 	readonly key = "github";
 	readonly name = "GitHub";
 
@@ -52,12 +53,17 @@ export class GitHub extends AbstractOAuthProvider<ScopeType> {
 		return data.json();
 	}
 
-	async handleRedirect(code: string): Promise<Record<string, any>> {
+	async handleRedirect(code: string): Promise<OAuthProviderResponse> {
 		const tokens = await this.exchangeCodeForTokens(code);
+		console.log("TOKENS:", tokens);
 		const userProfile = this.convertToUserProfile(
 			await this.getUserProfile(tokens.access_token)
 		);
-		return { tokens, userProfile };
+		const adapterAccount = this.convertToAdapterAccount(
+			userProfile.id,
+			tokens
+		);
+		return { userProfile, adapterAccount};
 	}
 
 	private async getUserProfile(
@@ -79,6 +85,26 @@ export class GitHub extends AbstractOAuthProvider<ScopeType> {
 			email: userProfile.email,
 			image: userProfile.avatar_url,
 		};
+	}
+
+	private convertToAdapterAccount(
+		providerAccountId: string,
+		tokens: Record<string, any>
+	): AdapterAccount {
+		const adapterAccount: AdapterAccount = {
+			// userId: userProfile.id.toString(),
+			providerAccountId,
+			provider: this.key,
+			type: this.type,
+			refresh_token: tokens.refresh_token,
+			access_token: tokens.access_token,
+			expires_at: tokens.expires_at,
+			token_type: tokens.token_type,
+			scope: tokens.scope,
+			id_token: tokens.id_token,
+			session_state: tokens.session_state,
+		};
+		return adapterAccount;
 	}
 }
 

@@ -22,12 +22,16 @@ export interface AdapterUser extends UserProfile {
 	 */
 	emailVerified: Date | null;
 
-	/**
-	 * Password - this may be used for credential based sign in only - for now thats the only way
-	 * Should be optional
-	 * Or COMPLETELY UNUSED
+	/*
+	 * TBD if image is required
 	 */
-	password?: string;
+	image?: string | null;
+	// /**
+	//  * Password - this may be used for credential based sign in only - for now thats the only way
+	//  * Should be optional
+	//  * Or COMPLETELY UNUSED
+	//  */
+	// password?: string;
 }
 
 export interface CreateUser {
@@ -35,6 +39,37 @@ export interface CreateUser {
 	name?: string;
 	image?: string;
 }
+
+export interface AdapterAccount {
+	/**
+	 * id of the user this account belongs to
+	 *
+	 * @see https://authjs.dev/reference/core/adapters#adapteruser
+	 */
+	userId?: string;
+
+	/** Provider's id for this account. E.g. "google". See the full list at https://authjs.dev/reference/core/providers */
+	provider: string;
+	/**
+	 * This value depends on the type of the provider being used to create the account.
+	 * - oauth/oidc: The OAuth account's id, returned from the `profile()` callback.
+	 * - email: The user's email address.
+	 * - credentials: `id` returned from the `authorize()` callback
+	 */
+	providerAccountId: string;
+	/** Provider's type for this account */
+	type: ProviderType;
+
+	refresh_token?: string;
+	access_token?: string;
+	expires_at?: number;
+	token_type?: string;
+	scope?: string;
+	id_token?: string;
+	session_state?: string;
+}
+
+export type ProviderType = "oidc" | "oauth" | "email" | "credentials";
 
 // From next auth
 /**
@@ -60,7 +95,7 @@ export interface Adapter {
 	 *
 	 * See also [User management](https://authjs.dev/guides/creating-a-database-adapter#user-management)
 	 */
-	createUser(user: AdapterUser): Promise<AdapterUser>;
+	createUserWithId(user: AdapterUser): Promise<AdapterUser>;
 	/**
 	 * My createUser method
 	 * The trouble with NextAuths createUser is that it takes an AdapterUser which requires an id field
@@ -68,7 +103,7 @@ export interface Adapter {
 	 * So I need to create a createUser method that takes a user without an id field
 	 *
 	 */
-	createUserWithoutId(user: SignupCredentials): Promise<AdapterUser>;
+	createUser(user: CreateUser): Promise<AdapterUser>;
 
 	/**
 	 *
@@ -93,6 +128,11 @@ export interface Adapter {
 	 *
 	 * See also [User management](https://authjs.dev/guides/creating-a-database-adapter#user-management)
 	 */
+
+	createAccountForUser(
+		user: AdapterUser,
+		account: AdapterAccount
+	): Promise<void>;
 
 	/**
 	 * Im working my way through this slowly so this will be implemented later

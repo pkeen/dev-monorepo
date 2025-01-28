@@ -1,5 +1,10 @@
 import { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
-import { Adapter, AdapterUser, CreateUser } from "../../../core/adapter";
+import {
+	Adapter,
+	AdapterUser,
+	CreateUser,
+	AdapterAccount,
+} from "../../../core/adapter";
 import { DefaultPostgresSchema, defineTables } from "./schema";
 import { getTableColumns } from "drizzle-orm";
 import { eq, sql } from "drizzle-orm";
@@ -19,17 +24,19 @@ export function PostgresDrizzleAdapter(
 	} = defineTables(schema);
 
 	return {
-		async createUserWithoutId(
-			signupCredentials: SignupCredentials
-		): Promise<AdapterUser> {
+		async createUser(user: CreateUser): Promise<AdapterUser> {
 			return client
 				.insert(usersTable)
-				.values(signupCredentials)
+				.values(user)
 				.returning()
 				.then((res) => res[0]) as Promise<AdapterUser>;
 		},
-		async createUser(data: AdapterUser) {
-			const { id, ...insertData } = data;
+		/*
+		 * This is the method that NextAuth uses to create a user
+		 * It takes an AdapterUser which requires an id field
+		 */
+		async createUserWithId(user: AdapterUser) {
+			const { id, ...insertData } = user;
 			const hasDefaultId =
 				getTableColumns(usersTable)["id"]["hasDefault"];
 
@@ -125,6 +132,12 @@ export function PostgresDrizzleAdapter(
 		// async linkAccount(data: AdapterAccount) {
 		// 	await client.insert(accountsTable).values(data);
 		// },
+
+		async createAccountForUser(user: AdapterUser, account: AdapterAccount) {
+			await client
+				.insert(accountsTable)
+				.values({ ...account, userId: user.id });
+		},
 		// async getUserByAccount(
 		// 	account: Pick<AdapterAccount, "provider" | "providerAccountId">
 		// ) {

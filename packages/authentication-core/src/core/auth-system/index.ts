@@ -70,6 +70,12 @@ export class AuthSystem implements IAuthSystem {
 
 			// If no code return authorization url
 			if (!code) {
+				this.logger.info(
+					"No code provided, returning authorization url",
+					{
+						provider,
+					}
+				);
 				const url = p.createAuthorizationUrl();
 				return { type: "redirect", url, state: p.getState() };
 			}
@@ -107,7 +113,10 @@ export class AuthSystem implements IAuthSystem {
 				authState: { authenticated: true, keyCards, user },
 			};
 		} catch (error) {
-			console.log(error);
+			// console.log(error);
+			this.logger.error("Error while signing in: ", {
+				error,
+			});
 			return { type: "error", error };
 		}
 	}

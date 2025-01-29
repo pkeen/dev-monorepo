@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { IOAuthProvider, OAuthProviderConfig } from "./index.types";
+import { IOAuthProvider } from "./index.types";
 import { UserProfile } from "core/types";
 import { AdapterAccount } from "core/adapter";
 
@@ -32,7 +32,7 @@ export abstract class AbstractOAuthProvider<ScopeType extends string>
 	public getState(): string {
 		return this.state;
 	}
-	abstract getScopes(): string;
+	// abstract getScopes(): string;
 
 	// public generateState(): string {
 	// 	const state =
@@ -69,6 +69,7 @@ export abstract class AbstractOAuthProvider<ScopeType extends string>
 	 */
 	public createAuthorizationUrl(additionalScopes: ScopeType[] = []): string {
 		const scopeString = this.transformScopes(additionalScopes);
+		console.log("CLIENT ID:", this.clientId);
 		const params = new URLSearchParams({
 			client_id: this.clientId,
 			redirect_uri: this.redirectUri,
@@ -92,6 +93,13 @@ export interface OAuthProviderResponse {
 	userProfile: UserProfile;
 	adapterAccount: AdapterAccount;
 	// tokens: Record<string, any>;
+}
+
+export interface OAuthProviderConfig<ScopeType extends string> {
+	// name: string; // Unique identifier for the provider
+	clientId: string;
+	clientSecret: string;
+	redirectUri: string;
 }
 
 // | WebAuthnProviderType;

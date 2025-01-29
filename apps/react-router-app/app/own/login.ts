@@ -22,6 +22,7 @@ export const login = async ({ request }: { request: Request }) => {
 	const formData = await request.formData();
 
 	const provider = formData.get("provider");
+	console.log("PROVIDER:", provider);
 
 	if (!provider) {
 		redirect("/auth/login");
@@ -34,6 +35,7 @@ export const login = async ({ request }: { request: Request }) => {
 			"Set-Cookie",
 			await stateCookie.serialize(authResult.state)
 		);
+		console.log("authResult.url:", authResult.url);
 		return redirect(authResult.url, { headers });
 	}
 

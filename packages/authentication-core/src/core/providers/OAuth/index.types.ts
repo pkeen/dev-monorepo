@@ -1,11 +1,6 @@
 import crypto from "crypto";
 
-export interface OAuthProviderConfig<ScopeType extends string> {
-	// name: string; // Unique identifier for the provider
-	clientId: string;
-	clientSecret: string;
-	redirectUri: string;
-}
+
 
 export interface IOAuthProvider {
 	createAuthorizationUrl(): string;

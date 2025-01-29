@@ -8,7 +8,6 @@
 // import { GitHub } from "~/own/github/github-client";
 // import { GoogleClient } from "~/own/googleClient";
 
-
 import { login } from "~/own/login";
 
 // const providers = { github: GitHub, google: GoogleClient };
@@ -21,9 +20,14 @@ export default function Login() {
 			<form method="post">
 				<button type="submit" value="google" name="provider">
 					Login with Google
-				</button>
+				</button>{" "}
+				--
 				<button type="submit" value="github" name="provider">
 					Login with GitHub
+				</button>{" "}
+				--
+				<button type="submit" value="zoom" name="provider">
+					Login with Zoom
 				</button>
 			</form>
 		</div>

@@ -1,4 +1,5 @@
 import { GitHub } from "@pete_keen/authentication-core/providers";
+import { Zoom } from "@pete_keen/authentication-core/providers";
 
 // export const providers = {
 // 	github: new GitHub({
@@ -44,6 +45,15 @@ authSystem.registerProvider(
 		clientId: process.env.GITHUB_CLIENT_ID!,
 		clientSecret: process.env.GITHUB_CLIENT_SECRET!,
 		redirectUri: "http://localhost:5173/auth/redirect/github",
+	})
+);
+
+authSystem.registerProvider(
+	"zoom",
+	new Zoom({
+		clientId: process.env.ZOOM_CLIENT_ID!,
+		clientSecret: process.env.ZOOM_CLIENT_SECRET!,
+		redirectUri: "http://localhost:5173/auth/redirect/zoom",
 	})
 );
 

@@ -1,7 +1,10 @@
 // import crypto from "node:crypto";
 // import { AbstractOAuthProvider, OAuthProviderConfig } from "../index.types";
-import { AbstractOAuthProvider, OAuthProviderResponse } from "./oauth-provider";
-import { OAuthProviderConfig } from "./index.types";
+import {
+	AbstractOAuthProvider,
+	OAuthProviderResponse,
+	OAuthProviderConfig,
+} from "./oauth-provider";
 import { UserProfile } from "../../types";
 import { AdapterAccount } from "core/adapter";
 
@@ -63,7 +66,7 @@ export class GitHub extends AbstractOAuthProvider<ScopeType> {
 			userProfile.id,
 			tokens
 		);
-		return { userProfile, adapterAccount};
+		return { userProfile, adapterAccount };
 	}
 
 	private async getUserProfile(

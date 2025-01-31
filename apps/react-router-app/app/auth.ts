@@ -1,5 +1,9 @@
-import { GitHub } from "@pete_keen/authentication-core/providers";
-import { Zoom } from "@pete_keen/authentication-core/providers";
+import {
+	GitHub,
+	Google,
+	Zoom,
+	Microsoft,
+} from "@pete_keen/authentication-core/providers";
 
 // export const providers = {
 // 	github: new GitHub({
@@ -56,5 +60,25 @@ authSystem.registerProvider(
 		redirectUri: "http://localhost:5173/auth/redirect/zoom",
 	})
 );
+
+authSystem.registerProvider(
+	"google",
+	new Google({
+		clientId: process.env.GOOGLE_CLIENT_ID!,
+		clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+		redirectUri: "http://localhost:5173/auth/redirect/google",
+	})
+);
+
+authSystem.registerProvider(
+	"microsoft",
+	new Microsoft({
+		clientId: process.env.MICROSOFT_CLIENT_ID!,
+		clientSecret: process.env.MICROSOFT_CLIENT_SECRET!,
+		redirectUri: "http://localhost:5173/auth/redirect/microsoft",
+	})
+);
+
+// TODO: improve authSystem.registerProvider method - I dont want the key defined by user
 
 export default authSystem;

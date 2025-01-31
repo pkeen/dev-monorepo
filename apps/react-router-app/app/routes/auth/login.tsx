@@ -22,12 +22,18 @@ export default function Login() {
 					Login with Google
 				</button>{" "}
 				--
+				<br />
 				<button type="submit" value="github" name="provider">
 					Login with GitHub
 				</button>{" "}
 				--
+				<br />
 				<button type="submit" value="zoom" name="provider">
 					Login with Zoom
+				</button>
+				<br />
+				<button type="submit" value="microsoft" name="provider">
+					Login with Microsoft
 				</button>
 			</form>
 		</div>

@@ -40,7 +40,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 		// Getting here
 		console.log("GETTING HERE");
 
-		const authResult = await authSystem.login("google", code);
+		const authResult = await authSystem.login("microsoft", code);
 		console.log("authResult:", authResult);
 
 		if (authResult.type === "success") {

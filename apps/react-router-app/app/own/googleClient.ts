@@ -19,59 +19,6 @@ const ScopeMap: Record<Scope, string> = {
 	// Add more mappings as needed
 };
 
-// function transformScopes(scopes: Scope[]): string {
-// 	return scopes
-// 		.map((scope) => {
-// 			const mappedScope = ScopeMap[scope];
-// 			if (!mappedScope) {
-// 				throw new Error(`Invalid scope: ${scope}`);
-// 			}
-// 			return mappedScope;
-// 		})
-// 		.join(" ");
-// }
-
-// function encodeScopes(scopes: Scope[]): string {
-// 	const transformed = transformScopes(scopes);
-// 	return encodeURIComponent(transformed);
-// }
-
-// export function googleClient() {
-// 	const clientId = process.env.GOOGLE_CLIENT_ID!;
-// 	const clientSecret = process.env.GOOGLE_CLIENT_SECRET!;
-// 	const authorizeEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
-// 	const tokenEndpoint = "https://oauth2.googleapis.com/token";
-// 	// how do we deal with scopes
-// 	const scopes: Scope[] = ["openid", "profile", "email"];
-// 	// ^ this will somehow need to come from google
-// 	const encodedScopes = encodeScopes(scopes);
-// 	console.log(encodedScopes);
-// 	// Generate a secure random state value.
-// 	const state = crypto.randomBytes(32).toString("hex");
-
-// 	const authorizeUrl = new URL(authorizeEndpoint);
-// 	authorizeUrl.searchParams.set("client_id", clientId);
-// 	authorizeUrl.searchParams.set(
-// 		"redirect_uri",
-// 		"http://localhost:5173/auth/callback/google"
-// 	);
-// 	authorizeUrl.searchParams.set("response_type", "code");
-// 	authorizeUrl.searchParams.set("scope", encodedScopes);
-// 	authorizeUrl.searchParams.set("state", state);
-
-// 	// const client = new oslo.OAuth2Client(
-// 	// 	clientId,
-// 	// 	clientSecret,
-// 	// 	authorizeEndpoint,
-// 	// 	tokenEndpoint,
-// 	// 	{
-// 	// 		redirectURI: "http://localhost:5173/auth/callback/google",
-// 	// 	}
-// 	// );
-
-// 	// return client;
-// }
-
 export class GoogleClient {
 	private clientId: string;
 	private clientSecret: string;

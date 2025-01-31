@@ -7,7 +7,7 @@ import {
 } from "../../../core/adapter";
 import { DefaultPostgresSchema, defineTables } from "./schema";
 import { getTableColumns } from "drizzle-orm";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, and } from "drizzle-orm";
 import { SignupCredentials } from "../../../core/providers/credentials/index.types";
 
 export function PostgresDrizzleAdapter(
@@ -138,6 +138,29 @@ export function PostgresDrizzleAdapter(
 				.insert(accountsTable)
 				.values({ ...account, userId: user.id });
 		},
+
+		async getAccount(
+			provider: string,
+			providerAccountId: string
+		): Promise<AdapterAccount | null> {
+			const account = await client
+				.select()
+				.from(accountsTable)
+				.where(
+					and(
+						eq(accountsTable.provider, provider),
+						eq(accountsTable.providerAccountId, providerAccountId)
+					)
+				)
+				.then((res) => res[0]);
+
+			if (!account) {
+				return null;
+			}
+
+			return account as AdapterAccount;
+		},
+
 		// async getUserByAccount(
 		// 	account: Pick<AdapterAccount, "provider" | "providerAccountId">
 		// ) {

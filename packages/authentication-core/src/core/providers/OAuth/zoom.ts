@@ -124,6 +124,9 @@ export class Zoom extends AbstractOAuthProvider<ScopeType> {
 		};
 		return adapterAccount;
 	}
+
+	// TODO: implement refreshing tokens
+    
 }
 
 export interface ZoomTokens {

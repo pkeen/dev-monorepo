@@ -2,11 +2,19 @@ import crypto from "crypto";
 import { IOAuthProvider } from "./index.types";
 import { UserProfile } from "core/types";
 import { AdapterAccount } from "core/adapter";
+import { createEmitAndSemanticDiagnosticsBuilderProgram } from "typescript";
+import { z } from "zod";
 
-export abstract class AbstractOAuthProvider<ScopeType extends string>
-	implements IOAuthProvider
+export abstract class AbstractOAuthProvider<
+	ScopeType extends string,
+	TokenType,
+	ProfileType
+> implements IOAuthProvider
 {
+	public abstract readonly key: string;
 	public abstract readonly name: string;
+	public abstract readonly type: "oauth" | "oidc";
+
 	protected clientId: string;
 	protected clientSecret: string;
 	protected redirectUri: string;
@@ -21,13 +29,11 @@ export abstract class AbstractOAuthProvider<ScopeType extends string>
 	// Minimum scopes required by the application
 	protected abstract defaultScopes: ScopeType[];
 
-	protected constructor(config: OAuthProviderConfig<ScopeType>) {
+	protected constructor(config: OAuthProviderConfig) {
 		this.clientId = config.clientId;
 		this.clientSecret = config.clientSecret;
 		this.redirectUri = config.redirectUri;
 	}
-
-	// abstract createAuthorizationUrl(): string;
 
 	public getState(): string {
 		return this.state;
@@ -47,7 +53,6 @@ export abstract class AbstractOAuthProvider<ScopeType extends string>
 	protected transformScopes(scopes: ScopeType[]): string {
 		// Combine minimum and additional scopes
 		const combinedScopes = [...this.defaultScopes, ...scopes];
-
 		// Remove duplicates
 		const uniqueScopes = Array.from(new Set(combinedScopes));
 
@@ -86,20 +91,60 @@ export abstract class AbstractOAuthProvider<ScopeType extends string>
 		authorizationCode: string
 	): Promise<Record<string, any>>;
 
+	/**
+	 * Handle callback - main authorization flow after redirect from provider
+	 * @param code
+	 * @returns
+	 */
 	abstract handleRedirect(code: string): Promise<OAuthProviderResponse>;
+
+	protected convertExpiresInToExpiresAt(expiresIn: number): number {
+		return Math.floor(Date.now() / 1000) + expiresIn; // If given as seconds remaining - I also want to store as seconds not miliseconds
+	}
+	// TODO: Implement refresh tokens
+
+	protected abstract convertToAdapterAccount(
+		providerAccountId: string,
+		tokens: Record<string, any>
+	): Omit<AdapterAccount, "userId">;
+
+	/**
+	 * How to get user profile
+	 * This will vary depending on the provider
+	 * @param tokens
+	 * @returns
+	 */
+	abstract getUserProfile(tokens: TokenType): Promise<UserProfile>;
 }
 
-export interface OAuthProviderResponse {
-	userProfile: UserProfile;
-	adapterAccount: AdapterAccount;
-	// tokens: Record<string, any>;
-}
-
-export interface OAuthProviderConfig<ScopeType extends string> {
+export interface OAuthProviderConfig {
 	// name: string; // Unique identifier for the provider
 	clientId: string;
 	clientSecret: string;
 	redirectUri: string;
 }
 
-// | WebAuthnProviderType;
+export interface OAuthProviderResponse {
+	userProfile: UserProfile;
+	adapterAccount: Omit<AdapterAccount, "userId">;
+	// tokens: Record<string, any>;
+}
+
+export const OIDCBaseTokenSchema = z.object({
+	sub: z.string(),
+	iss: z.string(),
+	aud: z.string(),
+	exp: z.number(),
+	iat: z.number(),
+	email: z.string().email(),
+	name: z.string(),
+});
+
+export const BaseOAuthTokenSchema = z.object({
+	access_token: z.string(),
+	token_type: z.string(),
+	expires_in: z.number().optional(),
+	refresh_token: z.string().optional(),
+	scope: z.string().optional(),
+	id_token: z.string().optional(),
+});

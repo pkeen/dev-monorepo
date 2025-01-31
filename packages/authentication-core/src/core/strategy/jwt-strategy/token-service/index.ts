@@ -95,6 +95,21 @@ export class JwtTokenService implements TokenService {
 			throw error;
 		}
 	}
+
+	// async verify<T>(token: string, options: JwtOptions): Promise<T> {
+	// 	try {
+	// 		const { payload } = await jwtVerify(
+	// 			token,
+	// 			new TextEncoder().encode(options.secretKey)
+	// 		);
+	// 		return payload as T;
+	// 	} catch (error: any) {
+	// 		logger.warn(
+	// 			"Token validation failed: " + (error.message || "Invalid token")
+	// 		);
+	// 		throw error;
+	// 	}
+	// }
 }
 
 export * from "./index.types";

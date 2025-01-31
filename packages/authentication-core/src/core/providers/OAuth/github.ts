@@ -10,105 +10,10 @@ import { AdapterAccount } from "core/adapter";
 
 type ScopeType = "repo" | "repo_status" | "public_repo" | "repo_deployment";
 
-export class GitHub extends AbstractOAuthProvider<ScopeType> {
-	readonly type = "oauth";
-	readonly key = "github";
-	readonly name = "GitHub";
-
-	private apiBaseUrl = "https://api.github.com";
-
-	protected authorizeEndpoint = "https://github.com/login/oauth/authorize";
-	protected tokenEndpoint = "https://github.com/login/oauth/access_token";
-	// private scopes: string[];
-	// protected redirectUri = "http://localhost:5173/auth/redirect/github";
-	protected scopeMap = {
-		repo: "repo",
-		repo_status: "repo:status",
-		repo_deployment: "repo_deployment",
-		public_repo: "public_repo",
-	};
-	protected defaultScopes = [];
-
-	constructor(config: OAuthProviderConfig<ScopeType>) {
-		super(config);
-	}
-
-	getScopes(): string {
-		return this.transformScopes(this.defaultScopes);
-	}
-
-	async exchangeCodeForTokens(
-		authorizationCode: string
-	): Promise<Record<string, any>> {
-		const tokenUrl = new URL(this.tokenEndpoint);
-		tokenUrl.searchParams.set("client_id", this.clientId);
-		tokenUrl.searchParams.set("client_secret", this.clientSecret);
-		tokenUrl.searchParams.set("redirect_uri", this.redirectUri);
-		tokenUrl.searchParams.set("grant_type", "authorization_code");
-		tokenUrl.searchParams.set("code", authorizationCode);
-		const headers = new Headers();
-		headers.append("Accept", "application/json");
-		// headers.append("Content-Type", "application/json");
-		const data = await fetch(tokenUrl.toString(), {
-			method: "POST",
-			headers,
-		});
-		return data.json();
-	}
-
-	async handleRedirect(code: string): Promise<OAuthProviderResponse> {
-		const tokens = await this.exchangeCodeForTokens(code);
-		console.log("TOKENS:", tokens);
-		const userProfile = this.convertToUserProfile(
-			await this.getUserProfile(tokens.access_token)
-		);
-		const adapterAccount = this.convertToAdapterAccount(
-			userProfile.id,
-			tokens
-		);
-		return { userProfile, adapterAccount };
-	}
-
-	private async getUserProfile(
-		accessToken: string
-	): Promise<GitHubUserProfile> {
-		const url = new URL(`${this.apiBaseUrl}/user`);
-		const headers = new Headers();
-		headers.append("Authorization", `Bearer ${accessToken}`);
-		const response = await fetch(url.toString(), {
-			headers,
-		});
-		return await response.json();
-	}
-
-	private convertToUserProfile(userProfile: GitHubUserProfile): UserProfile {
-		return {
-			id: userProfile.id.toString(),
-			name: userProfile.name ?? userProfile.login,
-			email: userProfile.email,
-			image: userProfile.avatar_url,
-		};
-	}
-
-	private convertToAdapterAccount(
-		providerAccountId: string,
-		tokens: Record<string, any>
-	): AdapterAccount {
-		const adapterAccount: AdapterAccount = {
-			// userId: userProfile.id.toString(),
-			providerAccountId,
-			provider: this.key,
-			type: this.type,
-			refresh_token: tokens.refresh_token,
-			access_token: tokens.access_token,
-			expires_at: tokens.expires_at,
-			token_type: tokens.token_type,
-			scope: tokens.scope,
-			id_token: tokens.id_token,
-			session_state: tokens.session_state,
-		};
-		return adapterAccount;
-	}
+interface GitHubTokens {
+	access_token: string;
+	token_type: string;
+	scope: string;
 }
 
 export type GitHubUserProfile = {
@@ -147,3 +52,101 @@ export type GitHubUserProfile = {
 	created_at: string;
 	updated_at: string;
 };
+
+export class GitHub extends AbstractOAuthProvider<ScopeType> {
+	readonly type = "oauth";
+	readonly key = "github";
+	readonly name = "GitHub";
+
+	private apiBaseUrl = "https://api.github.com";
+
+	protected authorizeEndpoint = "https://github.com/login/oauth/authorize";
+	protected tokenEndpoint = "https://github.com/login/oauth/access_token";
+	// private scopes: string[];
+	// protected redirectUri = "http://localhost:5173/auth/redirect/github";
+	protected scopeMap = {
+		repo: "repo",
+		repo_status: "repo:status",
+		repo_deployment: "repo_deployment",
+		public_repo: "public_repo",
+	};
+	protected defaultScopes = [];
+
+	constructor(config: OAuthProviderConfig<ScopeType>) {
+		super(config);
+	}
+
+	getScopes(): string {
+		return this.transformScopes(this.defaultScopes);
+	}
+
+	async exchangeCodeForTokens(
+		authorizationCode: string
+	): Promise<GitHubTokens> {
+		const tokenUrl = new URL(this.tokenEndpoint);
+		tokenUrl.searchParams.set("client_id", this.clientId);
+		tokenUrl.searchParams.set("client_secret", this.clientSecret);
+		tokenUrl.searchParams.set("redirect_uri", this.redirectUri);
+		tokenUrl.searchParams.set("grant_type", "authorization_code");
+		tokenUrl.searchParams.set("code", authorizationCode);
+		const headers = new Headers();
+		headers.append("Accept", "application/json");
+		// headers.append("Content-Type", "application/json");
+		const data = await fetch(tokenUrl.toString(), {
+			method: "POST",
+			headers,
+		});
+		const res = await data.json();
+		console.log("GITHUB TOKENS:", res);
+		return res;
+	}
+
+	async handleRedirect(code: string): Promise<OAuthProviderResponse> {
+		const tokens = await this.exchangeCodeForTokens(code);
+		console.log("TOKENS:", tokens);
+		const userProfile = this.convertToUserProfile(
+			await this.getUserProfile(tokens.access_token)
+		);
+		const adapterAccount = this.convertToAdapterAccount(
+			userProfile.id,
+			tokens
+		);
+		return { userProfile, adapterAccount };
+	}
+
+	private async getUserProfile(
+		accessToken: string
+	): Promise<GitHubUserProfile> {
+		const url = new URL(`${this.apiBaseUrl}/user`);
+		const headers = new Headers();
+		headers.append("Authorization", `Bearer ${accessToken}`);
+		const response = await fetch(url.toString(), {
+			headers,
+		});
+		return await response.json();
+	}
+
+	private convertToUserProfile(userProfile: GitHubUserProfile): UserProfile {
+		return {
+			id: userProfile.id.toString(),
+			name: userProfile.name ?? userProfile.login,
+			email: userProfile.email,
+			image: userProfile.avatar_url,
+		};
+	}
+
+	private convertToAdapterAccount(
+		providerAccountId: string,
+		tokens: GitHubTokens
+	): Omit<AdapterAccount, "userId"> {
+		const adapterAccount: Omit<AdapterAccount, "userId"> = {
+			providerAccountId,
+			provider: this.key,
+			type: this.type,
+			access_token: tokens.access_token,
+			token_type: tokens.token_type,
+			scope: tokens.scope,
+		};
+		return adapterAccount;
+	}
+}

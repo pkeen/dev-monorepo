@@ -134,6 +134,11 @@ export interface Adapter {
 		account: AdapterAccount
 	): Promise<void>;
 
+	getAccount(
+		providerAccountId: string,
+		provider: string
+	): Promise<AdapterAccount | null>;
+
 	/**
 	 * Im working my way through this slowly so this will be implemented later
 	 */

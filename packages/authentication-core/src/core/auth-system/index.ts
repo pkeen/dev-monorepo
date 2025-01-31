@@ -102,8 +102,18 @@ export class AuthSystem implements IAuthSystem {
 				this.logger.info("User found", {
 					email: userProfile.email,
 				});
+				// Select account where user id matches and provider matches
+				const account = await this.adapter.getAccount(
+					adapterAccount.provider,
+					adapterAccount.providerAccountId
+				);
 				// TODO: create user account if not exists
-				await this.adapter.createAccountForUser(user, adapterAccount);
+				if (!account) {
+					await this.adapter.createAccountForUser(
+						user,
+						adapterAccount
+					);
+				}
 			}
 
 			// Step 3: Create auth state

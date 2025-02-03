@@ -3,6 +3,7 @@ import {
 	OAuthProviderConfig,
 	OIDCBaseTokenSchema,
 	BaseOAuthTokenSchema,
+	OAuthProviderResponse,
 } from "./oauth-provider";
 import { decodeJwt } from "jose";
 import { z } from "zod";
@@ -68,7 +69,7 @@ type MicrosoftOIDCToken = z.infer<typeof MicrosoftOIDCTokenSchema>;
 export class Microsoft extends AbstractOAuthProvider<
 	ScopeType,
 	MicrosoftOAuthToken,
-	MicrosoftUserProfile
+	MicrosoftOIDCToken
 > {
 	readonly type = "oauth";
 	readonly key = "microsoft";
@@ -94,7 +95,7 @@ export class Microsoft extends AbstractOAuthProvider<
 		super(config);
 	}
 
-	protected async exchangeCodeForTokens(
+	public async exchangeCodeForTokens(
 		authorizationCode: string
 	): Promise<MicrosoftOAuthToken> {
 		const tokenUrl = new URL(this.tokenEndpoint);
@@ -149,9 +150,7 @@ export class Microsoft extends AbstractOAuthProvider<
 		return { userProfile: profile, adapterAccount };
 	}
 
-	private async getUserProfile(
-		tokens: MicrosoftOAuthToken
-	): Promise<UserProfile> {
+	async getUserProfile(tokens: MicrosoftOAuthToken): Promise<UserProfile> {
 		const profile = this.convertToUserProfile(
 			this.decodeOIDCToken(tokens.id_token)
 		);
@@ -205,9 +204,9 @@ export class Microsoft extends AbstractOAuthProvider<
 		};
 	}
 
-	private convertToAdapterAccount(
+	public convertToAdapterAccount(
 		providerAccountId: string,
-		tokens: Record<string, any>
+		tokens: MicrosoftOAuthToken
 	): Omit<AdapterAccount, "userId"> {
 		// TODO: maybe this should be a generalized function
 		// TODO: WHY AM I OMITTING USER ID AGAIN?
@@ -222,7 +221,7 @@ export class Microsoft extends AbstractOAuthProvider<
 			token_type: tokens.token_type,
 			scope: tokens.scope,
 			id_token: tokens.id_token,
-			session_state: tokens.session_state,
+			// session_state: tokens.session_state,
 		};
 		return adapterAccount;
 	}

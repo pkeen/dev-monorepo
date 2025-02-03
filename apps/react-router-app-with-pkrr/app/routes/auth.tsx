@@ -21,6 +21,7 @@ import {
 	Microsoft,
 	Facebook,
 } from "@pete_keen/authentication-core/providers";
+import { Form } from "react-router";
 
 if (!process.env.JWT_ACCESS_SECRET) {
 	// throw new Error("JWT_ACCESS_SECRET not found in process.env");
@@ -110,15 +111,15 @@ export default function AuthComponent({ loaderData }: { loaderData: any }) {
 		case "login":
 			return (
 				<div>
-					<form method="post">
+					<Form method="post">
 						<button type="submit" value="google" name="provider">
 							Login with Google
-						</button>{" "}
+						</button>
 						--
 						<br />
 						<button type="submit" value="github" name="provider">
 							Login with GitHub
-						</button>{" "}
+						</button>
 						--
 						<br />
 						<button type="submit" value="zoom" name="provider">
@@ -132,7 +133,7 @@ export default function AuthComponent({ loaderData }: { loaderData: any }) {
 						<button type="submit" value="facebook" name="provider">
 							Login with Facebook
 						</button>
-					</form>
+					</Form>
 				</div>
 			);
 		default:

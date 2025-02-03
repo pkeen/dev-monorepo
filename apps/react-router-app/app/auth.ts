@@ -3,6 +3,7 @@ import {
 	Google,
 	Zoom,
 	Microsoft,
+	Facebook,
 } from "@pete_keen/authentication-core/providers";
 
 // export const providers = {
@@ -79,6 +80,14 @@ authSystem.registerProvider(
 	})
 );
 
+authSystem.registerProvider(
+	"facebook",
+	new Facebook({
+		clientId: process.env.FACEBOOK_CLIENT_ID!,
+		clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
+		redirectUri: "http://localhost:5173/auth/redirect/facebook",
+	})
+);
 // TODO: improve authSystem.registerProvider method - I dont want the key defined by user
 
 export default authSystem;

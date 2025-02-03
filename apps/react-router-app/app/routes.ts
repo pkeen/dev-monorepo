@@ -13,4 +13,5 @@ export default [
 	route("/auth/redirect/github", "routes/auth/redirect/github.tsx"),
 	route("/auth/redirect/zoom", "routes/auth/redirect/zoom.tsx"),
 	route("/auth/redirect/microsoft", "routes/auth/redirect/microsoft.tsx"),
+	route("/auth/redirect/facebook", "routes/auth/redirect/facebook.tsx"),
 ] satisfies RouteConfig;

@@ -35,6 +35,10 @@ export default function Login() {
 				<button type="submit" value="microsoft" name="provider">
 					Login with Microsoft
 				</button>
+				<br />
+				<button type="submit" value="facebook" name="provider">
+					Login with Facebook
+				</button>
 			</form>
 		</div>
 	);

@@ -9,8 +9,7 @@ export abstract class AbstractOAuthProvider<
 	ScopeType extends string,
 	TokenType,
 	ProfileType
-> implements IOAuthProvider
-{
+> {
 	public abstract readonly key: string;
 	public abstract readonly name: string;
 	public abstract readonly type: "oauth" | "oidc";
@@ -87,9 +86,9 @@ export abstract class AbstractOAuthProvider<
 	}
 
 	// Handle callback - to be implemented by subclasses
-	abstract exchangeCodeForTokens(
+	protected abstract exchangeCodeForTokens(
 		authorizationCode: string
-	): Promise<Record<string, any>>;
+	): Promise<TokenType>;
 
 	/**
 	 * Handle callback - main authorization flow after redirect from provider

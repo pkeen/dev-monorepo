@@ -42,6 +42,8 @@ export enum AuthErrorCode {
 	ACCOUNT_ALREADY_EXISTS = "ACCOUNT_ALREADY_EXISTS",
 
 	// Authorization Errors (403s)
+	// OAUTH Errors
+	OAUTH_ERROR = "OAUTH_ERROR",
 	INSUFFICIENT_PERMISSIONS = "INSUFFICIENT_PERMISSIONS",
 	INVALID_SCOPE = "INVALID_SCOPE",
 
@@ -184,6 +186,13 @@ export class ProviderNotFoundError extends AuthError {
 			AuthErrorCode.PROVIDER_NOT_FOUND
 		);
 		this.name = "ProviderNotFoundError";
+	}
+}
+
+export class OAuthError extends AuthError {
+	constructor(message: string) {
+		super(message, AuthErrorCode.OAUTH_ERROR);
+		this.name = "OAuthError";
 	}
 }
 

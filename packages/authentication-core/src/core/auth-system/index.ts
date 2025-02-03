@@ -1,6 +1,6 @@
 // packages/auth-core/src/services/AuthenticationService.ts
 import { AuthState, AuthStrategy, KeyCards, AuthResult } from "../types";
-import { IAuthSystem } from "./index.types";
+import { AuthConfig, IAuthSystem } from "./index.types";
 import {
 	Credentials,
 	SignupCredentials,
@@ -66,7 +66,9 @@ export class AuthSystem implements IAuthSystem {
 			if (!provider)
 				throw new ProviderNotGivenError("Provider not specified");
 			const p = this.providers[provider];
+			console.log("p:", p);
 			if (!p) {
+				console.log("STOPPING OUT HERE");
 				throw new ProviderNotFoundError(provider);
 			}
 
@@ -338,15 +340,15 @@ export class AuthSystem implements IAuthSystem {
 	 * @param provider Instance of a class extending AbstractOAuthProvider.
 	 */
 	public registerProvider(
-		name: string,
+		key: string,
 		provider: AbstractOAuthProvider<any>
 	): void {
-		if (this.providers[name]) {
+		if (this.providers[key]) {
 			throw new Error(
-				`Provider with name "${name}" is already registered.`
+				`Provider with key "${key}" is already registered.`
 			);
 		}
-		this.providers[name] = provider;
+		this.providers[key] = provider;
 	}
 
 	// async refresh(keyCards: KeyCards): Promise<ImprovedAuthState> {
@@ -481,6 +483,14 @@ export class AuthSystem implements IAuthSystem {
 			logger.warn("You will be using no persistence adapter");
 		}
 
-		return new AuthSystem(strategy, config.adapter, logger);
+		const authSystem = new AuthSystem(strategy, config.adapter, logger);
+
+		for (const provider of config.providers || []) {
+			authSystem.registerProvider(provider.key, provider);
+		}
+
+		return authSystem;
 	}
 }
+
+export * from "./index.types";

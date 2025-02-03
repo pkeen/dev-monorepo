@@ -92,8 +92,8 @@ export const RemixAuth = (config: RemixAuthConfig) => {
 		// 	throw new Error(`Unknown OAuth provider: ${provider}`);
 		// }
 
-        console.log("PROVIDER", provider);
-        // console.log("oauthProvider", oauthProvider);
+		console.log("PROVIDER", provider);
+		// console.log("oauthProvider", oauthProvider);
 
 		// // Generate and store OAuth state
 		// const state = crypto.randomUUID();

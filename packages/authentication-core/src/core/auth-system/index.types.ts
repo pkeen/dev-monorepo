@@ -8,6 +8,7 @@ import {
 	SignupCredentials,
 } from "../providers/credentials/index.types";
 import { AuthState, KeyCards } from "../types";
+import { AbstractOAuthProvider } from "core/providers/oauth/oauth-provider";
 
 export interface LoggerOptions {
 	level?: LogLevel;
@@ -20,7 +21,7 @@ export interface AuthConfigBase {
 	adapter?: Adapter;
 	// passwordService?: string;
 	logger?: LoggerOptions;
-	providers: ProviderOptions[];
+	providers?: AbstractOAuthProvider<any, any, any>[]; // TODO: Make this an array of provider options
 }
 
 export type AuthConfig =

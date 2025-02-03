@@ -5,14 +5,6 @@ import {
 	Microsoft,
 	Facebook,
 } from "@pete_keen/authentication-core/providers";
-
-// export const providers = {
-// 	github: new GitHub({
-// 		clientId: process.env.GITHUB_CLIENT_ID!,
-// 		clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-// 		redirectUri: "http://localhost:5173/auth/redirect/github",
-// 	}),
-// };
 import { createLogger } from "@pete_keen/logger";
 import { AuthSystem } from "@pete_keen/authentication-core";
 import { DrizzleAdapter } from "@pete_keen/authentication-core/adapters";
@@ -26,14 +18,14 @@ const logger = createLogger({
 const authSystem = new AuthSystem(
 	new JwtStrategy({
 		access: {
-			key: "pk-auth-access",
+			name: "access", // for now the names NEED to be access and refresh
 			secretKey: "asfjsdkfj",
 			algorithm: "HS256",
 			expiresIn: "30 minutes",
 			fields: ["id", "email"],
 		},
 		refresh: {
-			key: "pk-auth-refresh",
+			name: "refresh",
 			secretKey: "jldmff",
 			algorithm: "HS256",
 			expiresIn: "30 days",

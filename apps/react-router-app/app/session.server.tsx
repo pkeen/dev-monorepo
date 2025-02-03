@@ -1,11 +1,9 @@
 import { createCookieSessionStorage, createCookie } from "react-router";
+import type { AuthState } from "@pete_keen/authentication-core";
 
-// export interface SessionData {
-// 	keyCards: KeyCard[] | null;
-// 	user: User | null;
-// 	authenticated: boolean | undefined;
-// 	csrf: string | null;
-// }
+export interface SessionData {
+	authState: AuthState;
+}
 
 // Create session storage
 export const { getSession, commitSession, destroySession } =

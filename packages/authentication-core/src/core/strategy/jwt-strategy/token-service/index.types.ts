@@ -2,7 +2,7 @@ import { User } from "../../../auth-system/index.types";
 import { type JWTPayload } from "jose";
 
 export interface JwtOptions {
-	key: string;
+	name: string;
 	secretKey: string;
 	algorithm: string;
 	expiresIn: string;

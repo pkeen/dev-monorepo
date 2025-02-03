@@ -54,7 +54,7 @@ export class JwtStrategy implements AuthStrategy {
 				this.config.refresh
 			);
 			const accessKeyCard: KeyCard = {
-				name: this.config.access.key,
+				name: this.config.access.name,
 				value: accessToken,
 				type: "access",
 				storageOptions: {
@@ -66,7 +66,7 @@ export class JwtStrategy implements AuthStrategy {
 				},
 			};
 			const refreshKeyCard: KeyCard = {
-				name: this.config.refresh.key,
+				name: this.config.refresh.name,
 				value: refreshToken,
 				type: "refresh",
 				storageOptions: {
@@ -96,6 +96,7 @@ export class JwtStrategy implements AuthStrategy {
 
 	async validate(keyCards: KeyCards): Promise<AuthState> {
 		try {
+			console.log("keyCards: ", keyCards);
 			const validationResult = await this.validateCard(
 				keyCards,
 				"access"

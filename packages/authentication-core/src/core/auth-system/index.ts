@@ -33,7 +33,7 @@ export class AuthSystem implements IAuthSystem {
 	public adapter: Adapter;
 	public passwordService: PasswordService;
 	/* this is currently OAuth only */
-	public providers: { [key: string]: AbstractOAuthProvider<any> } = {};
+	public providers: { [key: string]: AbstractOAuthProvider } = {};
 
 	// storageAdapter: WebStorageAdapter; // Declare the storageAdapter property
 

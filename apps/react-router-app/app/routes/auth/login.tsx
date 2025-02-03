@@ -8,7 +8,7 @@
 // import { GitHub } from "~/own/github/github-client";
 // import { GoogleClient } from "~/own/googleClient";
 
-import { login } from "~/own/login";
+import { login } from "~/lib/login";
 
 // const providers = { github: GitHub, google: GoogleClient };
 

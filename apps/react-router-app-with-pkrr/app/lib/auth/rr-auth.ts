@@ -158,6 +158,14 @@ export const Auth = (config: RRAuthConfig) => {
 		const storedState = await stateCookie.parse(cookieHeader);
 		console.log("STORED STATE:", storedState);
 		const url = new URL(request.url);
+		const error = url.searchParams.get("error");
+		if (error) {
+			console.log("ERROR:", error);
+			return {
+				page: "error",
+				error,
+			};
+		}
 		const code = url.searchParams.get("code");
 		const returnedState = url.searchParams.get("state");
 		console.log("RETURNED URL:", url);
@@ -221,7 +229,9 @@ export const Auth = (config: RRAuthConfig) => {
 	const authLoader = async ({
 		request,
 		params,
-	}: LoaderFunctionArgs): { page: string; provider?: string } => {
+	}: LoaderFunctionArgs): Promise<
+		{ page: string } | Response | undefined
+	> => {
 		const { action } = params;
 		if (action === "redirect") {
 			if (params.provider) {
@@ -229,12 +239,6 @@ export const Auth = (config: RRAuthConfig) => {
 				return callback({ request, params });
 			}
 		}
-
-		console.log("ACTION:", action);
-		// console.log("PROVIDER:", provider);
-		// if (action === "redirect") {
-		// 	return redirect({ request, params });
-		// }
 		if (action === "login") {
 			return { page: "login" };
 		}

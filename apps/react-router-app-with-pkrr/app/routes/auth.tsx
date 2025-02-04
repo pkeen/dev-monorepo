@@ -136,6 +136,13 @@ export default function AuthComponent({ loaderData }: { loaderData: any }) {
 					</Form>
 				</div>
 			);
+		case "error":
+			return (
+				<div>
+					<h1>Error</h1>
+					<p>{loaderData.error}</p>
+				</div>
+			);
 		default:
 			return (
 				<div>

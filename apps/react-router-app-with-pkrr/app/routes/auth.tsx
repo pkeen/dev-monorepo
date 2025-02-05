@@ -20,6 +20,7 @@ import {
 	Zoom,
 	Microsoft,
 	Facebook,
+	LinkedIn,
 } from "@pete_keen/authentication-core/providers";
 import { Form } from "react-router";
 
@@ -90,6 +91,11 @@ const config: RRAuthConfig = {
 			clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
 			redirectUri: "http://localhost:5173/auth/redirect/facebook",
 		}),
+		new LinkedIn({
+			clientId: process.env.LINKEDIN_CLIENT_ID!,
+			clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
+			redirectUri: "http://localhost:5173/auth/redirect/linkedin",
+		}),
 	],
 	logger: {
 		level: "debug",
@@ -99,10 +105,12 @@ const config: RRAuthConfig = {
 	sessionSecret: "asfjsdkfj",
 };
 
-const { login, logout, authLoader, authAction } = Auth(config);
+const { login, logout, authLoader, authAction, requireAuth } = Auth(config);
 
 export const loader = authLoader;
 export const action = authAction;
+
+export { login, logout, requireAuth };
 
 // export { loader, action };
 
@@ -132,6 +140,10 @@ export default function AuthComponent({ loaderData }: { loaderData: any }) {
 						<br />
 						<button type="submit" value="facebook" name="provider">
 							Login with Facebook
+						</button>
+						<br />
+						<button type="submit" value="linkedin" name="provider">
+							Login with LinkedIn
 						</button>
 					</Form>
 				</div>

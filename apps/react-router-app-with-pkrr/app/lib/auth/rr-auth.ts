@@ -107,13 +107,10 @@ export const Auth = (config: RRAuthConfig) => {
 		});
 	};
 
-	const requireAuth = async ({
-		request,
-		redirectTo,
-	}: {
-		request: Request;
-		redirectTo?: string;
-	}) => {
+	const requireAuth = async (
+		request: Request,
+		{ redirectTo }: { redirectTo?: string }
+	) => {
 		const session = await getSession(request.headers.get("Cookie"));
 		const sessionState = session.get("authState");
 		console.log("sessionState: ", sessionState);

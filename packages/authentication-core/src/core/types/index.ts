@@ -67,8 +67,8 @@ export interface UserPublic {
 	// TODO: add roles
 }
 
-export interface UserProfile {
-	id: string;
+export interface UserAccountProfile {
+	accountId: string;
 	name?: string | null;
 	email: string;
 	image?: string | null;

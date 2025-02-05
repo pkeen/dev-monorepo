@@ -26,6 +26,7 @@ import {
 import { AbstractOAuthProvider } from "../providers/oauth/oauth-provider";
 import { JwtStrategy } from "../strategy";
 import crypto from "crypto";
+import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
 
 export class AuthSystem implements IAuthSystem {
 	public logger?: Logger;
@@ -44,7 +45,7 @@ export class AuthSystem implements IAuthSystem {
 		// userRepository: UserRepository
 		adapter: Adapter,
 		logger: Logger,
-		passwordService: PasswordService = DefaultPasswordService()
+		passwordService: PasswordService = DefaultPasswordService() // not needed atm no password system implemented
 	) {
 		this.strategy = strategy;
 		// this.userRepository = userRepository;
@@ -90,7 +91,7 @@ export class AuthSystem implements IAuthSystem {
 			);
 			// Step 2: Check if user already exists
 			let user = await this.adapter.getUserByEmail(userProfile.email);
-			// if not existing user create new one
+			// Step 2a: if not existing user create new one
 			if (!user) {
 				this.logger.info("User not found, creating new user", {
 					email: userProfile.email,
@@ -106,12 +107,28 @@ export class AuthSystem implements IAuthSystem {
 				this.logger.info("User found", {
 					email: userProfile.email,
 				});
-				// Select account where user id matches and provider matches
+				// Step 2b: Select account where user id matches and provider matches
 				const account = await this.adapter.getAccount(
 					adapterAccount.provider,
 					adapterAccount.providerAccountId
 				);
+
+				if (account) {
+					this.logger.info("Account found", {
+						provider: account.provider,
+						providerAccountId: account.providerAccountId,
+					});
+					// Has token changed check - temporary
+					if (account.access_token === adapterAccount.access_token) {
+						console.log("SAME TOKEN");
+					} else {
+						console.log("DIFFERENT TOKEN");
+					}
+					await this.adapter.updateAccount(adapterAccount);
+				}
+
 				// TODO: create user account if not exists
+				// TODO: update user account if exists
 				if (!account) {
 					await this.adapter.createAccountForUser(
 						user,

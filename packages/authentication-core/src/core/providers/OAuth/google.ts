@@ -1,14 +1,25 @@
 import {
 	AbstractOAuthProvider,
+	AbstractOIDCProvider,
 	OAuthProviderResponse,
 	OAuthProviderConfig,
+	BaseTokenSchema,
 } from "./oauth-provider";
-import { UserProfile } from "../../types";
+import { UserAccountProfile } from "../../types";
 import { AdapterAccount } from "core/adapter";
 import { decodeJwt } from "jose";
 import { z } from "zod";
 
-const OIDCTokenSchema = z.object({
+const GoogleTokensSchema = BaseTokenSchema.extend({
+	id_token: z.string(),
+	expires_in: z.number(),
+	scope: z.string(),
+});
+
+// Infer the TypeScript type from the schema
+type GoogleTokens = z.infer<typeof GoogleTokensSchema>;
+
+const GoogleOIDCProfileSchema = z.object({
 	iss: z.string(),
 	azp: z.string(),
 	aud: z.string(),
@@ -25,45 +36,7 @@ const OIDCTokenSchema = z.object({
 });
 
 // Infer the TypeScript type from the schema
-type OIDCToken = z.infer<typeof OIDCTokenSchema>;
-
-// Define the structure of the OIDC token
-// interface OIDCToken {
-// 	iss: string;
-// 	azp: string;
-// 	aud: string;
-// 	sub: string;
-// 	email: string;
-// 	email_verified: boolean;
-// 	at_hash: string;
-// 	name: string;
-// 	picture: string;
-// 	given_name: string;
-// 	family_name: string;
-// 	iat: number;
-// 	exp: number;
-// 	// Add other properties if needed
-// }
-
-interface GoogleUserProfile {
-	id: string;
-	email: string;
-	email_verified: boolean;
-	name: string;
-	given_name: string;
-	family_name: string;
-	picture: string;
-	// locale: string;
-}
-
-interface GoogleTokens {
-	access_token: string;
-	expires_in: number;
-	refresh_token?: string;
-	scope: string;
-	token_type: string;
-	id_token: string;
-}
+type GoogleOIDCProfile = z.infer<typeof GoogleOIDCProfileSchema>;
 
 type ScopeType =
 	| "profile"
@@ -72,20 +45,13 @@ type ScopeType =
 	| "driveMetadataReadonly"
 	| "calendarReadonly";
 
-// interface GoogleOAuthConfig {
-// 	clientId: string;
-// 	clientSecret: string;
-// 	// Optional configurations
-// 	scopes?: string[];
-// 	accessType?: "online" | "offline";
-// 	prompt?: "none" | "consent" | "select_account";
-// }
-
-export class Google extends AbstractOAuthProvider<ScopeType> {
+export class Google extends AbstractOIDCProvider<
+	ScopeType,
+	GoogleTokens,
+	GoogleOIDCProfile
+> {
 	readonly key = "google";
 	readonly name = "Google";
-	readonly type = "oidc";
-
 	protected authorizeEndpoint =
 		"https://accounts.google.com/o/oauth2/v2/auth";
 	protected tokenEndpoint = "https://oauth2.googleapis.com/token";
@@ -101,17 +67,18 @@ export class Google extends AbstractOAuthProvider<ScopeType> {
 
 	protected defaultScopes: ScopeType[] = ["profile", "email", "openid"];
 
-	constructor(private config: OAuthProviderConfig) {
+	protected tokenSchema = GoogleTokensSchema;
+	protected profileSchema = GoogleOIDCProfileSchema;
+
+	constructor(config: OAuthProviderConfig) {
 		super(config);
 	}
 
-	protected async exchangeCodeForTokens(
-		authorizationCode: string
-	): Promise<GoogleTokens> {
+	protected async exchangeCodeForTokens(code: string): Promise<GoogleTokens> {
 		const tokenUrl = new URL(this.tokenEndpoint);
 		tokenUrl.searchParams.set("client_id", this.clientId);
 		tokenUrl.searchParams.set("client_secret", this.clientSecret);
-		tokenUrl.searchParams.set("code", authorizationCode);
+		tokenUrl.searchParams.set("code", code);
 		tokenUrl.searchParams.set("redirect_uri", this.redirectUri);
 		tokenUrl.searchParams.set("grant_type", "authorization_code");
 		const headers = new Headers();
@@ -123,89 +90,145 @@ export class Google extends AbstractOAuthProvider<ScopeType> {
 		return data.json();
 	}
 
-	async handleRedirect(code: string): Promise<OAuthProviderResponse> {
-		const tokens = await this.exchangeCodeForTokens(code);
-		console.log("TOKENS:", tokens);
-		const googleProfile = await this.getUserProfile(tokens.id_token);
-		console.log("GOOGLE PROFILE:", googleProfile);
-
-		const userProfile = this.convertToUserProfile(
-			this.mapOidcTokenToProfile(googleProfile)
-		);
-		const adapterAccount = this.convertToAdapterAccount(
-			userProfile.id,
-			tokens
-		);
-		return { userProfile, adapterAccount };
-	}
-
-	protected async getUserProfile(idToken: string): Promise<OIDCToken> {
-		// const decoded = decodeJwt(idToken);
-		const claims = await decodeJwt(idToken);
-		// Parse and validate the claims
-		const result = OIDCTokenSchema.safeParse(claims);
-
-		if (result.success) {
-			return result.data;
-		} else {
-			// Handle validation errors
-			throw new Error("Invalid OIDC Token: " + result.error.message);
-		}
-	}
-
-	private mapOidcTokenToProfile(token: OIDCToken): GoogleUserProfile {
-		const {
-			sub, // Will be mapped to 'id'
-			email,
-			email_verified,
-			name,
-			given_name,
-			family_name,
-			picture,
-		} = token;
-
+	protected convertToUserAccountProfile(
+		profile: GoogleOIDCProfile
+	): UserAccountProfile {
 		return {
-			id: sub,
-			email,
-			email_verified,
-			name,
-			given_name,
-			family_name,
-			picture,
-		};
-	}
-
-	private convertToUserProfile(profile: GoogleUserProfile): UserProfile {
-		return {
-			id: profile.id.toString(),
+			accountId: profile.sub,
 			name: profile.name,
 			email: profile.email,
 			image: profile.picture,
 		};
 	}
-
-	private convertToAdapterAccount(
-		providerAccountId: string,
-		tokens: Record<string, any>
-	): Omit<AdapterAccount, "userId"> {
-		// TODO: maybe this should be a generalized function
-		// TODO: WHY AM I OMITTING USER ID AGAIN?
-
-		const adapterAccount: Omit<AdapterAccount, "userId"> = {
-			providerAccountId,
-			provider: this.key,
-			type: this.type,
-			refresh_token: tokens.refresh_token,
-			access_token: tokens.access_token,
-			expires_at: this.convertExpiresInToExpiresAt(tokens.expires_in),
-			token_type: tokens.token_type,
-			scope: tokens.scope,
-			id_token: tokens.id_token,
-			session_state: tokens.session_state,
-		};
-		return adapterAccount;
-	}
 }
+
+// export class Google extends AbstractOAuthProvider<
+// 	ScopeType,
+// 	GoogleTokens,
+// 	GoogleOIDCToken
+// > {
+// 	readonly key = "google";
+// 	readonly name = "Google";
+// 	readonly type = "oidc";
+
+// 	protected authorizeEndpoint =
+// 		"https://accounts.google.com/o/oauth2/v2/auth";
+// 	protected tokenEndpoint = "https://oauth2.googleapis.com/token";
+
+// 	protected scopeMap: Record<ScopeType, string> = {
+// 		profile: "https://www.googleapis.com/auth/userinfo.profile",
+// 		email: "https://www.googleapis.com/auth/userinfo.email",
+// 		openid: "openid",
+// 		driveMetadataReadonly:
+// 			"https://www.googleapis.com/auth/drive.metadata.readonly",
+// 		calendarReadonly: "https://www.googleapis.com/auth/calendar.readonly",
+// 	};
+
+// 	protected defaultScopes: ScopeType[] = ["profile", "email", "openid"];
+
+// 	constructor(private config: OAuthProviderConfig) {
+// 		super(config);
+// 	}
+
+// 	protected async exchangeCodeForTokens(code: string): Promise<GoogleTokens> {
+// 		const tokenUrl = new URL(this.tokenEndpoint);
+// 		tokenUrl.searchParams.set("client_id", this.clientId);
+// 		tokenUrl.searchParams.set("client_secret", this.clientSecret);
+// 		tokenUrl.searchParams.set("code", code);
+// 		tokenUrl.searchParams.set("redirect_uri", this.redirectUri);
+// 		tokenUrl.searchParams.set("grant_type", "authorization_code");
+// 		const headers = new Headers();
+// 		headers.append("Content-Type", "application/x-www-form-urlencoded");
+// 		const data = await fetch(tokenUrl.toString(), {
+// 			method: "POST",
+// 			headers,
+// 		});
+// 		return data.json();
+// 	}
+
+// 	async handleRedirect(code: string): Promise<OAuthProviderResponse> {
+// 		const tokens = await this.exchangeCodeForTokens(code);
+// 		console.log("GOOGLETOKENS:", tokens);
+// 		const googleProfile = await this.getUserProfile(tokens.id_token);
+// 		console.log("GOOGLE PROFILE:", googleProfile);
+
+// 		const userProfile = this.convertToUserProfile(
+// 			this.mapOidcTokenToProfile(googleProfile)
+// 		);
+// 		const adapterAccount = this.convertToAdapterAccount(
+// 			userProfile.id,
+// 			tokens
+// 		);
+// 		return { userProfile, adapterAccount };
+// 	}
+
+// 	protected async getUserProfile(idToken: string): Promise<GoogleOIDCToken> {
+// 		// const decoded = decodeJwt(idToken);
+// 		const claims = await decodeJwt(idToken);
+// 		// Parse and validate the claims
+// 		const result = OIDCTokenSchema.safeParse(claims);
+
+// 		if (result.success) {
+// 			return result.data;
+// 		} else {
+// 			// Handle validation errors
+// 			throw new Error("Invalid OIDC Token: " + result.error.message);
+// 		}
+// 	}
+
+// 	private mapOidcTokenToProfile(token: GoogleOIDCToken): GoogleUserProfile {
+// 		const {
+// 			sub, // Will be mapped to 'id'
+// 			email,
+// 			email_verified,
+// 			name,
+// 			given_name,
+// 			family_name,
+// 			picture,
+// 		} = token;
+
+// 		return {
+// 			id: sub,
+// 			email,
+// 			email_verified,
+// 			name,
+// 			given_name,
+// 			family_name,
+// 			picture,
+// 		};
+// 	}
+
+// 	private convertToUserProfile(profile: GoogleUserProfile): UserProfile {
+// 		return {
+// 			id: profile.id.toString(),
+// 			name: profile.name,
+// 			email: profile.email,
+// 			image: profile.picture,
+// 		};
+// 	}
+
+// 	private convertToAdapterAccount(
+// 		providerAccountId: string,
+// 		tokens: Record<string, any>
+// 	): Omit<AdapterAccount, "userId"> {
+// 		// TODO: maybe this should be a generalized function
+// 		// TODO: WHY AM I OMITTING USER ID AGAIN? - Because I dont have it yet
+
+// 		const adapterAccount: Omit<AdapterAccount, "userId"> = {
+// 			providerAccountId,
+// 			provider: this.key,
+// 			type: this.type,
+// 			access_token: tokens.access_token,
+// 			expires_at: this.convertExpiresInToExpiresAt(tokens.expires_in),
+// 			token_type: tokens.token_type,
+// 			scope: tokens.scope,
+// 			refresh_token: tokens.refresh_token,
+// 			id_token: tokens.id_token,
+// 			session_state: tokens.session_state,
+// 		};
+// 		return adapterAccount;
+// 	}
+// }
 
 // Custom error for handling OAuth redirects
 export class AuthRedirectError extends Error {

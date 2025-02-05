@@ -60,11 +60,11 @@ export interface AdapterAccount {
 	/** Provider's type for this account */
 	type: ProviderType;
 
-	refresh_token?: string;
 	access_token?: string;
 	expires_at?: number;
 	token_type?: string;
 	scope?: string;
+	refresh_token?: string;
 	id_token?: string;
 	session_state?: string;
 }
@@ -138,6 +138,8 @@ export interface Adapter {
 		providerAccountId: string,
 		provider: string
 	): Promise<AdapterAccount | null>;
+
+	updateAccount(account: AdapterAccount): Promise<void>;
 
 	/**
 	 * Im working my way through this slowly so this will be implemented later

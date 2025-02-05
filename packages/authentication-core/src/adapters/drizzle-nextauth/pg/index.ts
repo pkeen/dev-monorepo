@@ -139,6 +139,21 @@ export function PostgresDrizzleAdapter(
 				.values({ ...account, userId: user.id });
 		},
 
+		async updateAccount(account: AdapterAccount) {
+			await client
+				.update(accountsTable)
+				.set(account)
+				.where(
+					and(
+						eq(accountsTable.provider, account.provider),
+						eq(
+							accountsTable.providerAccountId,
+							account.providerAccountId
+						)
+					)
+				);
+		},
+
 		async getAccount(
 			provider: string,
 			providerAccountId: string

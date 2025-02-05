@@ -1,13 +1,24 @@
 import crypto from "crypto";
-import { IOAuthProvider } from "./index.types";
-import { UserProfile } from "core/types";
+import { UserAccountProfile } from "core/types";
 import { AdapterAccount } from "core/adapter";
-import { createEmitAndSemanticDiagnosticsBuilderProgram } from "typescript";
+import { decodeJwt } from "jose";
 import { z } from "zod";
 
-export abstract class AbstractOAuthProvider<
+export const BaseTokenSchema = z.object({
+	access_token: z.string(),
+	token_type: z.string(),
+	expires_in: z.number().optional(),
+	refresh_token: z.string().optional(),
+	scope: z.string().optional(),
+	id_token: z.string().optional(),
+	session_state: z.string().optional(),
+});
+
+export type BaseToken = z.infer<typeof BaseTokenSchema>;
+
+export abstract class AbstractBaseOAuthProvider<
 	ScopeType extends string,
-	TokenType,
+	TokenType extends BaseToken,
 	ProfileType
 > {
 	public abstract readonly key: string;
@@ -28,6 +39,10 @@ export abstract class AbstractOAuthProvider<
 	// Minimum scopes required by the application
 	protected abstract defaultScopes: ScopeType[];
 
+	// defining zod schemas to use for validation
+	protected abstract tokenSchema: z.ZodSchema<TokenType>;
+	protected abstract profileSchema: z.ZodSchema<ProfileType>;
+
 	protected constructor(config: OAuthProviderConfig) {
 		this.clientId = config.clientId;
 		this.clientSecret = config.clientSecret;
@@ -37,12 +52,6 @@ export abstract class AbstractOAuthProvider<
 	public getState(): string {
 		return this.state;
 	}
-	// abstract getScopes(): string;
-
-	// public generateState(): string {
-	// 	const state =
-	// 	return state;
-	// }
 
 	/**
 	 * Transforms and validates scopes using the provider-specific scope map.
@@ -73,7 +82,6 @@ export abstract class AbstractOAuthProvider<
 	 */
 	public createAuthorizationUrl(additionalScopes: ScopeType[] = []): string {
 		const scopeString = this.transformScopes(additionalScopes);
-		console.log("CLIENT ID:", this.clientId);
 		const params = new URLSearchParams({
 			client_id: this.clientId,
 			redirect_uri: this.redirectUri,
@@ -86,34 +94,141 @@ export abstract class AbstractOAuthProvider<
 	}
 
 	// Handle callback - to be implemented by subclasses
-	protected abstract exchangeCodeForTokens(
-		authorizationCode: string
-	): Promise<TokenType>;
+	protected abstract exchangeCodeForTokens(code: string): Promise<TokenType>;
 
 	/**
 	 * Handle callback - main authorization flow after redirect from provider
 	 * @param code
 	 * @returns
 	 */
-	abstract handleRedirect(code: string): Promise<OAuthProviderResponse>;
+	public async handleRedirect(code: string): Promise<OAuthProviderResponse> {
+		const tokens = this.tokenSchema.parse(
+			await this.exchangeCodeForTokens(code)
+		);
+		console.log("TOKENS:", tokens);
+
+		const userProfile = await this.getUserProfile(tokens);
+		const adapterAccount = this.convertToAdapterAccount(
+			userProfile.accountId,
+			tokens
+		);
+		console.log(
+			"HANDLE REDIRECT USER PROFILE:",
+			userProfile,
+			"ADAPTER ACCOUNT:",
+			adapterAccount
+		);
+		return { userProfile, adapterAccount };
+	}
+
+	abstract getUserProfile(tokens: TokenType): Promise<UserAccountProfile>;
 
 	protected convertExpiresInToExpiresAt(expiresIn: number): number {
 		return Math.floor(Date.now() / 1000) + expiresIn; // If given as seconds remaining - I also want to store as seconds not miliseconds
 	}
 	// TODO: Implement refresh tokens
 
-	protected abstract convertToAdapterAccount(
-		providerAccountId: string,
-		tokens: Record<string, any>
-	): Omit<AdapterAccount, "userId">;
+	// protected abstract convertToAdapterAccount(
+	// 	providerAccountId: string,
+	// 	tokens: Record<string, any>
+	// ): Omit<AdapterAccount, "userId">;
 
+	// Standardized converToAdapterAccount function
+	protected convertToAdapterAccount(
+		providerAccountId: string,
+		tokens: TokenType
+	): Omit<AdapterAccount, "userId"> {
+		const adapterAccount: Omit<AdapterAccount, "userId"> = {
+			providerAccountId,
+			provider: this.key,
+			type: this.type,
+			access_token: tokens.access_token,
+			token_type: tokens.token_type,
+			scope: tokens.scope && tokens.scope,
+			expires_at:
+				tokens.expires_in &&
+				this.convertExpiresInToExpiresAt(tokens.expires_in),
+			refresh_token: tokens.refresh_token,
+			id_token: tokens.id_token,
+			session_state: tokens.session_state,
+		};
+		return adapterAccount;
+	}
+
+	protected abstract convertToUserAccountProfile(
+		profile: ProfileType
+	): UserAccountProfile;
+}
+
+export abstract class AbstractOAuthProvider<
+	ScopeType extends string,
+	TokenType extends BaseToken,
+	ProfileType
+> extends AbstractBaseOAuthProvider<ScopeType, TokenType, ProfileType> {
+	readonly type = "oauth";
 	/**
 	 * How to get user profile
 	 * This will vary depending on the provider
 	 * @param tokens
 	 * @returns
 	 */
-	abstract getUserProfile(tokens: TokenType): Promise<UserProfile>;
+	async getUserProfile(tokens: TokenType): Promise<UserAccountProfile> {
+		// return this.convertToUserProfile(
+		// 	await this.fetchPublicProfile(tokens.access_token)
+		// );
+		// const rawProfile = await this.fetchPublicProfile(tokens.access_token);
+		// const profile = this.profileSchema.parse(rawProfile);
+		// return this.convertToUserProfile(profile);
+		// TODO: this works??
+		return this.convertToUserAccountProfile(
+			this.profileSchema.parse(
+				await this.fetchPublicProfile(tokens.access_token)
+			)
+		);
+	}
+
+	protected abstract fetchPublicProfile(
+		accessToken: string
+	): Promise<ProfileType>;
+}
+
+export abstract class AbstractOIDCProvider<
+	ScopeType extends string,
+	TokenType extends BaseToken,
+	ProfileType
+> extends AbstractBaseOAuthProvider<ScopeType, TokenType, ProfileType> {
+	readonly type = "oidc";
+	/**
+	 * How to get user profile
+	 * This will vary depending on the provider
+	 * @param tokens
+	 * @returns
+	 */
+	async getUserProfile(tokens: TokenType): Promise<UserAccountProfile> {
+		// console.log("OIDC GET USER PROFILE FUNCTION");
+		const rawProfile = this.decodeOIDCToken(tokens.id_token);
+		// console.log("PROFILE:", rawProfile);
+		const profile = this.profileSchema.parse(rawProfile);
+		// console.log("PROFILE PARSED:", profile);
+
+		return this.convertToUserAccountProfile(profile);
+		// return this.convertToUserAccountProfile(
+		// 	this.profileSchema.parse(
+		// 		await this.decodeOIDCToken(tokens.id_token)
+		// 	)
+		// );
+	}
+
+	protected decodeOIDCToken(oidcToken: string): ProfileType {
+		console.log("OIDCTOKEN:", oidcToken);
+		const claims = decodeJwt(oidcToken);
+		console.log("CLAIMS:", claims);
+		const result = this.profileSchema.parse(claims);
+		return result;
+	}
+
+	// // This is might be standardized
+	// protected abstract decodeOIDCToken(token: string): Promise<ProfileType>;
 }
 
 export interface OAuthProviderConfig {
@@ -124,9 +239,8 @@ export interface OAuthProviderConfig {
 }
 
 export interface OAuthProviderResponse {
-	userProfile: UserProfile;
+	userProfile: UserAccountProfile;
 	adapterAccount: Omit<AdapterAccount, "userId">;
-	// tokens: Record<string, any>;
 }
 
 export const OIDCBaseTokenSchema = z.object({
@@ -137,13 +251,4 @@ export const OIDCBaseTokenSchema = z.object({
 	iat: z.number(),
 	email: z.string().email(),
 	name: z.string(),
-});
-
-export const BaseOAuthTokenSchema = z.object({
-	access_token: z.string(),
-	token_type: z.string(),
-	expires_in: z.number().optional(),
-	refresh_token: z.string().optional(),
-	scope: z.string().optional(),
-	id_token: z.string().optional(),
 });

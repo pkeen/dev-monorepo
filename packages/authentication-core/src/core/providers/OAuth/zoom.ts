@@ -77,6 +77,11 @@ export class Zoom extends AbstractOAuthProvider<
 	protected tokenSchema = ZoomTokensSchema;
 	protected profileSchema = ZoomUserProfileSchema;
 
+	readonly style = {
+		bg: "#0b5cff",
+		text: "#fff",
+	};
+
 	constructor(config: OAuthProviderConfig) {
 		super(config);
 	}

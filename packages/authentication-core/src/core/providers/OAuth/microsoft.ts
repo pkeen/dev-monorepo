@@ -93,6 +93,8 @@ export class Microsoft extends AbstractOIDCProvider<
 	protected tokenSchema = MicrosftTokenSchema;
 	protected profileSchema = MicrosoftOIDCTokenSchema;
 
+	readonly style = { text: "#fff", bg: "#0072c6" };
+
 	constructor(config: OAuthProviderConfig) {
 		super(config);
 	}

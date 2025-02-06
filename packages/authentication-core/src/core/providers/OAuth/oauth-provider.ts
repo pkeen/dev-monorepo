@@ -43,6 +43,8 @@ export abstract class AbstractBaseOAuthProvider<
 	protected abstract tokenSchema: z.ZodSchema<TokenType>;
 	protected abstract profileSchema: z.ZodSchema<ProfileType>;
 
+	public abstract style: { text: string; bg: string };
+
 	protected constructor(config: OAuthProviderConfig) {
 		this.clientId = config.clientId;
 		this.clientSecret = config.clientSecret;
@@ -252,3 +254,10 @@ export const OIDCBaseTokenSchema = z.object({
 	email: z.string().email(),
 	name: z.string(),
 });
+
+// Here we assume that both tokens conform to BaseToken and profiles can be anything.
+export type AuthProvider = AbstractBaseOAuthProvider<
+	string,
+	BaseToken,
+	unknown
+>;

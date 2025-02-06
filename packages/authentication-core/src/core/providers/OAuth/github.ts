@@ -124,6 +124,8 @@ export class GitHub extends AbstractOAuthProvider<
 	protected tokenSchema = GitHubTokensSchema;
 	protected profileSchema = GitHubProfileSchema;
 
+	readonly style = { text: "#fff", bg: "#24292f" };
+
 	constructor(config: OAuthProviderConfig) {
 		super(config);
 	}

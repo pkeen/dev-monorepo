@@ -70,6 +70,8 @@ export class Google extends AbstractOIDCProvider<
 	protected tokenSchema = GoogleTokensSchema;
 	protected profileSchema = GoogleOIDCProfileSchema;
 
+	readonly style = { text: "#fff", bg: "#4285F4" };
+
 	constructor(config: OAuthProviderConfig) {
 		super(config);
 	}

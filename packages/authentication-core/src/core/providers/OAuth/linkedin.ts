@@ -57,6 +57,8 @@ export class LinkedIn extends AbstractOIDCProvider<
 		super(config);
 	}
 
+	readonly style = { bg: "#069", text: "#fff" };
+
 	async exchangeCodeForTokens(code: string): Promise<LinkedInTokens> {
 		const tokenUrl = new URL(this.tokenEndpoint);
 		tokenUrl.searchParams.set("client_id", this.clientId);

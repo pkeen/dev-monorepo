@@ -23,10 +23,26 @@ import {
 	ProviderNotGivenError,
 	ProviderNotFoundError,
 } from "../error";
-import { AbstractOAuthProvider } from "../providers/oauth/oauth-provider";
+import {
+	AbstractOAuthProvider,
+	AuthProvider,
+} from "../providers/oauth/oauth-provider";
 import { JwtStrategy } from "../strategy";
 import crypto from "crypto";
 import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
+
+export type Providers = {
+	[key: string]: AuthProvider;
+};
+
+export type DisplayProvider = {
+	name: string;
+	key: string;
+	style: {
+		text: string;
+		bg: string;
+	};
+};
 
 export class AuthSystem implements IAuthSystem {
 	public logger?: Logger;
@@ -34,9 +50,7 @@ export class AuthSystem implements IAuthSystem {
 	public adapter: Adapter;
 	public passwordService: PasswordService;
 	/* this is currently OAuth only */
-	public providers: {
-		[key: string]: AbstractOAuthProvider<ScopeType, TokenType, ProfileType>;
-	} = {};
+	public providers: Providers = {};
 
 	// storageAdapter: WebStorageAdapter; // Declare the storageAdapter property
 
@@ -450,6 +464,15 @@ export class AuthSystem implements IAuthSystem {
 			});
 			return { authenticated: false, keyCards: null, user: null, error };
 		}
+	}
+
+	// Assuming this is a method on your auth system
+	listProviders(): DisplayProvider[] {
+		return Object.values(this.providers).map((provider) => ({
+			name: provider.name,
+			key: provider.key,
+			style: provider.style,
+		}));
 	}
 
 	/**

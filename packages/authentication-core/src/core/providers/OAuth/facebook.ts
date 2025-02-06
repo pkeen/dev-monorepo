@@ -56,6 +56,8 @@ export class Facebook extends AbstractOAuthProvider<
 	protected tokenSchema = FacebookTokenSchema;
 	protected profileSchema = FacebookProfileSchema;
 
+	readonly style = { bg: "#006aff", text: "#fff" };
+
 	constructor(config: OAuthProviderConfig) {
 		super(config);
 	}

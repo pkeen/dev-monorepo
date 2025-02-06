@@ -11,6 +11,8 @@ import {
 	type AuthState,
 	type AuthConfig,
 	type UserProfile,
+	type Providers,
+	type DisplayProvider,
 } from "@pete_keen/authentication-core";
 
 // App-specific config extension
@@ -64,7 +66,9 @@ export const Auth = (config: RRAuthConfig) => {
 		request: Request;
 		params: any;
 	}) => {
+		// await new Promise((resolve) => setTimeout(resolve, 3000)); // wait 3 seconds
 		const headers = new Headers(request.headers);
+		console.log("LOGIN HEADERS:", headers);
 		const formData = await request.formData();
 
 		const provider = formData.get("provider");
@@ -77,11 +81,15 @@ export const Auth = (config: RRAuthConfig) => {
 		const authResult = await authSystem.login(provider?.toString());
 
 		if (authResult.type === "redirect") {
+			console.log("authResult:", authResult);
 			headers.append(
 				"Set-Cookie",
 				await stateCookie.serialize(authResult.state)
 			);
+			// Explicitly set a Content-Type header so that the client interprets the response correctly.
+			headers.set("Content-Type", "text/html");
 			console.log("authResult.url:", authResult.url);
+			console.log("HEADERS FOR REDIRECT:", headers);
 			return redirect(authResult.url, { headers });
 		}
 	};
@@ -148,6 +156,7 @@ export const Auth = (config: RRAuthConfig) => {
 
 	const callback = async ({ request, params }: LoaderFunctionArgs) => {
 		const { provider } = params;
+		console.log("GETTING TO CALLBACK FUNCTION");
 		console.log("PROVIDER from redirect loader:", provider);
 
 		// Retrieve the stored state from cookie
@@ -195,12 +204,16 @@ export const Auth = (config: RRAuthConfig) => {
 			if (authResult.type === "success") {
 				console.log("SUCCESS");
 				session.set("authState", authResult.authState);
+				// Add the Content-Type header here too.
+				headers.append("Content-Type", "text/html");
 				headers.append("Set-Cookie", await commitSession(session));
 				return redirect(config.redirectAfterLogin || "/", {
 					headers,
 				});
 			} else if (authResult.type === "redirect") {
 				console.log("REDIRECT");
+				// Add the Content-Type header here too.
+				headers.append("Content-Type", "text/html");
 				return redirect(authResult.url);
 			} else {
 				throw new Error("Unknown authResult type");
@@ -215,6 +228,7 @@ export const Auth = (config: RRAuthConfig) => {
 		console.log("ACTION:", action);
 		// console.log("PROVIDER:", provider);
 		if (action === "login") {
+			console.log("GETTING HERE");
 			return await login({ request });
 		}
 		if (action === "logout") {
@@ -227,7 +241,12 @@ export const Auth = (config: RRAuthConfig) => {
 		request,
 		params,
 	}: LoaderFunctionArgs): Promise<
-		{ page: string } | Response | undefined
+		| {
+				page: string;
+				providers?: DisplayProvider[];
+		  }
+		| Response
+		| undefined
 	> => {
 		const { action } = params;
 		if (action === "redirect") {
@@ -237,7 +256,7 @@ export const Auth = (config: RRAuthConfig) => {
 			}
 		}
 		if (action === "login") {
-			return { page: "login" };
+			return { page: "login", providers: authSystem.listProviders() };
 		}
 	};
 
@@ -249,6 +268,7 @@ export const Auth = (config: RRAuthConfig) => {
 		// redirect,
 		authAction,
 		authLoader,
+		authSystem,
 	};
 };
 

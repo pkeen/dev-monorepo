@@ -1,5 +1,5 @@
 import { Form } from "react-router";
-import Login from "../lib/auth/login";
+import AuthComponent from "../lib/auth/auth-component";
 import { authLoader, authAction } from "../auth";
 
 // if (!process.env.JWT_ACCESS_SECRET) {
@@ -90,27 +90,6 @@ import { authLoader, authAction } from "../auth";
 
 export const loader = authLoader;
 export const action = authAction;
+export default AuthComponent;
 
 // export { loader, action };
-
-export default function AuthComponent({ loaderData }: { loaderData: any }) {
-	const providers = loaderData.providers;
-
-	switch (loaderData.page) {
-		case "login":
-			return <Login providers={providers} />;
-		case "error":
-			return (
-				<div>
-					<h1>Error</h1>
-					<p>{loaderData.error}</p>
-				</div>
-			);
-		default:
-			return (
-				<div>
-					<h1>Auth</h1>
-				</div>
-			);
-	}
-}

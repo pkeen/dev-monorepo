@@ -5,7 +5,7 @@
 
 import { Form, useFetcher, useLoaderData, useNavigation } from "react-router";
 import { useEffect } from "react";
-import { requireAuth } from "./auth";
+import { requireAuth } from "../auth";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 
 // import { Route } from "+types/dashboard";

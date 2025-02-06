@@ -4,32 +4,15 @@ import { useState, useEffect } from "react";
 import { useFetcher } from "react-router";
 
 export default function Login({ providers }: { providers: DisplayProvider[] }) {
-	console.log("Login component rendered");
-	// const navigation = useNavigation();
-	const fetcher = useFetcher();
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	useEffect(() => {
 		console.log("Login component mounted on the client");
 	}, []);
 	// const isNavigating = Boolean(navigation.location);
 
-	// Check if any submission is happening (fetcher state or global navigation)
-	const isSubmitting = fetcher.state !== "idle";
-
 	// State to track the provider that was clicked
 	const [selectedProvider, setSelectedProvider] = useState("");
-
-	// Log state for debugging
-	useEffect(() => {
-		console.log("fetcher.state:", fetcher.state);
-	}, [fetcher.state]);
-
-	// Clear selectedProvider when submission is finished
-	useEffect(() => {
-		if (fetcher.state === "idle") {
-			setSelectedProvider("");
-		}
-	}, [fetcher.state]);
 
 	const [hover, setHover] = useState(false);
 
@@ -103,9 +86,12 @@ export default function Login({ providers }: { providers: DisplayProvider[] }) {
 								type="submit"
 								name="provider"
 								value={provider.key}
-								onClick={() =>
-									setSelectedProvider(provider.name)
-								}
+								onClick={() => {
+									setSelectedProvider(provider.name);
+									// setIsSubmitting(true);
+								}}
+								onMouseEnter={() => setHover(true)}
+								onMouseLeave={() => setHover(false)}
 								disabled={isSubmitting} // disable the buttons while submitting
 								style={{
 									width: "100%",
@@ -120,6 +106,7 @@ export default function Login({ providers }: { providers: DisplayProvider[] }) {
 										? "not-allowed"
 										: "pointer",
 									fontSize: "16px",
+
 									transition: "all 0.2s ease",
 								}}
 							>

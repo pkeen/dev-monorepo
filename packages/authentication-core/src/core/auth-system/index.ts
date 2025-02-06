@@ -525,6 +525,8 @@ export class AuthSystem implements IAuthSystem {
 
 		const authSystem = new AuthSystem(strategy, config.adapter, logger);
 
+		console.log("AUTH CONFIG:", config);
+
 		for (const provider of config.providers || []) {
 			authSystem.registerProvider(provider.key, provider);
 		}

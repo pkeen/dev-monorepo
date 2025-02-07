@@ -4,6 +4,7 @@ import {
 	AuthState,
 	KeyCards,
 	KeyCard,
+	AuthResult,
 	// JwtConfig,
 	// Credentials,
 	// AuthTokens,
@@ -94,46 +95,42 @@ export class JwtStrategy implements AuthStrategy {
 		});
 	}
 
-	async validate(keyCards: KeyCards): Promise<AuthState> {
+	async validate(keyCards: KeyCards): Promise<AuthResult> {
 		try {
 			console.log("keyCards: ", keyCards);
-			const validationResult = await this.validateCard(
-				keyCards,
-				"access"
-			);
-			if (validationResult.authenticated) {
+			const accessState = await this.validateCard(keyCards, "access");
+			if (accessState.authenticated) {
 				logger.info("Keycards validated", {
-					userId: validationResult.user.id,
-					email: validationResult.user.email,
+					userId: accessState.user.id,
+					email: accessState.user.email,
 				});
 				return {
-					authenticated: true,
-					user: validationResult.user,
-					keyCards,
+					type: "success",
+					authState: accessState,
 				};
 			}
-			const refreshResult = await this.validateCard(keyCards, "refresh");
-			if (refreshResult.authenticated) {
+			const refreshState = await this.validateCard(keyCards, "refresh");
+			if (refreshState.authenticated) {
 				logger.info("Refresh keycard validated", {
-					userId: refreshResult.user.id,
-					email: refreshResult.user.email,
+					userId: refreshState.user.id,
+					email: refreshState.user.email,
 				});
 				// TO-DO - Add DB check here, dont just refresh the cards
 				const newKeyCards = await this.createKeyCards(
-					refreshResult.user
+					refreshState.user
 				);
 				return {
-					authenticated: true,
-					user: refreshResult.user,
-					keyCards: newKeyCards,
+					type: "refresh",
+					authState: {
+						...refreshState,
+						keyCards: newKeyCards,
+					},
 				};
 			}
 		} catch (error) {
 			return {
-				authenticated: false,
+				type: "error",
 				error,
-				user: null,
-				keyCards: null,
 			};
 		}
 	}

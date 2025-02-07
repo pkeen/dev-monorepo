@@ -3,50 +3,73 @@
  * Should not be accessed by unauthenticated users
  */
 
-import { Form, useFetcher, useLoaderData, useNavigation } from "react-router";
+import {
+	Form,
+	useFetcher,
+	useLoaderData,
+	useActionData,
+	useNavigation,
+	useSubmit,
+} from "react-router";
 import { useEffect } from "react";
 import { requireAuth } from "../auth";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
+import { useState } from "react";
 
 // import { Route } from "+types/dashboard";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
 	// TODO: Check if user is authenticated
 	// const user = await useAuth({ request });
-	const user = await requireAuth(request, { redirectTo: "/auth/login" });
+	const { user, headers } = await requireAuth(request, {
+		redirectTo: "/auth/login",
+	});
 	// if (!authenticated) {
 	// 	return redirect("/auth/login");
 	// }
 
-	return { user };
+	return Response.json({ user }, { headers });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-	await new Promise((resolve) => setTimeout(resolve, 3000));
-	const user = await requireAuth(request, { redirectTo: "/auth/login" });
-	console.log("ACTION USER: ", user);
+	console.log("ACTION USER: ");
+	await new Promise((resolve) => setTimeout(resolve, 1000));
+	const { user, headers } = await requireAuth(request, {
+		redirectTo: "/auth/login",
+	});
+	const form = await request.formData();
+	const count = form.get("count") || 0;
+	console.log("count: ", count);
+	return { count };
 };
 
 export default function Dashboard() {
-	const loaderData = useLoaderData();
+	const actionData = useActionData();
+	const { user } = useLoaderData();
 	const fetcher = useFetcher();
 	const navigation = useNavigation();
+	const count = actionData?.count ?? 0;
+	// const [count, setCount] = useState(0);
+	const submit = useSubmit();
 
 	useEffect(() => {
 		console.log("fetcher.state:", fetcher.state);
 		console.log("navigation.state:", navigation.state);
 	}, [fetcher.state, navigation.state]);
+
 	return (
 		<div>
 			<h1>Dashboard</h1>
-			<p> Hi 🖐🏻, {loaderData.user.email} </p>
+			<p> Hi 🖐🏻, {user.email} </p>
 			<br />
 			<div>
-				<button
-					onClick={() => fetcher.submit(null, { method: "post" })}
-				>
-					Protected Button
-				</button>
+				<Form method="post" onSubmit={() => submit(count)}>
+					<input type="hidden" name="count" value={count} />
+					<button type="submit">Protected Button</button>
+				</Form>
+			</div>
+			<div>
+				<p>Count: {count}</p>
 			</div>
 		</div>
 	);

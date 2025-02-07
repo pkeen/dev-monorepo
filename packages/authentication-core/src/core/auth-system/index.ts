@@ -44,7 +44,7 @@ export type DisplayProvider = {
 	};
 };
 
-export class AuthSystem implements IAuthSystem {
+export class AuthSystem {
 	public logger?: Logger;
 	public strategy: AuthStrategy;
 	public adapter: Adapter;
@@ -402,20 +402,19 @@ export class AuthSystem implements IAuthSystem {
 	// 	}
 	// }
 
-	async validate(keyCards: KeyCards): Promise<AuthState> {
+	async validate(keyCards: KeyCards): Promise<AuthResult> {
 		// TO-DO decide how to deal with missing keycards
 		// its probably early on the game
 		if (!keyCards) {
 			return {
-				authenticated: false,
-				user: null,
-				keyCards: null,
+				type: "error",
 				error: new KeyCardMissingError("No keycards found"),
 			};
 		}
 
 		const result = await this.strategy.validate(keyCards);
-		if (result.authenticated === false) {
+		console.log("AUTH.VALIDATE RESULT: ", result);
+		if (result.type === "error") {
 			// log the error
 			this.logger.error("Failed to validate keycards", {
 				message: result.error?.message,
@@ -525,7 +524,7 @@ export class AuthSystem implements IAuthSystem {
 
 		const authSystem = new AuthSystem(strategy, config.adapter, logger);
 
-		console.log("AUTH CONFIG:", config);
+		// console.log("AUTH CONFIG:", config);
 
 		for (const provider of config.providers || []) {
 			authSystem.registerProvider(provider.key, provider);

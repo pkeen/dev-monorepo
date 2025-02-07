@@ -4,6 +4,8 @@ import {
 	createCookieSessionStorage,
 	type ActionFunctionArgs,
 	type LoaderFunctionArgs,
+	type ActionFunction,
+	type LoaderFunction,
 } from "react-router";
 // import { stateCookie } from "./session.server";
 import {
@@ -29,6 +31,19 @@ export type RRAuthConfig = AuthConfig & ExtendedAuthConfig;
 export interface SessionData {
 	authState: AuthState;
 }
+
+export interface WithAuthHandlerArgs {
+	request: Request;
+	authState: AuthState;
+	csrf?: string | null;
+	formData?: FormData;
+}
+
+export type WithAuth<T> = (
+	handler: HandlerFunction<T>
+) => Promise<Response | T>;
+
+export type HandlerFunction<T> = (args: WithAuthHandlerArgs) => Promise<T>;
 
 export const Auth = (config: RRAuthConfig) => {
 	const authSystem = AuthSystem.create(config);
@@ -115,27 +130,84 @@ export const Auth = (config: RRAuthConfig) => {
 		});
 	};
 
+	// const requireAuth = async (
+	// 	request: Request,
+	// 	{ redirectTo }: { redirectTo?: string }
+	// ) => {
+	// 	const session = await getSession(request.headers.get("Cookie"));
+	// 	const sessionState = session.get("authState");
+	// 	console.log("sessionState: ", sessionState);
+	// 	if (!sessionState) {
+	// 		if (redirectTo) {
+	// 			throw redirect(redirectTo);
+	// 		}
+	// 		return null;
+	// 	}
+	// 	const authResult = await authSystem.validate(sessionState.keyCards!);
+	// 	if (authResult.type === "error") {
+	// 		if (redirectTo) {
+	// 			throw redirect(redirectTo);
+	// 		}
+	// 		return null;
+	// 	} else if (authResult.type === "refresh") {
+	// 		const headers = new Headers();
+	// 		session.set("authState", authResult.authState);
+	// 		headers.append("Set-Cookie", await commitSession(session));
+	// 		throw Response(authResult.authState.user, { headers });
+	// 	}
+
+	// 	return authResult.user;
+	// };
+
 	const requireAuth = async (
 		request: Request,
 		{ redirectTo }: { redirectTo?: string }
-	) => {
+	): Promise<{ user: UserProfile; headers?: Headers }> => {
 		const session = await getSession(request.headers.get("Cookie"));
 		const sessionState = session.get("authState");
 		console.log("sessionState: ", sessionState);
+
 		if (!sessionState) {
-			if (redirectTo) {
-				throw redirect(redirectTo);
-			}
-			return null;
+			throw redirect(redirectTo ?? "/auth/login");
 		}
-		const authState = await authSystem.validate(sessionState.keyCards!);
-		if (!authState.authenticated) {
-			if (redirectTo) {
-				throw redirect(redirectTo);
-			}
-			return null;
+
+		const authResult = await authSystem.validate(sessionState.keyCards!);
+		// console.log("AUTH RESULT (IN REQUIRE AUTH): ", authResult);
+		if (authResult.type === "error") {
+			throw redirect(redirectTo ?? "/auth/login");
+		} else if (authResult.type === "refresh") {
+			const headers = new Headers();
+			session.set("authState", authResult.authState);
+			headers.append("Set-Cookie", await commitSession(session));
+			// Return both the updated user and headers so the caller can forward them
+			return { user: authResult.authState.user, headers };
+		} else if (authResult.type === "redirect") {
+			// this shouldnt happen
+			throw redirect(authResult.url);
 		}
-		return authState.user;
+
+		return { user: authResult.authState.user };
+	};
+
+	const withAuth = <T>(
+		handler: LoaderFunction | ActionFunction
+	): ((args: LoaderFunctionArgs | ActionFunctionArgs) => Promise<T>) => {
+		return async (args: LoaderFunctionArgs | ActionFunctionArgs) => {
+			const { request } = args;
+			const { user, headers } = await requireAuth(request, {
+				redirectTo: "/auth/login",
+			});
+			// Add user to the loader/action context if needed, e.g. by modifying args or attaching it to locals.
+			const result = await handler({ ...args, user });
+			// If the handler returns a response, merge the headers (ensuring updated cookies are sent)
+			if (result instanceof Response) {
+				for (let [key, value] of headers?.entries() || []) {
+					result.headers.append(key, value);
+				}
+				return result;
+			}
+			return Response.json(result, { headers });
+		};
 	};
 
 	const getUser = async ({
@@ -146,12 +218,19 @@ export const Auth = (config: RRAuthConfig) => {
 		// TODO: Check if user is authenticated
 		const session = await getSession(request.headers.get("Cookie"));
 		const sessionState = session.get("authState");
-		console.log("sessionState: ", sessionState);
+		// console.log("sessionState: ", sessionState);
 		if (!sessionState || !sessionState.authenticated) {
 			return null;
 		}
-		const authState = await authSystem.validate(sessionState.keyCards);
-		return authState.user;
+		const authResult = await authSystem.validate(sessionState.keyCards);
+		if (authResult.type === "error") {
+			return null;
+		} else if (authResult.type === "refresh") {
+			return authResult.authState.user;
+		} else if (authResult.type === "redirect") {
+			throw redirect(authResult.url);
+		}
+		return authResult.authState.user;
 	};
 
 	const callback = async ({ request, params }: LoaderFunctionArgs) => {

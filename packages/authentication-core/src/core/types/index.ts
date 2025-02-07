@@ -27,12 +27,21 @@ export type ErrorResult = {
 	error: AuthError;
 };
 
-export type AuthResult = SuccessResult | ErrorResult | RedirectResult;
+export type RefreshResult = {
+	type: "refresh";
+	authState: AuthState;
+};
+
+export type AuthResult =
+	| SuccessResult
+	| ErrorResult
+	| RedirectResult
+	| RefreshResult;
 
 export interface AuthStrategy {
 	createKeyCards(user: User): Promise<KeyCards>;
 	logout(keyCards: KeyCards): Promise<AuthState>;
-	validate(keyCards: KeyCards): Promise<AuthState>;
+	validate(keyCards: KeyCards): Promise<AuthResult>;
 	// validateCard(keyCards: KeyCards, name: string): Promise<AuthResult>;
 	// validateAll(keyCards: KeyCards): Promise<AuthValidationResult>;
 	// validateRefresh?(keyCards: KeyCards): Promise<AuthValidationResult>;

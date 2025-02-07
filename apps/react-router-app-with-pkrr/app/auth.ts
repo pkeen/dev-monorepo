@@ -32,7 +32,7 @@ const jwtOptions = {
 		secretKey:
 			process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || "",
 		algorithm: "HS256",
-		expiresIn: "30 minutes",
+		expiresIn: "30 seconds",
 		fields: ["id", "email"],
 	},
 	refresh: {

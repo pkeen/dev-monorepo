@@ -91,12 +91,5 @@ const config: RRAuthConfig = {
 	sessionSecret: "asfjsdkfj",
 };
 
-export const {
-	login,
-	logout,
-	authLoader,
-	authAction,
-	requireAuth,
-	withAuth,
-	authSystem,
-} = Auth(config);
+export const { login, logout, authLoader, authAction, requireAuth, withAuth } =
+	Auth(config);

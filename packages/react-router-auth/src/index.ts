@@ -331,7 +331,6 @@ export const Auth = (config: RRAuthConfig) => {
 		// redirect,
 		authAction,
 		authLoader,
-		authSystem,
 	};
 };
 

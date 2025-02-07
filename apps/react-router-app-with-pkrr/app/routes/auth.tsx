@@ -1,5 +1,6 @@
 import { Form } from "react-router";
-import AuthComponent from "../lib/auth/auth-component";
+// import AuthComponent from "../lib/auth/auth-component";
+import { AuthComponent } from "@pete_keen/react-router-auth/client";
 import { authLoader, authAction } from "../auth";
 
 // if (!process.env.JWT_ACCESS_SECRET) {

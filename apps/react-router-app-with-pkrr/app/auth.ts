@@ -1,4 +1,4 @@
-import { Auth, type RRAuthConfig } from "./lib/auth/rr-auth";
+import { Auth, type RRAuthConfig } from "@pete_keen/react-router-auth";
 import { DrizzleAdapter } from "@pete_keen/authentication-core/adapters";
 import db from "./lib/db";
 import {
@@ -97,5 +97,6 @@ export const {
 	authLoader,
 	authAction,
 	requireAuth,
+	withAuth,
 	authSystem,
 } = Auth(config);

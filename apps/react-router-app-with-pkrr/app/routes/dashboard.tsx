@@ -12,24 +12,33 @@ import {
 	useSubmit,
 } from "react-router";
 import { useEffect } from "react";
-import { requireAuth } from "../auth";
+import { requireAuth, withAuth } from "../auth";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useState } from "react";
 
 // import { Route } from "+types/dashboard";
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-	// TODO: Check if user is authenticated
-	// const user = await useAuth({ request });
-	const { user, headers } = await requireAuth(request, {
-		redirectTo: "/auth/login",
-	});
-	// if (!authenticated) {
-	// 	return redirect("/auth/login");
-	// }
+// export const loader = async ({ request }: LoaderFunctionArgs) => {
+// 	// TODO: Check if user is authenticated
+// 	// const user = await useAuth({ request });
+// 	const { user, headers } = await requireAuth(request, {
+// 		redirectTo: "/auth/login",
+// 	});
+// 	// if (!authenticated) {
+// 	// 	return redirect("/auth/login");
+// 	// }
 
-	return Response.json({ user }, { headers });
+// 	return Response.json({ user }, { headers });
+// };
+
+const handler = async ({ request, user }) => {
+	console.log("GETTING HERE");
+	console.log("request: ", request);
+	console.log("user: ", user);
+	// return { user };
 };
+
+export const loader = withAuth(handler);
 
 export const action = async ({ request }: ActionFunctionArgs) => {
 	console.log("ACTION USER: ");

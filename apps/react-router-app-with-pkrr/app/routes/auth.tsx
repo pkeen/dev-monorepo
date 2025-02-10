@@ -89,8 +89,7 @@ import { authLoader, authAction } from "../auth";
 
 // export { login, logout, requireAuth };
 
-export const loader = authLoader;
-export const action = authAction;
+// export const loader = authLoader;
+// export const action = authAction;
+export { authLoader as loader, authAction as action };
 export default AuthComponent;
-
-// export { loader, action };

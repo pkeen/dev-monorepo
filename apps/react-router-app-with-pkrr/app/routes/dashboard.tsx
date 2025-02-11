@@ -14,6 +14,7 @@ import {
 import { useEffect } from "react";
 import { requireAuth, withAuth } from "../auth";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
+import type { User } from "@pete_keen/authentication-core";
 
 // import { Route } from "+types/dashboard";
 
@@ -30,10 +31,7 @@ import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 // 	return Response.json({ user }, { headers });
 // };
 
-const handler = async ({ request, user }) => {
-	console.log("GETTING HERE");
-	console.log("request: ", request);
-	console.log("user: ", user);
+const handler = async ({ request, user }: { request: Request; user: User }) => {
 	// return { user };
 };
 

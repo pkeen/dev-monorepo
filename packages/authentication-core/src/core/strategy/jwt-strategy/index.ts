@@ -97,7 +97,7 @@ export class JwtStrategy implements AuthStrategy {
 
 	async validate(keyCards: KeyCards): Promise<AuthResult> {
 		try {
-			console.log("keyCards: ", keyCards);
+			// console.log("keyCards: ", keyCards);
 			const accessState = await this.validateCard(keyCards, "access");
 			if (accessState.authenticated) {
 				logger.info("Keycards validated", {

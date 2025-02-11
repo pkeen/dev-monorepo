@@ -413,7 +413,7 @@ export class AuthSystem {
 		}
 
 		const result = await this.strategy.validate(keyCards);
-		console.log("AUTH.VALIDATE RESULT: ", result);
+		// console.log("AUTH.VALIDATE RESULT: ", result);
 		if (result.type === "error") {
 			// log the error
 			this.logger.error("Failed to validate keycards", {

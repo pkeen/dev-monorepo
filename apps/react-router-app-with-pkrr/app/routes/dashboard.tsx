@@ -15,6 +15,7 @@ import { useEffect } from "react";
 import { requireAuth, withAuth, logout } from "../auth";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import type { User } from "@pete_keen/authentication-core";
+import type { WithAuthHandlerArgs } from "@pete_keen/react-router-auth";
 
 // import { Route } from "+types/dashboard";
 
@@ -29,8 +30,8 @@ import type { User } from "@pete_keen/authentication-core";
 // 	return Response.json({ user }, { headers });
 // };
 
-const handler = async ({ request, user }: { request: Request; user: User }) => {
-	// return { user };
+const handler = async ({ request, user }: WithAuthHandlerArgs) => {
+	return { user };
 };
 
 export const loader = withAuth(handler);

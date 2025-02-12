@@ -420,47 +420,47 @@ export class AuthSystem {
 		return result;
 	}
 
-	async signup(credentials: Credentials): Promise<AuthState> {
-		// return this.strategy.signup(credentials);
-		// Step 1: Validate input
-		// TO-DO Zod input validation
+	// async signup(credentials: Credentials): Promise<AuthState> {
+	// 	// return this.strategy.signup(credentials);
+	// 	// Step 1: Validate input
+	// 	// TO-DO Zod input validation
 
-		try {
-			this.logger.info("Signing up user", {
-				email: credentials.email,
-			});
+	// 	try {
+	// 		this.logger.info("Signing up user", {
+	// 			email: credentials.email,
+	// 		});
 
-			// Step 2: Check if user already exists
-			const existingUser = await this.adapter.getUserByEmail(
-				credentials.email
-			);
-			if (existingUser) {
-				this.logger.error("An account with that email already exists");
-				throw new AccountAlreadyExistsError(credentials.email);
-			}
+	// 		// Step 2: Check if user already exists
+	// 		const existingUser = await this.adapter.getUserByEmail(
+	// 			credentials.email
+	// 		);
+	// 		if (existingUser) {
+	// 			this.logger.error("An account with that email already exists");
+	// 			throw new AccountAlreadyExistsError(credentials.email);
+	// 		}
 
-			// Step 3: Hash the password
-			const hashedPassword = await this.passwordService.hash(
-				credentials.password
-			);
-			credentials.password = hashedPassword;
+	// 		// Step 3: Hash the password
+	// 		const hashedPassword = await this.passwordService.hash(
+	// 			credentials.password
+	// 		);
+	// 		credentials.password = hashedPassword;
 
-			// Step 4: Create the user
-			const user = await this.adapter.createUserWithoutId(credentials);
+	// 		// Step 4: Create the user
+	// 		const user = await this.adapter.createUserWithoutId(credentials);
 
-			// Step 5: Create the auth state
-			const keyCards = await this.strategy.createKeyCards(user);
+	// 		// Step 5: Create the auth state
+	// 		const keyCards = await this.strategy.createKeyCards(user);
 
-			// Step 6: Return the auth state
-			return { authenticated: true, keyCards, user };
-			// return { accessToken: "", refreshToken: "" };
-		} catch (error) {
-			this.logger.error("Error while signing up: ", {
-				error,
-			});
-			return { authenticated: false, keyCards: null, user: null, error };
-		}
-	}
+	// 		// Step 6: Return the auth state
+	// 		return { authenticated: true, keyCards, user };
+	// 		// return { accessToken: "", refreshToken: "" };
+	// 	} catch (error) {
+	// 		this.logger.error("Error while signing up: ", {
+	// 			error,
+	// 		});
+	// 		return { authenticated: false, keyCards: null, user: null, error };
+	// 	}
+	// }
 
 	// Assuming this is a method on your auth system
 	listProviders(): DisplayProvider[] {

@@ -147,22 +147,25 @@ export const Auth = (config: RRAuthConfig) => {
 		// console.log("sessionState: ", sessionState);
 
 		if (!sessionState) {
-			throw redirect(redirectTo ?? "/auth/login");
+			if (redirectTo) {
+				throw redirect(redirectTo ?? "/auth/login");
+			}
+			return { user: null };
 		}
 
 		const authResult = await authSystem.validate(sessionState.keyCards!);
 		// console.log("AUTH RESULT (IN REQUIRE AUTH): ", authResult);
-		if (authResult.type === "error") {
-			throw redirect(redirectTo ?? "/auth/login");
+		if (authResult.type === "error" || authResult.type === "redirect") {
+			if (redirectTo) {
+				throw redirect(redirectTo);
+			}
+			return { user: null };
 		} else if (authResult.type === "refresh") {
 			const headers = new Headers();
 			session.set("authState", authResult.authState);
 			headers.append("Set-Cookie", await commitSession(session));
 			// Return both the updated user and headers so the caller can forward them
 			return { user: authResult.authState.user, headers };
-		} else if (authResult.type === "redirect") {
-			// this shouldnt happen
-			throw redirect(authResult.url);
 		}
 
 		return { user: authResult.authState.user };
@@ -311,7 +314,7 @@ export const Auth = (config: RRAuthConfig) => {
 		| undefined
 	> => {
 		const { action } = params;
-        console.log("ACTION:", action);
+		console.log("ACTION:", action);
 		if (action === "redirect") {
 			if (params.provider) {
 				console.log("PROVIDER:", params.provider);

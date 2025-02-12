@@ -12,15 +12,13 @@ import {
 	useSubmit,
 } from "react-router";
 import { useEffect } from "react";
-import { requireAuth, withAuth } from "../auth";
+import { requireAuth, withAuth, logout } from "../auth";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import type { User } from "@pete_keen/authentication-core";
 
 // import { Route } from "+types/dashboard";
 
 // export const loader = async ({ request }: LoaderFunctionArgs) => {
-// 	// TODO: Check if user is authenticated
-// 	// const user = await useAuth({ request });
 // 	const { user, headers } = await requireAuth(request, {
 // 		redirectTo: "/auth/login",
 // 	});
@@ -77,6 +75,9 @@ export default function Dashboard() {
 			<div>
 				<p>Count: {count}</p>
 			</div>
+			<Form action="/auth/logout" method="post">
+				<button type="submit">Logout</button>
+			</Form>
 		</div>
 	);
 }

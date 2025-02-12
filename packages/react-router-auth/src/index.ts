@@ -105,8 +105,8 @@ export const Auth = (config: RRAuthConfig) => {
 			);
 			// Explicitly set a Content-Type header so that the client interprets the response correctly.
 			headers.set("Content-Type", "text/html");
-			console.log("authResult.url:", authResult.url);
-			console.log("HEADERS FOR REDIRECT:", headers);
+			// console.log("authResult.url:", authResult.url);
+			// console.log("HEADERS FOR REDIRECT:", headers);
 			return redirect(authResult.url, { headers });
 		}
 	};
@@ -127,7 +127,7 @@ export const Auth = (config: RRAuthConfig) => {
 		session.set("authState", authState);
 		headers.append("Set-Cookie", await commitSession(session));
 
-		return redirect(config.redirectAfterLogout || "/auth/logout", {
+		return redirect(config.redirectAfterLogout || "/", {
 			headers,
 		});
 	};
@@ -236,7 +236,7 @@ export const Auth = (config: RRAuthConfig) => {
 		}
 		const code = url.searchParams.get("code");
 		const returnedState = url.searchParams.get("state");
-		console.log("RETURNED URL:", url);
+		// console.log("RETURNED URL:", url);
 
 		const session = await getSession(request.headers.get("Cookie"));
 		const headers = new Headers();
@@ -311,6 +311,7 @@ export const Auth = (config: RRAuthConfig) => {
 		| undefined
 	> => {
 		const { action } = params;
+        console.log("ACTION:", action);
 		if (action === "redirect") {
 			if (params.provider) {
 				console.log("PROVIDER:", params.provider);

@@ -3,7 +3,7 @@ import { AuthState, AuthStrategy, KeyCards, AuthResult } from "../types";
 import { AuthConfig, IAuthSystem } from "./index.types";
 import {
 	Credentials,
-	SignupCredentials,
+	// SignupCredentials,
 } from "../providers/credentials/index.types";
 
 // import { WebStorageAdapter } from "../types";
@@ -166,64 +166,8 @@ export class AuthSystem {
 		}
 	}
 
-	async authenticate(credentials: Credentials): Promise<AuthState> {
-		// Now this is just the credentials based signin method
-		try {
-			// Step 1: Validate input
-			if (!this.validateCredentials(credentials))
-				throw new InvalidCredentialsError();
-
-			// Step 2: Find user
-			const user = await this.findUser(credentials.email);
-			if (!user) {
-				throw new UserNotFoundError(credentials.email);
-			}
-
-			// Step 3: Verify password
-			const isAuthenticated = await this.verifyPassword(
-				credentials.password,
-				user
-			);
-			if (!isAuthenticated) {
-				throw new InvalidCredentialsError();
-			}
-			// Step 4: Create auth state
-			const keyCards = await this.createKeyCardsForUser(user);
-
-			this.logger.info(
-				"Authentication successful",
-				createLogContext({
-					userId: user.id,
-					email: user.email,
-				})
-			);
-			return { authenticated: true, keyCards, user };
-		} catch (error) {
-			this.logger.error("Error while signing in: ", {
-				error,
-			});
-			if (error instanceof AuthError) {
-				return {
-					authenticated: false,
-					error,
-					user: null,
-					keyCards: null,
-				};
-			} else {
-				return {
-					authenticated: false,
-					user: null,
-					keyCards: null,
-					error: new UnknownAuthError(
-						"An unknown error occurred while signing in"
-					),
-				};
-			}
-		}
-	}
-	// async signin(provider: string): Promise<AuthState> {
-	// 	// Authenticate with different providers
-
+	// async authenticate(credentials: Credentials): Promise<AuthState> {
+	// 	// Now this is just the credentials based signin method
 	// 	try {
 	// 		// Step 1: Validate input
 	// 		if (!this.validateCredentials(credentials))
@@ -277,71 +221,127 @@ export class AuthSystem {
 	// 		}
 	// 	}
 	// }
-	private validateCredentials(credentials: Credentials): boolean {
-		if (!credentials.email || !credentials.password) {
-			this.logger.warn("Invalid credentials provided", {
-				missingFields: {
-					email: !credentials.email,
-					password: !credentials.password,
-				},
-			});
-			return false;
-		}
-		return true;
-	}
+	// // async signin(provider: string): Promise<AuthState> {
+	// // 	// Authenticate with different providers
+
+	// // 	try {
+	// // 		// Step 1: Validate input
+	// // 		if (!this.validateCredentials(credentials))
+	// // 			throw new InvalidCredentialsError();
+
+	// // 		// Step 2: Find user
+	// // 		const user = await this.findUser(credentials.email);
+	// // 		if (!user) {
+	// // 			throw new UserNotFoundError(credentials.email);
+	// // 		}
+
+	// // 		// Step 3: Verify password
+	// // 		const isAuthenticated = await this.verifyPassword(
+	// // 			credentials.password,
+	// // 			user
+	// // 		);
+	// // 		if (!isAuthenticated) {
+	// // 			throw new InvalidCredentialsError();
+	// // 		}
+	// // 		// Step 4: Create auth state
+	// // 		const keyCards = await this.createKeyCardsForUser(user);
+
+	// // 		this.logger.info(
+	// // 			"Authentication successful",
+	// // 			createLogContext({
+	// // 				userId: user.id,
+	// // 				email: user.email,
+	// // 			})
+	// // 		);
+	// // 		return { authenticated: true, keyCards, user };
+	// // 	} catch (error) {
+	// // 		this.logger.error("Error while signing in: ", {
+	// // 			error,
+	// // 		});
+	// // 		if (error instanceof AuthError) {
+	// // 			return {
+	// // 				authenticated: false,
+	// // 				error,
+	// // 				user: null,
+	// // 				keyCards: null,
+	// // 			};
+	// // 		} else {
+	// // 			return {
+	// // 				authenticated: false,
+	// // 				user: null,
+	// // 				keyCards: null,
+	// // 				error: new UnknownAuthError(
+	// // 					"An unknown error occurred while signing in"
+	// // 				),
+	// // 			};
+	// // 		}
+	// // 	}
+	// // }
+	// private validateCredentials(credentials: Credentials): boolean {
+	// 	if (!credentials.email || !credentials.password) {
+	// 		this.logger.warn("Invalid credentials provided", {
+	// 			missingFields: {
+	// 				email: !credentials.email,
+	// 				password: !credentials.password,
+	// 			},
+	// 		});
+	// 		return false;
+	// 	}
+	// 	return true;
+	// }
 
 	// In your auth system
-	private async findUser(email: string): Promise<AdapterUser | null> {
-		const user = await safeExecute(
-			async () => {
-				const user = await this.adapter.getUserByEmail(email);
-				// console.log("DEBUG - Found user:", user); // Temporary debug log
-				return user;
-			},
-			this.logger,
-			{
-				message: "Failed to fetch user",
-				error: UserNotFoundError,
-			},
-			createLogContext({ email })
-		);
+	// private async findUser(email: string): Promise<AdapterUser | null> {
+	// 	const user = await safeExecute(
+	// 		async () => {
+	// 			const user = await this.adapter.getUserByEmail(email);
+	// 			// console.log("DEBUG - Found user:", user); // Temporary debug log
+	// 			return user;
+	// 		},
+	// 		this.logger,
+	// 		{
+	// 			message: "Failed to fetch user",
+	// 			error: UserNotFoundError,
+	// 		},
+	// 		createLogContext({ email })
+	// 	);
 
-		if (!user) {
-			this.logger.warn("User not found", createLogContext({ email }));
-		}
-		return user;
-	}
+	// 	if (!user) {
+	// 		this.logger.warn("User not found", createLogContext({ email }));
+	// 	}
+	// 	return user;
+	// }
 
-	private async verifyPassword(
-		password: string,
-		user: AdapterUser
-	): Promise<boolean> {
-		if (!user.password) {
-			this.logger.error(
-				"User has no password",
-				createLogContext({ email: user.email, id: user.id })
-			);
-			return false;
-		}
+	// private async verifyPassword(
+	// 	password: string,
+	// 	user: AdapterUser
+	// ): Promise<boolean> {
+	// 	if (!user.password) {
+	// 		this.logger.error(
+	// 			"User has no password",
+	// 			createLogContext({ email: user.email, id: user.id })
+	// 		);
+	// 		return false;
+	// 	}
 
-		const isAuthenticated = await safeExecute(
-			async () => {
-				return await this.passwordService.verify(
-					password,
-					user.password
-				);
-			},
-			this.logger,
-			{
-				message: "Failed to verify password",
-				error: UserNotFoundError,
-			},
-			createLogContext({ email: user.email, id: user.id })
-		);
-		return isAuthenticated;
-	}
+	// 	const isAuthenticated = await safeExecute(
+	// 		async () => {
+	// 			return await this.passwordService.verify(
+	// 				password,
+	// 				user.password
+	// 			);
+	// 		},
+	// 		this.logger,
+	// 		{
+	// 			message: "Failed to verify password",
+	// 			error: UserNotFoundError,
+	// 		},
+	// 		createLogContext({ email: user.email, id: user.id })
+	// 	);
+	// 	return isAuthenticated;
+	// }
 
-	private async createKeyCardsForUser(user: User): Promise<KeyCards> {
+	private async createKeyCardsForUser(user: AdapterUser): Promise<KeyCards> {
 		return safeExecute(
 			() => this.strategy.createKeyCards(user),
 			this.logger,
@@ -370,10 +370,7 @@ export class AuthSystem {
 	 * @param name Unique name/key for the provider.
 	 * @param provider Instance of a class extending AbstractOAuthProvider.
 	 */
-	public registerProvider(
-		key: string,
-		provider: AbstractOAuthProvider<any>
-	): void {
+	public registerProvider(key: string, provider: AuthProvider): void {
 		if (this.providers[key]) {
 			throw new Error(
 				`Provider with key "${key}" is already registered.`
@@ -478,7 +475,7 @@ export class AuthSystem {
 	 * Registers a new OAuth provider.
 	 * @param provider Instance of a class extending AbstractOAuthProvider.
 	 */
-	public addProvider(provider: AbstractOAuthProvider<any>): void {
+	public addProvider(provider: AuthProvider): void {
 		const name = provider.name;
 		if (this.providers[name]) {
 			throw new Error(

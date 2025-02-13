@@ -10,23 +10,24 @@ import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 // import { Route } from "+types/dashboard";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-	// TODO: Check if user is authenticated
-	// const user = await useAuth({ request });
-	const user = await requireAuth(request, "/auth/login");
-	// if (!authenticated) {
-	// 	return redirect("/auth/login");
-	// }
+	const user = await requireAuth(request, {
+		redirectTo: "/auth/login",
+	});
+	console.log("LOADER USER: ", user);
 
-	return { user };
+	return user;
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-	const user = await requireAuth(request, "/auth/login");
+	const user = await requireAuth(request, {
+		redirectTo: "/auth/login",
+	});
 	console.log("ACTION USER: ", user);
 };
 
 export default function Dashboard() {
 	const loaderData = useLoaderData();
+	console.log("LOADER DATA: ", loaderData);
 	const fetcher = useFetcher();
 	return (
 		<div>
@@ -40,6 +41,9 @@ export default function Dashboard() {
 					Protected Button
 				</button>
 			</div>
+			<Form action="/auth/logout" method="post">
+				<button type="submit">Logout</button>
+			</Form>
 		</div>
 	);
 }

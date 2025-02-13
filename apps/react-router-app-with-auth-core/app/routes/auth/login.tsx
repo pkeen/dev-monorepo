@@ -1,81 +1,93 @@
-// import * as arctic from "arctic";
-// import { createCookie, redirect } from "react-router";
-// import { stateCookie, codeVerifierCookie } from "~/session.server";
-// import { requestAuthorization } from "~/arctic/requestAuthorization";
-// import { requestAuthorization } from "~/oslo/requestAuthorization";
-// import { requestAuthorization } from "~/own/requestAuthorization";
-// import { requestAuthorization } from "~/own/github/requestAuthorization";
-// import { GitHub } from "~/own/github/github-client";
-// import { GoogleClient } from "~/own/googleClient";
+// import { Login } from "~/lib/components/login";
+import type { DisplayProvider } from "@pete_keen/authentication-core";
+import { redirect } from "react-router";
+import { stateCookie } from "~/session.server";
+import authSystem from "~/auth";
 
-import { login } from "~/lib/login";
+export const loader = async ({ request }: { request: Request }) => {
+	const providers = authSystem.listProviders();
+	return { providers };
+};
 
-// const providers = { github: GitHub, google: GoogleClient };
+export const action = async ({ request }: { request: Request }) => {
+	const headers = new Headers(request.headers);
+	const formData = await request.formData();
+	const provider = formData.get("provider");
 
-export const action = login;
+	if (!provider) {
+		redirect("/auth/login");
+	}
 
-export default function Login() {
+	const authResult = await authSystem.login(provider?.toString());
+
+	if (authResult.type === "redirect") {
+		headers.append(
+			"Set-Cookie",
+			await stateCookie.serialize(authResult.state)
+		);
+		headers.set("Content-Type", "text/html");
+		return redirect(authResult.url, { headers });
+	}
+};
+
+export default function Login({
+	loaderData,
+}: {
+	loaderData: { providers: DisplayProvider[] };
+}) {
+	const providers = loaderData.providers;
+
 	return (
-		<div>
-			<form method="post">
-				<button type="submit" value="google" name="provider">
-					Login with Google
-				</button>{" "}
-				--
-				<br />
-				<button type="submit" value="github" name="provider">
-					Login with GitHub
-				</button>{" "}
-				--
-				<br />
-				<button type="submit" value="zoom" name="provider">
-					Login with Zoom
-				</button>
-				<br />
-				<button type="submit" value="microsoft" name="provider">
-					Login with Microsoft
-				</button>
-				<br />
-				<button type="submit" value="facebook" name="provider">
-					Login with Facebook
-				</button>
+		<div
+			style={{
+				height: "100vh",
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "center",
+			}}
+		>
+			<form method="post" data-turbo="false">
+				<div style={{ display: "inline-block" }}>
+					<h1 style={{ textAlign: "center", fontSize: "22px" }}>
+						Continue with
+					</h1>
+					{providers?.map((provider) => (
+						<button
+							key={provider.key}
+							type="submit"
+							name="provider"
+							value={provider.key}
+							// onClick={() => {
+							// 	setSelectedProvider(provider.name);
+							// 	// setIsSubmitting(true);
+							// }}
+							// onMouseEnter={() => setHover(true)}
+							// onMouseLeave={() => setHover(false)}
+							// disabled={isSubmitting} // disable the buttons while submitting
+							style={{
+								width: "100%",
+								display: "block",
+								color: provider.style.text,
+								backgroundColor: provider.style.bg,
+								border: "none",
+								borderRadius: "4px",
+								padding: "12px 20px",
+								marginBottom: "10px",
+								cursor: "pointer",
+								// cursor: isSubmitting
+								// 	? "not-allowed"
+								// 	: "pointer",
+								fontSize: "16px",
+
+								transition: "all 0.2s ease",
+							}}
+						>
+							{provider.name}
+						</button>
+					))}
+				</div>
+				{/* )} */}
 			</form>
 		</div>
 	);
 }
-
-// export const action = async ({ request }) => {
-// 	const headers = new Headers(request.headers);
-
-// 	// const google = new arctic.Google({
-// 	// 	clientId: process.env.GOOGLE_CLIENT_ID,
-// 	// 	clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-// 	// 	redirectUri: "http://localhost:5173/auth/google/callback",
-// 	// });
-// 	const google = new arctic.Google(
-// 		process.env.GOOGLE_CLIENT_ID!,
-// 		process.env.GOOGLE_CLIENT_SECRET!,
-// 		"http://localhost:5173/auth/callback/google"
-// 	);
-
-// 	// The state parameter is to prevent CSRF attacks
-// 	const state = arctic.generateState();
-// 	// Generate a codeVerifier for PKCE (Proof Key for Code Exchange)
-// 	const codeVerifier = arctic.generateCodeVerifier();
-// 	const scopes = ["openid", "profile"];
-// 	const url = google.createAuthorizationURL(state, codeVerifier, scopes);
-
-// 	console.log("Authorization URL:", url);
-// 	console.log("state:", state);
-// 	console.log("codeVerifier:", codeVerifier);
-
-// 	headers.append("Set-Cookie", await stateCookie.serialize(state));
-// 	headers.append(
-// 		"Set-Cookie",
-// 		await codeVerifierCookie.serialize(codeVerifier)
-// 	);
-
-// 	return redirect(url, {
-// 		headers,
-// 	});
-// };

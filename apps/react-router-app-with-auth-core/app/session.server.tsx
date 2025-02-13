@@ -9,7 +9,7 @@ export interface SessionData {
 export const { getSession, commitSession, destroySession } =
 	createCookieSessionStorage<SessionData>({
 		cookie: {
-			name: "__session", // Name of the cookie
+			name: "auth_session", // Name of the cookie
 			// secrets: ["your-secret-key"], // Replace with a secure key
 			secure: process.env.NODE_ENV === "production", // Secure cookies in production
 			httpOnly: true, // Prevent client-side access
@@ -32,12 +32,3 @@ export const codeVerifierCookie = createCookie("codeVerifier", {
 	secure: process.env.NODE_ENV === "production",
 	sameSite: "lax",
 });
-
-import type { KeyCard, UserProfile } from "@pete_keen/authentication-core";
-
-export interface SessionData {
-	keyCards: KeyCard[] | null;
-	user: UserProfile | null;
-	authenticated: boolean;
-	csrf: string | null;
-}

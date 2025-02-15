@@ -11,6 +11,7 @@ import {
 	MantineProvider,
 	mantineHtmlProps,
 } from "@mantine/core";
+import "@mantine/core/styles.css";
 
 import type { Route } from "./+types/root";
 import "./app.css";

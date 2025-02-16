@@ -19,10 +19,13 @@ export function Login({ providers }: { providers: DisplayProvider[] }) {
 	return (
 		<div
 			style={{
-				height: "100vh",
+				// height: "100%",
+                height: "100vh",
 				display: "flex",
 				alignItems: "center",
 				justifyContent: "center",
+				border: "1px solid red",
+				flex: 1,
 			}}
 		>
 			<form method="post" data-turbo="false">
@@ -35,7 +38,14 @@ export function Login({ providers }: { providers: DisplayProvider[] }) {
 				) : ( */}
 				{/* // Otherwise, show all the login buttons */}
 				<div style={{ display: "inline-block" }}>
-					<h1 style={{ textAlign: "center", fontSize: "22px" }}>
+					<h1
+						style={{
+							textAlign: "center",
+							fontSize: "22px",
+                            marginBottom: "10px",
+							// border: "1px solid red",
+						}}
+					>
 						Continue with
 					</h1>
 					{providers?.map((provider) => (
@@ -56,7 +66,7 @@ export function Login({ providers }: { providers: DisplayProvider[] }) {
 								display: "block",
 								color: provider.style.text,
 								backgroundColor: provider.style.bg,
-								border: "none",
+								// border: "none",
 								borderRadius: "4px",
 								padding: "12px 20px",
 								marginBottom: "10px",
@@ -67,6 +77,9 @@ export function Login({ providers }: { providers: DisplayProvider[] }) {
 								fontSize: "16px",
 
 								transition: "all 0.2s ease",
+								// border: "1px solid red",
+								// margin: "10px",
+								// border: hover ? "1px solid black" : "none"
 							}}
 						>
 							{provider.name}

@@ -178,11 +178,14 @@ export const Auth = (config: RRAuthConfig) => {
 	 * @param handler
 	 * @returns Response.json(<T>)
 	 */
-	const withAuth = <T>(handler: HandlerFunction<T>) => {
+	const withAuth = <T>(
+		handler: HandlerFunction<T>,
+		options?: { redirectTo?: string }
+	) => {
 		return async (args: LoaderFunctionArgs | ActionFunctionArgs) => {
 			const { request } = args;
 			const { user, headers } = await requireAuth(request, {
-				redirectTo: "/auth/login",
+				redirectTo: options?.redirectTo,
 			});
 			// Add user to the loader/action context if needed, e.g. by modifying args or attaching it to locals.
 			const result = await handler({ ...args, user });

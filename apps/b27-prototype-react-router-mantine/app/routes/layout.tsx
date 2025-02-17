@@ -62,7 +62,7 @@ export default function Layout({ loaderData }: Route.ComponentProps) {
 					<Outlet />
 				</AppShell.Main>
 				<AppShell.Footer>
-					<Container size="xl">Footer Content</Container>
+					<Container size="md">Footer Content</Container>
 				</AppShell.Footer>
 			</AppShell>
 		</Paper>

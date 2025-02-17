@@ -56,7 +56,8 @@ export default function Layout({ loaderData }: Route.ComponentProps) {
 				{/* <AppShell.Navbar p="md">Navbar</AppShell.Navbar> */}
 
 				<AppShell.Main
-					style={{ display: "flex", flexDirection: "column" }}
+					// style={{ display: "flex", flexDirection: "column" }}
+					style={{ border: "5px solid blue", display: "flex" }}
 				>
 					<Outlet />
 				</AppShell.Main>

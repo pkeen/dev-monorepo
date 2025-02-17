@@ -61,6 +61,7 @@ import { LogoGradientButton, LogoButton } from "./logo";
 
 const AvatarOrSignin = ({ user }: { user: any }) => {
 	const fetcher = useFetcher();
+
 	return (
 		// <Group style={{ border: "1px solid red" }} justify="space-between">
 		<>

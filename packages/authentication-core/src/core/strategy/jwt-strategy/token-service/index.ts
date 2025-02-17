@@ -18,6 +18,8 @@ export class JwtTokenService implements TokenService {
 		return {
 			id: user.id.toString(),
 			email: user.email,
+			name: user.name,
+			image: user.image,
 		};
 	}
 
@@ -61,6 +63,8 @@ export class JwtTokenService implements TokenService {
 			const user: User = {
 				id: payload.id as string,
 				email: payload.email as string,
+				name: payload.name as string,
+				image: payload.image as string,
 			};
 
 			return {

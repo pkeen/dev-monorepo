@@ -8,7 +8,7 @@ import {
 	SignupCredentials,
 } from "../providers/credentials/index.types";
 import { AuthState, KeyCards } from "../types";
-import { AuthProvider } from "../providers/OAuth/oauth-provider";
+import { AuthProvider } from "../providers/oauth/oauth-provider";
 import { Role } from "../roles/index.types";
 
 export interface LoggerOptions {

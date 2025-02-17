@@ -143,8 +143,9 @@ export const Auth = (config: RRAuthConfig) => {
 		{ redirectTo }: { redirectTo?: string }
 	): Promise<{ user: User | null; headers?: Headers }> => {
 		const session = await getSession(request.headers.get("Cookie"));
+		console.log("session: ", session);
 		const sessionState = session.get("authState");
-		// console.log("sessionState: ", sessionState);
+		console.log("sessionState: ", sessionState);
 
 		if (!sessionState) {
 			if (redirectTo) {

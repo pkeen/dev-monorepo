@@ -26,7 +26,7 @@ import {
 import {
 	AbstractOAuthProvider,
 	AuthProvider,
-} from "../providers/OAuth/oauth-provider";
+} from "../providers/oauth/oauth-provider";
 import { JwtStrategy } from "../strategy";
 import crypto from "crypto";
 import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";

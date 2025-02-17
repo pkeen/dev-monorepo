@@ -114,7 +114,13 @@ const ColorSchemeSelector = () => {
 			<Menu>
 				<Menu.Target>
 					<ActionIcon radius="xl" size="lg" variant="default">
-						{colorScheme === "dark" ? <IconMoon /> : <IconSun />}
+						{colorScheme === "dark" ? (
+							<IconMoon />
+						) : colorScheme === "light" ? (
+							<IconSun />
+						) : (
+							<IconSettings />
+						)}
 					</ActionIcon>
 				</Menu.Target>
 				<Menu.Dropdown>

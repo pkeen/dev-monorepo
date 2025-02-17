@@ -22,9 +22,9 @@ export default defineConfig({
 		"react",
 		"react-dom",
 		// Ensure all Next.js imports are treated as external
-		"next",
-		"next/*",
-		/^next\/.*/,
+		// "next",
+		// "next/*",
+		// /^next\/.*/,
 		// Add any other dependencies that should be external
 	],
 	plugins: [

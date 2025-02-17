@@ -102,7 +102,7 @@ export interface DatabaseUser {
 	email: string;
 	emailVerified?: Date | null;
 	image?: string | null;
-	password?: string;
+	// password?: string;
 }
 
 export interface Resource {

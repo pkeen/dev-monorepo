@@ -10,6 +10,7 @@ import { TokenTamperedError, TokenExpiredError } from "../../../error";
 // import jose from "jose";
 import { SignJWT, jwtVerify } from "jose";
 import { createLogger } from "@pete_keen/logger";
+import { Role } from "core/roles/index.types";
 
 const logger = createLogger({});
 
@@ -20,6 +21,7 @@ export class JwtTokenService implements TokenService {
 			email: user.email,
 			name: user.name,
 			image: user.image,
+			role: user.role,
 		};
 	}
 
@@ -65,6 +67,7 @@ export class JwtTokenService implements TokenService {
 				email: payload.email as string,
 				name: payload.name as string,
 				image: payload.image as string,
+				role: payload.role as Role,
 			};
 
 			return {

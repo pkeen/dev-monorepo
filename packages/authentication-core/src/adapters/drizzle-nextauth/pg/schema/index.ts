@@ -10,6 +10,7 @@ import {
 	AnyPgColumn,
 	pgSchema,
 	primaryKey,
+	pgEnum,
 } from "drizzle-orm/pg-core";
 import {
 	GeneratedColumnConfig,
@@ -19,6 +20,7 @@ import {
 	SQL,
 	sql,
 } from "drizzle-orm";
+import type { Role, RoleType } from "../../../../core/roles/index.types";
 
 /**
  * The type of account.
@@ -29,6 +31,7 @@ export function lower(email: AnyPgColumn): SQL {
 	return sql`lower(${email})`;
 }
 
+// We will make Role a dynamically passed type later
 export function defineTables(
 	schema: Partial<DefaultPostgresSchema> = {}
 ): Required<DefaultPostgresSchema> {
@@ -47,6 +50,7 @@ export function defineTables(
 				emailVerified: timestamp("emailVerified", { mode: "date" }),
 				image: text("image"),
 				password: text("password"),
+				role: text("role").$type<Role>().notNull().default("user"),
 			},
 			(table) => ({
 				// emailUniqueIndex: uniqueIndex('emailUniqueIndex').on(sql`lower(${table.email})`),

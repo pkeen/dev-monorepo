@@ -20,6 +20,9 @@ export interface VerifiedToken {
 export interface AuthPayload extends JWTPayload {
 	id: string; // User ID
 	email: string; // User email
+	name: string; // User name
+	image: string; // User image
+	role: string; // User role
 }
 
 /*

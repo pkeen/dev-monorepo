@@ -39,6 +39,8 @@ import { MantineLogo } from "@mantinex/mantine-logo";
 import { Link, useFetcher } from "react-router";
 import classes from "./header.module.css";
 import { LogoGradientButton, LogoButton } from "./logo";
+import { AvatarOrSignin } from "./avatar-or-signin";
+import { ColorSchemeSelector } from "./color-scheme-selector";
 
 // const LogoButton = ({ color }: LogoButtonProps) => {
 // 	const theme = useMantineTheme();
@@ -59,95 +61,95 @@ import { LogoGradientButton, LogoButton } from "./logo";
 // 	);
 // };
 
-const AvatarOrSignin = ({ user }: { user: any }) => {
-	const fetcher = useFetcher();
+// const AvatarOrSignin = ({ user }: { user: any }) => {
+// 	const fetcher = useFetcher();
 
-	return (
-		// <Group style={{ border: "1px solid red" }} justify="space-between">
-		<>
-			{user ? (
-				<Menu trigger="click-hover" openDelay={100} closeDelay={400}>
-					<Menu.Target>
-						<Avatar src={user.image} alt={user.name} />
-					</Menu.Target>
-					<Menu.Dropdown>
-						<Menu.Item>Profile</Menu.Item>
-						<Menu.Item
-							onClick={() =>
-								fetcher.submit(null, {
-									method: "post",
-									action: "/auth/logout",
-								})
-							}
-						>
-							Logout
-						</Menu.Item>
-					</Menu.Dropdown>
-				</Menu>
-			) : (
-				// <Avatar src={user.image} alt={user.name} />
-				<>
-					<Button variant="gradient" component="a" href="/auth/login">
-						Sign in
-					</Button>
-					{/* <Button
-						variant="primary"
-						component="a"
-						href="/auth/signup"
-						style={{ width: "auto" }}
-					>
-						Sign up
-					</Button> */}
-				</>
-			)}
+// 	return (
+// 		// <Group style={{ border: "1px solid red" }} justify="space-between">
+// 		<>
+// 			{user ? (
+// 				<Menu trigger="click-hover" openDelay={100} closeDelay={400}>
+// 					<Menu.Target>
+// 						<Avatar src={user.image} alt={user.name} />
+// 					</Menu.Target>
+// 					<Menu.Dropdown>
+// 						<Menu.Item>Profile</Menu.Item>
+// 						<Menu.Item
+// 							onClick={() =>
+// 								fetcher.submit(null, {
+// 									method: "post",
+// 									action: "/auth/logout",
+// 								})
+// 							}
+// 						>
+// 							Logout
+// 						</Menu.Item>
+// 					</Menu.Dropdown>
+// 				</Menu>
+// 			) : (
+// 				// <Avatar src={user.image} alt={user.name} />
+// 				<>
+// 					<Button variant="gradient" component="a" href="/auth/login">
+// 						Sign in
+// 					</Button>
+// 					{/* <Button
+// 						variant="primary"
+// 						component="a"
+// 						href="/auth/signup"
+// 						style={{ width: "auto" }}
+// 					>
+// 						Sign up
+// 					</Button> */}
+// 				</>
+// 			)}
 
-			{/* // </Group> */}
-		</>
-	);
-};
+// 			{/* // </Group> */}
+// 		</>
+// 	);
+// };
 
-const ColorSchemeSelector = () => {
-	const { colorScheme, setColorScheme } = useMantineColorScheme();
+// const ColorSchemeSelector = () => {
+// 	const { colorScheme, setColorScheme } = useMantineColorScheme();
 
-	return (
-		<>
-			<Menu>
-				<Menu.Target>
-					<ActionIcon radius="xl" size="lg" variant="default">
-						{colorScheme === "dark" ? (
-							<IconMoon />
-						) : colorScheme === "light" ? (
-							<IconSun />
-						) : (
-							<IconSettings />
-						)}
-					</ActionIcon>
-				</Menu.Target>
-				<Menu.Dropdown>
-					<Menu.Label>Toggle color scheme</Menu.Label>
-					<Menu.Item
-						leftSection={<IconSun />}
-						onClick={() => setColorScheme("light")}
-					>
-						Light
-					</Menu.Item>
-					<Menu.Item
-						leftSection={<IconMoon />}
-						onClick={() => setColorScheme("dark")}
-					>
-						Dark
-					</Menu.Item>
-					<Menu.Item
-						leftSection={<IconSettings />}
-						onClick={() => setColorScheme("auto")}
-					>
-						System
-					</Menu.Item>
-				</Menu.Dropdown>
-			</Menu>
-		</>
-	);
-};
+// 	return (
+// 		<>
+// 			<Menu>
+// 				<Menu.Target>
+// 					<ActionIcon radius="xl" size="lg" variant="default">
+// 						{colorScheme === "dark" ? (
+// 							<IconMoon />
+// 						) : colorScheme === "light" ? (
+// 							<IconSun />
+// 						) : (
+// 							<IconSettings />
+// 						)}
+// 					</ActionIcon>
+// 				</Menu.Target>
+// 				<Menu.Dropdown>
+// 					<Menu.Label>Toggle color scheme</Menu.Label>
+// 					<Menu.Item
+// 						leftSection={<IconSun />}
+// 						onClick={() => setColorScheme("light")}
+// 					>
+// 						Light
+// 					</Menu.Item>
+// 					<Menu.Item
+// 						leftSection={<IconMoon />}
+// 						onClick={() => setColorScheme("dark")}
+// 					>
+// 						Dark
+// 					</Menu.Item>
+// 					<Menu.Item
+// 						leftSection={<IconSettings />}
+// 						onClick={() => setColorScheme("auto")}
+// 					>
+// 						System
+// 					</Menu.Item>
+// 				</Menu.Dropdown>
+// 			</Menu>
+// 		</>
+// 	);
+// };
 
 const mockdata = [
 	{
@@ -224,15 +226,15 @@ export default function Header({ user }: { user: any }) {
 				</Link>
 
 				<Group h="100%" gap={0} visibleFrom="sm">
-					<a href="#" className={classes.link}>
-						About
-					</a>
-					<a href="#" className={classes.link}>
+					<Link to="/dashboard" className={classes.link}>
+						Dashboard
+					</Link>
+					<Link to="/courses" className={classes.link}>
 						Courses
-					</a>
-					<a href="#" className={classes.link}>
+					</Link>
+					<Link to="/academy" className={classes.link}>
 						Academy
-					</a>
+					</Link>
 				</Group>
 
 				<Group visibleFrom="sm">

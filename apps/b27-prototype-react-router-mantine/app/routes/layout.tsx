@@ -7,7 +7,7 @@ import type { WithAuthHandlerArgs } from "@pete_keen/react-router-auth";
 import Header from "~/lib/components/header";
 
 const handler = async ({ request, user }: WithAuthHandlerArgs) => {
-	console.log("USER:", user);
+	// console.log("USER:", user);
 	return { user };
 };
 

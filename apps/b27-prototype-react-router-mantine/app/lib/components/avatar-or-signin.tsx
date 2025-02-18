@@ -1,15 +1,21 @@
+import { Avatar, Button, Menu } from "@mantine/core";
 import { useFetcher } from "react-router";
-import { Menu, Button, Avatar } from "@mantine/core";
+import type { User } from "@pete_keen/authentication-core";
 
-const AvatarOrSignin = ({ user }: { user: any }) => {
+export const AvatarOrSignin = ({ user }: { user: User | null }) => {
 	const fetcher = useFetcher();
+
 	return (
-		// <Group style={{ border: "1px solid red" }} justify="space-between">
 		<>
 			{user ? (
 				<Menu trigger="click-hover" openDelay={100} closeDelay={400}>
 					<Menu.Target>
-						<Avatar src={user.image} alt={user.name} />
+						<Avatar
+							src={user.image ?? ""}
+							alt={user.name ?? ""}
+							name={user.name ?? ""}
+							size="md"
+						/>
 					</Menu.Target>
 					<Menu.Dropdown>
 						<Menu.Item>Profile</Menu.Item>
@@ -26,23 +32,12 @@ const AvatarOrSignin = ({ user }: { user: any }) => {
 					</Menu.Dropdown>
 				</Menu>
 			) : (
-				// <Avatar src={user.image} alt={user.name} />
 				<>
-					<Button variant="default" component="a" href="/auth/login">
-						Log in
-					</Button>
-					<Button
-						variant="primary"
-						component="a"
-						href="/auth/signup"
-						style={{ width: "auto" }}
-					>
-						Sign up
+					<Button variant="gradient" component="a" href="/auth/login">
+						Sign in
 					</Button>
 				</>
 			)}
-
-			{/* // </Group> */}
 		</>
 	);
 };

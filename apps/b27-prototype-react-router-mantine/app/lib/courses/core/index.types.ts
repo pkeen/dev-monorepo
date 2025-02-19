@@ -42,7 +42,7 @@ interface CourseSlotInput {
 }
 
 // Input types for creating new records
-export interface CreateCourseInput {
+export interface CourseInput {
 	userId: string;
 	title: string;
 	description?: string;

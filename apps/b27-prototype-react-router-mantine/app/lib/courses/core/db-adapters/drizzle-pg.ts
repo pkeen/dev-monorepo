@@ -7,15 +7,14 @@ import {
 import { NeonHttpDatabase } from "drizzle-orm/neon-http";
 // import { courses as Schema } from '~/lib/courses/db/schema';
 import * as defaultSchema from "./schema";
-import type { CreateCourseInput } from "../index.types";
+import type { CourseInput, Course } from "../index.types";
 import { eq } from "drizzle-orm";
 
 type DefaultSchema = typeof defaultSchema;
 
 type DrizzleDatabase =
 	// | NodePgDatabase
-	| PgDatabase<PgQueryResultHKT, any>
-	| NeonHttpDatabase;
+	PgDatabase<PgQueryResultHKT, any> | NeonHttpDatabase;
 
 const toDBId = (id: string): number => parseInt(id, 10);
 
@@ -141,8 +140,12 @@ export const DrizzlePGAdapter = (
 	schema: DefaultSchema = defaultSchema
 ) => {
 	return {
-		createCourse: (input: CreateCourseInput) => {
-			return db.insert(schema.course).values(input);
+		createCourse: async (input: CourseInput): Promise<Course> => {
+			const [course] = await db
+				.insert(schema.course)
+				.values(input)
+				.returning();
+			return course;
 		},
 		getCourse: (id: string) => {
 			return db
@@ -150,7 +153,17 @@ export const DrizzlePGAdapter = (
 				.from(schema.course)
 				.where(eq(schema.course.id, toDBId(id)));
 		},
-		update: () => {},
+		async updateCourse(
+			id: string,
+			data: Partial<CourseInput>
+		): Promise<Course> {
+			const [course] = await db
+				.update(schema.course)
+				.set(data)
+				.where(eq(schema.course.id, toDBId(id)))
+				.returning();
+			return course;
+		},
 		logSchema: () => {
 			console.log(schema);
 		},

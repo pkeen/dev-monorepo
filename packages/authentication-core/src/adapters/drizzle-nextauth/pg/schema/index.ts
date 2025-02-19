@@ -212,6 +212,12 @@ export type DefaultPostgresUsersTable = PgTableWithColumns<{
 			data: string;
 			notNull: boolean;
 		}>;
+        role: DefaultPostgresColumn<{
+            columnType: "PgVarchar" | "PgText";
+            data: string;
+            notNull: boolean;
+            dataType: "string";
+        }>
 	};
 	dialect: "pg";
 	schema: string | undefined;

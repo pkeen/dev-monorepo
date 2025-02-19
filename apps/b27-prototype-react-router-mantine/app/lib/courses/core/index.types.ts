@@ -34,12 +34,20 @@ export interface ModuleSlot {
 	lessonId: number;
 }
 
+interface CourseSlotInput {
+	courseId: number;
+	// order: number;
+	moduleId?: number;
+	lessonId?: number;
+}
+
 // Input types for creating new records
 export interface CreateCourseInput {
 	userId: string;
 	title: string;
 	description?: string;
 	isPublished?: boolean;
+	courseSlots: CourseSlotInput[];
 }
 
 export interface CreateModuleInput {

@@ -153,16 +153,21 @@ export const DrizzlePGAdapter = (
 				.from(schema.course)
 				.where(eq(schema.course.id, toDBId(id)));
 		},
-		async updateCourse(
+		updateCourse: async (
 			id: string,
 			data: Partial<CourseInput>
-		): Promise<Course> {
+		): Promise<Course> => {
 			const [course] = await db
 				.update(schema.course)
 				.set(data)
 				.where(eq(schema.course.id, toDBId(id)))
 				.returning();
 			return course;
+		},
+		deleteCourse: async (id: string): Promise<void> => {
+			await db
+				.delete(schema.course)
+				.where(eq(schema.course.id, toDBId(id)));
 		},
 		logSchema: () => {
 			console.log(schema);

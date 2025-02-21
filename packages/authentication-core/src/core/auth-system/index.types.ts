@@ -23,6 +23,7 @@ export interface AuthConfigBase {
 	// passwordService?: string;
 	logger?: LoggerOptions;
 	providers?: AuthProvider; // TODO: Make this an array of provider options
+	authorizationManager?: any;
 }
 
 export type AuthConfig =

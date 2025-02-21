@@ -4,7 +4,7 @@
  */
 export type SessionCallback = (userId: string) => RolesAndPermissions;
 
-type RolesAndPermissions = {
+export type RolesAndPermissions = {
 	roles?: Role[]; // lets keep it simple as roles for now
 	// permissions?: string[];
 };
@@ -16,8 +16,6 @@ export type Role = {
 	// permissions?: string[];
 };
 
-export type RoleHierarchy = {
-	[role: string]: Role;
-};
+export type RoleHierarchy = Role[];
 
 // Needs to be hierarchical

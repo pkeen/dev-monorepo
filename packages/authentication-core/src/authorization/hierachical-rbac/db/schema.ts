@@ -38,12 +38,12 @@ export const userRolesTable = schema.table(
 	"user_roles",
 	{
 		id: uuid("id").defaultRandom().primaryKey(),
-		user_id: uuid("user_id").notNull().unique(), // the unique means only one role per user
-		role_id: uuid("role_id").notNull(),
-		assigned_at: timestamp("assigned_at").defaultNow(),
+		userId: uuid("user_id").notNull().unique(), // the unique means only one role per user
+		roleId: uuid("role_id").notNull(),
+		assignedAt: timestamp("assigned_at").defaultNow(),
 	},
 	(table) => [
 		// Ensure user_id and role_id combination is unique
-		uniqueIndex("user_role_idx").on(table.user_id, table.role_id),
+		uniqueIndex("user_role_idx").on(table.userId, table.roleId),
 	]
 );

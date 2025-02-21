@@ -29,7 +29,7 @@ import {
 } from "../providers/oauth/oauth-provider";
 import { JwtStrategy } from "../session-strategy";
 import crypto from "crypto";
-import { RolesManager } from "../roles/index";
+import type { RBAC } from "../../authorization";
 
 export type Providers = {
 	[key: string]: AuthProvider;
@@ -52,7 +52,7 @@ export class AuthSystem {
 	/* this is currently OAuth only */
 	public providers: Providers = {};
 	// add roles manaer
-	public rolesManager: typeof RolesManager = RolesManager;
+	public authorizationManager: RBAC;
 
 	// storageAdapter: WebStorageAdapter; // Declare the storageAdapter property
 
@@ -60,6 +60,7 @@ export class AuthSystem {
 		strategy: AuthStrategy,
 		// userRepository: UserRepository
 		adapter: Adapter,
+		authorizationManager: RBAC,
 		logger: Logger
 		// passwordService: PasswordService = DefaultPasswordService() // not needed atm no password system implemented
 		// rolesManager: typeof RolesManager
@@ -67,15 +68,19 @@ export class AuthSystem {
 		this.strategy = strategy;
 		// this.userRepository = userRepository;
 		this.adapter = adapter;
+
+		this.authorizationManager = authorizationManager;
 		// this.rolesManager = rolesManager;
 		this.logger = logger;
+
+        this.authorizationManager.seed();
 
 		// Log initialization with structured metadata
 		this.logger.info("Auth system initialized", {
 			strategy: strategy.constructor.name,
 			adapter: adapter.constructor.name,
 			// passwordService: passwordService.constructor.name,
-			rolesManager: this.rolesManager,
+			authorizationManager: this.authorizationManager
 		});
 	}
 
@@ -524,7 +529,14 @@ export class AuthSystem {
 			logger.warn("You will be using no persistence adapter");
 		}
 
-		const authSystem = new AuthSystem(strategy, config.adapter, logger);
+		const authSystem = new AuthSystem(
+			strategy,
+			config.adapter,
+			logger,
+			config.authorizationManager
+		);
+
+		authSystem.authorizationManager.seed();
 
 		// console.log("AUTH CONFIG:", config);
 

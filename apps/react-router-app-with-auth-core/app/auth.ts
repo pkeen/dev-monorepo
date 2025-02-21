@@ -9,6 +9,7 @@ import { createLogger } from "@pete_keen/logger";
 import { AuthSystem } from "@pete_keen/authentication-core";
 import { DrizzleAdapter } from "@pete_keen/authentication-core/adapters";
 import { JwtStrategy } from "@pete_keen/authentication-core";
+import { RBAC } from "@pete_keen/authentication-core/authorization";
 import db from "~/db";
 
 const logger = createLogger({
@@ -33,6 +34,7 @@ const authSystem = new AuthSystem(
 		},
 	}),
 	DrizzleAdapter(db),
+	RBAC(db),
 	logger
 );
 

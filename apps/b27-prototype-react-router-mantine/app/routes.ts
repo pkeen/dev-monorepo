@@ -20,20 +20,20 @@ export default [
 			// route("/:id/edit", "routes/courses/edit.tsx"),
 		]),
 	]),
-    ...prefix("/admin", [
-        ...prefix("/dashboard", [
-            layout("routes/admin/dashboard/_layout.tsx", [
-                index("routes/admin/dashboard/index.tsx"),
+	...prefix("/admin", [
+		// ...prefix("/dashboard", [
+		layout("routes/admin/_layout.tsx", [
+			index("routes/admin/index.tsx"),
 
-                // Dashboard-specific courses routes
-                ...prefix("/courses", [
-                    index("routes/admin/dashboard/courses/index.tsx"),
-                    // route("/create", "routes/dashboard/courses/create.tsx"),
-                    // route("/create", "routes/dashboard/courses/create.tsx"),
-                    // route("/:id", "routes/dashboard/courses/show.tsx"),
-                    // route("/:id/edit", "routes/dashboard/courses/edit.tsx"),
-                ]),
-            ]),
-        ]),
-    ]),
+			// Dashboard-specific courses routes
+			...prefix("/courses", [
+				index("routes/admin/courses/index.tsx"),
+				// route("/create", "routes/dashboard/courses/create.tsx"),
+				// route("/create", "routes/dashboard/courses/create.tsx"),
+				// route("/:id", "routes/dashboard/courses/show.tsx"),
+				// route("/:id/edit", "routes/dashboard/courses/edit.tsx"),
+			]),
+		]),
+		// ]),
+	]),
 ] satisfies RouteConfig;

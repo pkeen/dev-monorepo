@@ -111,6 +111,75 @@ export const Auth = (config: RRAuthConfig) => {
 		}
 	};
 
+	const callback = async ({ request, params }: LoaderFunctionArgs) => {
+		const { provider } = params;
+		// console.log("GETTING TO CALLBACK FUNCTION");
+		// console.log("PROVIDER from redirect loader:", provider);
+
+		// Retrieve the stored state from cookie
+		const cookieHeader = request.headers.get("Cookie");
+		const storedState = await stateCookie.parse(cookieHeader);
+		// console.log("STORED STATE:", storedState);
+		const url = new URL(request.url);
+		const error = url.searchParams.get("error");
+		if (error) {
+			console.log("ERROR:", error);
+			return {
+				page: "error",
+				error,
+			};
+		}
+		const code = url.searchParams.get("code");
+		const returnedState = url.searchParams.get("state");
+		// console.log("RETURNED URL:", url);
+
+		const session = await getSession(request.headers.get("Cookie"));
+		const headers = new Headers();
+
+		// validate state
+		if (
+			!code ||
+			!returnedState ||
+			!storedState ||
+			returnedState !== storedState
+		) {
+			// console.log("RETURNED STATE", returnedState);
+			// console.log("STORED STATE", storedState);
+			// bad request
+			return new Response(null, {
+				status: 400,
+			});
+		}
+
+		try {
+			// Getting here
+			// console.log("GETTING HERE");
+
+			const authResult = await authSystem.login(provider, code);
+			// console.log("authResult:", authResult);
+
+			if (authResult.type === "success") {
+				// console.log("SUCCESS");
+				session.set("authState", authResult.authState);
+				// Add the Content-Type header here too.
+				headers.append("Content-Type", "text/html");
+				headers.append("Set-Cookie", await commitSession(session));
+				return redirect(config.redirectAfterLogin || "/", {
+					headers,
+				});
+			} else if (authResult.type === "redirect") {
+				// console.log("REDIRECT");
+				// Add the Content-Type header here too.
+				headers.append("Content-Type", "text/html");
+				return redirect(authResult.url);
+			} else {
+				throw new Error("Unknown authResult type");
+			}
+		} catch (e) {
+			console.log("ERROR:", e);
+		}
+	};
+
 	const logout = async ({ request }: { request: Request }) => {
 		const session = await getSession(request.headers.get("Cookie"));
 		const previousAuthState = await session.get("authState");
@@ -136,18 +205,20 @@ export const Auth = (config: RRAuthConfig) => {
 	 * This function will check authentication and return the User and headers
 	 * The headers are there to be appended to the response to update the cookies
 	 * @param request
+	 * @param { redirectTo?: string, role?: string}
 	 * @returns { user: User | null; headers?: Headers }
 	 */
 	const requireAuth = async (
 		request: Request,
-		{ redirectTo }: { redirectTo?: string }
+		{ redirectTo, role }: { redirectTo?: string; role?: string }
 	): Promise<{ user: User | null; headers?: Headers }> => {
+		console.log("ROLE in requireAuth:", role);
 		const session = await getSession(request.headers.get("Cookie"));
-		console.log("session: ", session);
+		// console.log("session: ", session);
 		const sessionState = session.get("authState");
-		console.log("sessionState: ", sessionState);
+		// console.log("sessionState: ", sessionState);
 
-		if (!sessionState) {
+		if (!sessionState || !sessionState.keyCards) {
 			if (redirectTo) {
 				throw redirect(redirectTo ?? "/auth/login");
 			}
@@ -162,11 +233,41 @@ export const Auth = (config: RRAuthConfig) => {
 			}
 			return { user: null };
 		} else if (authResult.type === "refresh") {
+			// Check role authorization before returning refreshed session
+			if (!isAuthorized(authResult?.authState?.user, role)) {
+				throw redirect(redirectTo);
+			}
 			const headers = new Headers();
 			session.set("authState", authResult.authState);
 			headers.append("Set-Cookie", await commitSession(session));
 			// Return both the updated user and headers so the caller can forward them
 			return { user: authResult.authState.user, headers };
+		}
+
+		// // Here we check if the user has the role we need
+		// if (authResult.authState.authenticated) {
+		// 	console.log("INPUT ROLE:", role);
+		// 	console.log("USER ROLE:", authResult.authState.user.role);
+		// 	if (role && authResult.authState.user.role !== role) {
+		// 		console.log("NOT AUTHORIZED");
+		// 		if (redirectTo) {
+		// 			throw redirect(redirectTo);
+		// 		}
+		// 		return { user: null };
+		// 	}
+		// 	console.log("AUTHORIZED");
+		// }
+
+		// Final authorization check
+		console.log(
+			"AUTHORIZED",
+			isAuthorized(authResult.authState.user, role)
+		);
+		if (
+			!authResult.authState.authenticated ||
+			!isAuthorized(authResult.authState.user, role)
+		) {
+			throw redirect(redirectTo);
 		}
 
 		return { user: authResult.authState.user };
@@ -181,12 +282,16 @@ export const Auth = (config: RRAuthConfig) => {
 	 */
 	const withAuth = <T>(
 		handler: HandlerFunction<T>,
-		options?: { redirectTo?: string }
+		options: { redirectTo?: string; role?: string | null } = {
+			redirectTo: "/",
+			role: null,
+		}
 	) => {
 		return async (args: LoaderFunctionArgs | ActionFunctionArgs) => {
 			const { request } = args;
 			const { user, headers } = await requireAuth(request, {
-				redirectTo: options?.redirectTo,
+				redirectTo: options.redirectTo,
+				role: options.role,
 			});
 			// Add user to the loader/action context if needed, e.g. by modifying args or attaching it to locals.
 			const result = await handler({ ...args, user });
@@ -199,6 +304,19 @@ export const Auth = (config: RRAuthConfig) => {
 			// }
 			return Response.json({ ...result, user }, { headers });
 		};
+	};
+
+	const isAuthorized = (user: User, requiredRole?: string) => {
+		console.log("REQUIRED ROLE:", requiredRole);
+		console.log("USER ROLE:", user.role);
+		if (!requiredRole) {
+			return true;
+		}
+		// If role is required but user has no role, deny access
+		if (!user?.role) {
+			return false;
+		}
+		return user.role === requiredRole;
 	};
 
 	/**
@@ -221,75 +339,6 @@ export const Auth = (config: RRAuthConfig) => {
 			return null;
 		}
 		return sessionState.user;
-	};
-
-	const callback = async ({ request, params }: LoaderFunctionArgs) => {
-		const { provider } = params;
-		console.log("GETTING TO CALLBACK FUNCTION");
-		console.log("PROVIDER from redirect loader:", provider);
-
-		// Retrieve the stored state from cookie
-		const cookieHeader = request.headers.get("Cookie");
-		const storedState = await stateCookie.parse(cookieHeader);
-		console.log("STORED STATE:", storedState);
-		const url = new URL(request.url);
-		const error = url.searchParams.get("error");
-		if (error) {
-			console.log("ERROR:", error);
-			return {
-				page: "error",
-				error,
-			};
-		}
-		const code = url.searchParams.get("code");
-		const returnedState = url.searchParams.get("state");
-		// console.log("RETURNED URL:", url);
-
-		const session = await getSession(request.headers.get("Cookie"));
-		const headers = new Headers();
-
-		// validate state
-		if (
-			!code ||
-			!returnedState ||
-			!storedState ||
-			returnedState !== storedState
-		) {
-			console.log("RETURNED STATE", returnedState);
-			console.log("STORED STATE", storedState);
-			// bad request
-			return new Response(null, {
-				status: 400,
-			});
-		}
-
-		try {
-			// Getting here
-			console.log("GETTING HERE");
-
-			const authResult = await authSystem.login(provider, code);
-			// console.log("authResult:", authResult);
-
-			if (authResult.type === "success") {
-				console.log("SUCCESS");
-				session.set("authState", authResult.authState);
-				// Add the Content-Type header here too.
-				headers.append("Content-Type", "text/html");
-				headers.append("Set-Cookie", await commitSession(session));
-				return redirect(config.redirectAfterLogin || "/", {
-					headers,
-				});
-			} else if (authResult.type === "redirect") {
-				console.log("REDIRECT");
-				// Add the Content-Type header here too.
-				headers.append("Content-Type", "text/html");
-				return redirect(authResult.url);
-			} else {
-				throw new Error("Unknown authResult type");
-			}
-		} catch (e) {
-			console.log("ERROR:", e);
-		}
 	};
 
 	const authAction = async ({ request, params }: ActionFunctionArgs) => {

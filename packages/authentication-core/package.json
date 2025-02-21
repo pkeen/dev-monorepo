@@ -20,6 +20,11 @@
 			"default": "./dist/core/providers/index.mjs",
 			"types": "./dist/core/providers/index.d.ts"
 		},
+		"./authorization": {
+			"import": "./dist/authorization/index.mjs",
+			"default": "./dist/authorization/index.mjs",
+			"types": "./dist/authorization/index.d.ts"
+		},
 		"./types": {
 			"import": "./dist/types/index.mjs",
 			"default": "./dist/types/index.mjs",

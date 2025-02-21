@@ -9,6 +9,7 @@ export default defineConfig({
 		"src/index.ts",
 		"src/adapters/index.ts",
 		"src/core/providers/index.ts",
+        "src/authorization/index.ts",
 	],
 	output: {
 		dir: "dist",

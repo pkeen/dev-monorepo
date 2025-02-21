@@ -1,15 +1,23 @@
 import { AppShell, Container, Paper } from "@mantine/core";
 import { Outlet, useLoaderData } from "react-router";
 import { MinimalHeader } from "~/lib/components/minimal-header";
-import { withAuth } from "~/auth";
+import { withAuth, requireAuth } from "~/auth";
 import type { Route } from "./+types";
 import { Nav } from "./_nav";
 
-export const loader = withAuth(async ({ user }) => {
-	return { user };
-});
+// export const loader = withAuth(async ({ user }) => {
+// 	return { user };
+// });
 
-export default function DashboardLayout() {
+export const loader = async ({ request }: Route.LoaderArgs) => {
+	const { user, headers } = await requireAuth(request, {
+		redirectTo: "/",
+		role: "admin",
+	});
+	return Response.json({ user }, { headers });
+};
+
+export default function AdminLayout() {
 	const { user } = useLoaderData();
 	return (
 		<Paper>

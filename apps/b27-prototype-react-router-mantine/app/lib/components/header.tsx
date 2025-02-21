@@ -226,8 +226,8 @@ export default function Header({ user }: { user: any }) {
 				</Link>
 
 				<Group h="100%" gap={0} visibleFrom="sm">
-					<Link to="/dashboard" className={classes.link}>
-						Dashboard
+					<Link to="/admin" className={classes.link}>
+						Admin
 					</Link>
 					<Link to="/courses" className={classes.link}>
 						Courses

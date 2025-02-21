@@ -1,7 +1,7 @@
 import { LogLevel } from "@pete_keen/logger";
 import { Adapter, AdapterUser } from "../adapter";
-import { JwtConfig } from "../strategy/jwt-strategy/index.types";
-import { SessionConfig } from "../strategy/session-strategy/index.types";
+import { JwtConfig } from "../session-strategy/jwt-strategy/index.types";
+import { SessionConfig } from "../session-strategy/db-strategy/index.types";
 import { ProviderOptions } from "../providers/index.types";
 import {
 	Credentials,

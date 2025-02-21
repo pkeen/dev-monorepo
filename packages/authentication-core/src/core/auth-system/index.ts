@@ -27,9 +27,9 @@ import {
 	AbstractOAuthProvider,
 	AuthProvider,
 } from "../providers/oauth/oauth-provider";
-import { JwtStrategy } from "../strategy";
+import { JwtStrategy } from "../session-strategy";
 import crypto from "crypto";
-import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
+import { RolesManager } from "../roles/index";
 
 export type Providers = {
 	[key: string]: AuthProvider;
@@ -48,9 +48,11 @@ export class AuthSystem {
 	public logger?: Logger;
 	public strategy: AuthStrategy;
 	public adapter: Adapter;
-	public passwordService: PasswordService;
+	// public passwordService: PasswordService;
 	/* this is currently OAuth only */
 	public providers: Providers = {};
+	// add roles manaer
+	public rolesManager: typeof RolesManager = RolesManager;
 
 	// storageAdapter: WebStorageAdapter; // Declare the storageAdapter property
 
@@ -58,20 +60,22 @@ export class AuthSystem {
 		strategy: AuthStrategy,
 		// userRepository: UserRepository
 		adapter: Adapter,
-		logger: Logger,
-		passwordService: PasswordService = DefaultPasswordService() // not needed atm no password system implemented
+		logger: Logger
+		// passwordService: PasswordService = DefaultPasswordService() // not needed atm no password system implemented
+		// rolesManager: typeof RolesManager
 	) {
 		this.strategy = strategy;
 		// this.userRepository = userRepository;
 		this.adapter = adapter;
-		this.passwordService = passwordService;
+		// this.rolesManager = rolesManager;
 		this.logger = logger;
 
 		// Log initialization with structured metadata
 		this.logger.info("Auth system initialized", {
 			strategy: strategy.constructor.name,
 			adapter: adapter.constructor.name,
-			passwordService: passwordService.constructor.name,
+			// passwordService: passwordService.constructor.name,
+			rolesManager: this.rolesManager,
 		});
 	}
 
@@ -402,6 +406,7 @@ export class AuthSystem {
 	async validate(keyCards: KeyCards): Promise<AuthResult> {
 		// TO-DO decide how to deal with missing keycards
 		// its probably early on the game
+		console.log("rolesManager: ", this.rolesManager);
 		if (!keyCards) {
 			return {
 				type: "error",

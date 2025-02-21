@@ -32,7 +32,7 @@ const authSystem = new AuthSystem(
 			fields: ["id"],
 		},
 	}),
-	new DrizzleAdapter(db),
+	DrizzleAdapter(db),
 	logger
 );
 
@@ -81,5 +81,6 @@ authSystem.registerProvider(
 	})
 );
 // TODO: improve authSystem.registerProvider method - I dont want the key defined by user
+// console.log("Roles:", authSystem.rolesManager.listRoles());
 
 export default authSystem;

@@ -11,6 +11,7 @@ import {
 	pgSchema,
 	primaryKey,
 	pgEnum,
+	uuid,
 } from "drizzle-orm/pg-core";
 import {
 	GeneratedColumnConfig,
@@ -19,8 +20,8 @@ import {
 	getTableColumns,
 	SQL,
 	sql,
+	relations,
 } from "drizzle-orm";
-import type { Role, RoleType } from "../../../../core/roles/index.types";
 
 /**
  * The type of account.
@@ -42,15 +43,13 @@ export function defineTables(
 		(authSchema.table(
 			"users",
 			{
-				id: text("id")
-					.primaryKey()
-					.$defaultFn(() => crypto.randomUUID()),
+				id: uuid("id").defaultRandom().primaryKey(),
 				name: text("name"),
 				email: text("email").unique(),
 				emailVerified: timestamp("emailVerified", { mode: "date" }),
 				image: text("image"),
 				password: text("password"),
-				role: text("role").$type<Role>().notNull().default("user"),
+				// role: text("role").$type<Role>().notNull().default("user"),
 			},
 			(table) => ({
 				// emailUniqueIndex: uniqueIndex('emailUniqueIndex').on(sql`lower(${table.email})`),
@@ -65,7 +64,7 @@ export function defineTables(
 		(authSchema.table(
 			"account",
 			{
-				userId: text("userId")
+				userId: uuid("userId")
 					.notNull()
 					.references(() => usersTable.id, { onDelete: "cascade" }),
 				type: text("type").$type<ProviderType>().notNull(),
@@ -85,6 +84,35 @@ export function defineTables(
 				}),
 			})
 		) satisfies DefaultPostgresAccountsTable);
+
+	const rolesTable =
+		schema.rolesTable ??
+		(authSchema.table("roles", {
+			id: uuid("id").defaultRandom().primaryKey(),
+			name: text("name").notNull().unique(),
+			level: integer("level").notNull().unique(),
+			description: text("description"),
+		}) satisfies DefaultPostgresRolesTable);
+
+	// // User roles junction table - associates users with their roles
+	// const userRoles =
+	// 	schema.userRolesTable ??
+	// 	(authSchema.table("user_roles", {
+	// 		id: uuid("id").defaultRandom().primaryKey(),
+	// 		userId: uuid("user_id")
+	// 			.notNull()
+	// 			.references(() => usersTable.id, { onDelete: "cascade" }),
+	// 		roleId: uuid("role_id")
+	// 			.notNull()
+	// 			.references(() => rolesTable.id, { onDelete: "cascade" }),
+	// 		assignedAt: timestamp("assigned_at").defaultNow(),
+	// 		assignedBy: uuid("assigned_by").references(() => usersTable.id),
+	// 	}) satisfies DefaultPostgresUserRolesTable);
+
+	// // Define relationships
+	// const usersRelations = relations(usersTable, ({ many }) => ({
+	// 	userRoles: many(userRoles),
+	// }));
 
 	// const sessionsTable =
 	// 	schema.sessionsTable ??
@@ -142,6 +170,9 @@ export function defineTables(
 		usersTable,
 		authSchema,
 		accountsTable,
+		rolesTable,
+		// usersRelations,
+		// userRoles,
 		// sessionsTable,
 		// verificationTokensTable,
 		// authenticatorsTable,
@@ -212,12 +243,12 @@ export type DefaultPostgresUsersTable = PgTableWithColumns<{
 			data: string;
 			notNull: boolean;
 		}>;
-        role: DefaultPostgresColumn<{
-            columnType: "PgVarchar" | "PgText";
-            data: string;
-            notNull: boolean;
-            dataType: "string";
-        }>
+		// role: DefaultPostgresColumn<{
+		// 	columnType: "PgVarchar" | "PgText";
+		// 	data: string;
+		// 	notNull: boolean;
+		// 	dataType: "string";
+		// }>;
 	};
 	dialect: "pg";
 	schema: string | undefined;

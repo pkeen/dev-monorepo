@@ -7,7 +7,11 @@ import {
 } from "drizzle-orm/pg-core";
 import { eq } from "drizzle-orm";
 import { NeonHttpDatabase } from "drizzle-orm/neon-http";
-import { Role, RolesAndPermissions } from "./hierachical-rbac/index.types";
+import {
+	Role,
+	RolesAndPermissions,
+	SelectRole,
+} from "./hierachical-rbac/index.types";
 import { defaultRoleHierarchy } from "./hierachical-rbac";
 
 type DefaultSchema = typeof defaultSchema;
@@ -20,6 +24,7 @@ type DrizzleDatabase =
 
 export const RBAC = (
 	db: DrizzleDatabase,
+	defaultRole: SelectRole,
 	schema: DefaultSchema = defaultSchema
 ) => {
 	return {
@@ -56,10 +61,100 @@ export const RBAC = (
 				roles,
 			};
 		},
+		updateUserRole: async (
+			userId: string,
+			role?: SelectRole
+		): Promise<void> => {
+			if (!role) {
+				role = defaultRole;
+			}
+
+			if (role.name) {
+				const [roleId] = await db
+					.select({ id: schema.rolesTable.id })
+					.from(schema.rolesTable)
+					.where(eq(schema.rolesTable.name, role.name));
+
+				if (!roleId) {
+					throw new Error(`Role ${role.name} does not exist`);
+				}
+
+				//update user's role
+				await db
+					.update(schema.userRolesTable)
+					.set({ roleId: roleId.id })
+					.where(eq(schema.userRolesTable.userId, userId));
+			} else if (role.level) {
+				const [roleId] = await db
+					.select({ id: schema.rolesTable.id })
+					.from(schema.rolesTable)
+					.where(eq(schema.rolesTable.level, role.level));
+
+				if (!roleId) {
+					throw new Error(
+						`Role with level ${role.level} does not exist`
+					);
+				}
+
+				//update user's role
+				await db
+					.update(schema.userRolesTable)
+					.set({ roleId: roleId.id })
+					.where(eq(schema.userRolesTable.userId, userId));
+			} else {
+				throw new Error(`Invalid role: ${role}`);
+			}
+		},
+		createUserRole: async (
+			userId: string,
+			role?: SelectRole
+		): Promise<void> => {
+			console.log("creating user role");
+			if (!role) {
+				role = defaultRole;
+			}
+			console.log(role);
+
+			if (role.name) {
+				const [roleId] = await db
+					.select({ id: schema.rolesTable.id })
+					.from(schema.rolesTable)
+					.where(eq(schema.rolesTable.name, role.name));
+
+				if (!roleId) {
+					throw new Error(`Role ${role.name} does not exist`);
+				}
+
+				// add user's role
+				await db
+					.insert(schema.userRolesTable)
+					.values({ userId, roleId: roleId.id });
+			} else if (role.level) {
+				const [roleId] = await db
+					.select({ id: schema.rolesTable.id })
+					.from(schema.rolesTable)
+					.where(eq(schema.rolesTable.level, role.level));
+
+				if (!roleId) {
+					throw new Error(
+						`Role with level ${role.level} does not exist`
+					);
+				}
+
+				// add user's role
+				await db
+					.insert(schema.userRolesTable)
+					.values({ userId, roleId: roleId.id });
+			} else {
+				throw new Error(`Invalid role: ${role}`);
+			}
+		},
 	};
 };
 
 export interface RBAC {
 	seed: () => Promise<void>;
 	getRoles: (userId: string) => Promise<RolesAndPermissions>;
+	updateUserRole: (userId: string, role?: SelectRole) => Promise<void>;
+	createUserRole: (userId: string, role?: SelectRole) => Promise<void>;
 }

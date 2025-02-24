@@ -1,17 +1,11 @@
 import {
-	pgTable,
 	text,
 	timestamp,
-	boolean,
 	integer,
-	PgColumn,
-	PgTableWithColumns,
 	uniqueIndex,
-	AnyPgColumn,
 	pgSchema,
-	primaryKey,
-	pgEnum,
 	uuid,
+	serial,
 } from "drizzle-orm/pg-core";
 
 export const schema = pgSchema("authorization");

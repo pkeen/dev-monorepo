@@ -34,7 +34,9 @@ const authSystem = new AuthSystem(
 		},
 	}),
 	DrizzleAdapter(db),
-	RBAC(db),
+	RBAC(db, {
+		name: "User",
+	}),
 	logger
 );
 

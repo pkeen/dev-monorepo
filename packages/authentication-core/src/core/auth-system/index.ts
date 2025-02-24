@@ -73,14 +73,14 @@ export class AuthSystem {
 		// this.rolesManager = rolesManager;
 		this.logger = logger;
 
-        this.authorizationManager.seed();
+		this.authorizationManager.seed();
 
 		// Log initialization with structured metadata
 		this.logger.info("Auth system initialized", {
 			strategy: strategy.constructor.name,
 			adapter: adapter.constructor.name,
 			// passwordService: passwordService.constructor.name,
-			authorizationManager: this.authorizationManager
+			authorizationManager: this.authorizationManager,
 		});
 	}
 
@@ -126,6 +126,10 @@ export class AuthSystem {
 				});
 				// TODO: create user account if not exists
 				await this.adapter.createAccountForUser(user, adapterAccount);
+
+				// TODO: create default user authorization roles/permissions
+				console.log("creating user role");
+				await this.authorizationManager.createUserRole(user.id);
 			} else {
 				this.logger.info("User found", {
 					email: userProfile.email,
@@ -532,8 +536,8 @@ export class AuthSystem {
 		const authSystem = new AuthSystem(
 			strategy,
 			config.adapter,
-			logger,
-			config.authorizationManager
+			config.authorizationManager,
+			logger
 		);
 
 		authSystem.authorizationManager.seed();

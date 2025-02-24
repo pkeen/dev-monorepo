@@ -18,4 +18,6 @@ export type Role = {
 
 export type RoleHierarchy = Role[];
 
-// Needs to be hierarchical
+export type SelectRole =
+	| { name: string; level?: never }
+	| { level: number; name?: never };

@@ -85,14 +85,14 @@ export function defineTables(
 			})
 		) satisfies DefaultPostgresAccountsTable);
 
-	const rolesTable =
-		schema.rolesTable ??
-		(authSchema.table("roles", {
-			id: uuid("id").defaultRandom().primaryKey(),
-			name: text("name").notNull().unique(),
-			level: integer("level").notNull().unique(),
-			description: text("description"),
-		}) satisfies DefaultPostgresRolesTable);
+	// const rolesTable =
+	// 	schema.rolesTable ??
+	// 	(authSchema.table("roles", {
+	// 		id: uuid("id").defaultRandom().primaryKey(),
+	// 		name: text("name").notNull().unique(),
+	// 		level: integer("level").notNull().unique(),
+	// 		description: text("description"),
+	// 	}) satisfies DefaultPostgresRolesTable);
 
 	// // User roles junction table - associates users with their roles
 	// const userRoles =
@@ -170,7 +170,7 @@ export function defineTables(
 		usersTable,
 		authSchema,
 		accountsTable,
-		rolesTable,
+		// rolesTable,
 		// usersRelations,
 		// userRoles,
 		// sessionsTable,

@@ -164,11 +164,13 @@ export class AuthSystem {
 				}
 			}
 
-            // Step 3 Add Roles to user
-            console.log("adding roles to user");
-            user = await this.authorizationManager.addRolesToUser(user);
+			// Step 3 Add Roles to user
+			console.log("adding roles to user");
+			user = await this.authorizationManager.addRolesToUser(user);
+			// user.roles = await this.authorizationManager.getRoles(user.id);
 
 			// Step 3: Create auth state
+			this.logger.info("Creating keycards ");
 			const keyCards = await this.createKeyCardsForUser(user);
 			return {
 				type: "success",

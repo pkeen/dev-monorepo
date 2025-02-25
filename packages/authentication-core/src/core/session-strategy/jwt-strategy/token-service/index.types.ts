@@ -14,22 +14,42 @@ export interface VerifiedToken {
 	expiresAt: number;
 }
 
+export interface RefreshUser {
+	id: string;
+}
+
+export interface AccessUser {
+	id: string;
+	email: string;
+	name?: string;
+	image?: string;
+	roles?: object;
+}
+
 /*
  * Payload interface
  */
-export interface AuthPayload extends JWTPayload {
+export interface AccessTokenPayload extends JWTPayload {
 	id: string; // User ID
 	email: string; // User email
 	name: string; // User name
 	image: string; // User image
-	role: string; // User role
+	roles: object; // User role
+}
+
+export interface RefreshTokenPayload extends JWTPayload {
+	id: string; // User ID
+}
+
+export interface AuthPayload extends JWTPayload {
+	user: AccessUser | RefreshUser;
 }
 
 /*
     Token service interface 
 */
 export interface TokenService {
-	generate: (user: User, options: JwtOptions) => Promise<string>;
+	generate: (payload: AuthPayload, options: JwtOptions) => Promise<string>;
 	validate: (token: string, options: JwtOptions) => Promise<VerifiedToken>;
 	// verify: (token: string, options: JwtOptions) => Promise<User>; // return user now
 	// revoke: (token: string) => Promise<void>;

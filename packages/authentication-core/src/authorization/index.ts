@@ -22,11 +22,47 @@ type DrizzleDatabase =
 
 // const toDBId = (id: string): number => parseInt(id, 10);
 
+interface User {
+	id: string;
+}
+
+interface UserWithRoles {
+	id: string;
+	roles: Role[];
+}
+
 export const RBAC = (
 	db: DrizzleDatabase,
 	defaultRole: SelectRole,
 	schema: DefaultSchema = defaultSchema
 ) => {
+	const getRoles = async (userId: string): Promise<RolesAndPermissions> => {
+		// Drizzle returns an array of joined rows.
+		// We'll select specific columns from `rolesTable` so it's typed more cleanly.
+		const rows = await db
+			.select({
+				// roleId: schema.rolesTable.id,
+				roleName: schema.rolesTable.name,
+				roleLevel: schema.rolesTable.level,
+			})
+			.from(schema.rolesTable)
+			.innerJoin(
+				schema.userRolesTable,
+				eq(schema.userRolesTable.roleId, schema.rolesTable.id)
+			)
+			.where(eq(schema.userRolesTable.userId, userId));
+
+		// Transform to your "Role" type
+		const roles: Role[] = rows.map((row) => ({
+			name: row.roleName,
+			level: row.roleLevel,
+		}));
+
+		return {
+			roles,
+		};
+	};
+
 	return {
 		seed: async () => {
 			console.log("seeding roles");
@@ -35,30 +71,13 @@ export const RBAC = (
 				.values(Object.values(defaultRoleHierarchy))
 				.onConflictDoNothing();
 		},
-		getRoles: async (userId: string): Promise<RolesAndPermissions> => {
-			// Drizzle returns an array of joined rows.
-			// We'll select specific columns from `rolesTable` so it's typed more cleanly.
-			const rows = await db
-				.select({
-					// roleId: schema.rolesTable.id,
-					roleName: schema.rolesTable.name,
-					roleLevel: schema.rolesTable.level,
-				})
-				.from(schema.rolesTable)
-				.innerJoin(
-					schema.userRolesTable,
-					eq(schema.userRolesTable.roleId, schema.rolesTable.id)
-				)
-				.where(eq(schema.userRolesTable.userId, userId));
-
-			// Transform to your "Role" type
-			const roles: Role[] = rows.map((row) => ({
-				name: row.roleName,
-				level: row.roleLevel,
-			}));
-
+		getRoles,
+		addRolesToUser: async (user: User): Promise<UserWithRoles> => {
+			const roles = await getRoles(user.id);
+			console.log("roles: ", roles);
 			return {
-				roles,
+				...user,
+				roles: roles.roles,
 			};
 		},
 		updateUserRole: async (
@@ -155,6 +174,7 @@ export const RBAC = (
 export interface RBAC {
 	seed: () => Promise<void>;
 	getRoles: (userId: string) => Promise<RolesAndPermissions>;
+	addRolesToUser: (user: User) => Promise<UserWithRoles>;
 	updateUserRole: (userId: string, role?: SelectRole) => Promise<void>;
 	createUserRole: (userId: string, role?: SelectRole) => Promise<void>;
 }

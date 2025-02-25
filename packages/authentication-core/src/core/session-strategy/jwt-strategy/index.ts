@@ -5,16 +5,6 @@ import {
 	KeyCards,
 	KeyCard,
 	AuthResult,
-	// JwtConfig,
-	// Credentials,
-	// AuthTokens,
-	// KeyCards,
-	// KeyCard,
-	// User,
-	// AuthState,
-	// TokenService,
-	// VerifiedToken,
-	// AuthResult,
 } from "../../types";
 import { JwtConfig } from "./index.types";
 // import { User } from "../../../auth-system/index.types";
@@ -30,16 +20,17 @@ import {
 	UnknownAuthError,
 } from "../../error";
 import { createLogger } from "@pete_keen/logger";
-
-import { safeExecute } from "../../error";
+import type { RBAC } from "../../../authorization";
 
 const logger = createLogger({});
 
 export class JwtStrategy implements AuthStrategy {
 	private tokenService: TokenService;
-	constructor(private config: JwtConfig) {
+	private authorizationManager: RBAC;
+	constructor(private config: JwtConfig, authorizationManager: RBAC) {
 		this.config = config;
-		this.tokenService = new JwtTokenService();
+		this.tokenService = JwtTokenService(); // for now lets get away from classes and into functions
+		this.authorizationManager = authorizationManager;
 	}
 
 	async createKeyCards(user: User): Promise<KeyCards> {
@@ -183,3 +174,90 @@ export class JwtStrategy implements AuthStrategy {
 		return true;
 	}
 }
+
+export const JwtStrategyFn = (config: JwtConfig): AuthStrategy => {
+	const tokenService = JwtTokenService(); // for now lets get away from classes and into functions
+
+	const validateCard = async (
+		keyCards: KeyCards,
+		name: string
+	): Promise<AuthState> => {
+		try {
+			const card = keyCards.find((keyCard) => keyCard.name === name);
+			if (!card) {
+				throw new KeyCardMissingError(`${name} Key Card Missing`);
+			}
+			const result = await tokenService.validate(
+				card.value,
+				config[name]
+			);
+			return {
+				authenticated: true,
+				user: result.user,
+				keyCards,
+			};
+		} catch (error) {
+			if (error instanceof AuthError) {
+				logger.warn(`${name} keycard not validated`, {
+					error,
+				});
+				return {
+					authenticated: false,
+					error,
+					user: null,
+					keyCards: null,
+				};
+			} else {
+				logger.warn(`${name} keycard not validated - unknown error`, {
+					error,
+				});
+				return {
+					authenticated: false,
+					user: null,
+					keyCards: null,
+					error: new UnknownAuthError("Unknown error"),
+				};
+			}
+		}
+	};
+
+	return {
+		createKeyCards: async (user: User): Promise<KeyCards> => {},
+		validate: async (keyCards: KeyCards): Promise<AuthResult> => {
+			try {
+				const accessState = await validateCard(keyCards, "access");
+				if (accessState.authenticated) {
+					logger.info("Keycards validated", {
+						userId: accessState.user.id,
+						email: accessState.user.email,
+					});
+					return {
+						type: "success",
+						authState: accessState,
+					};
+				}
+				const refreshState = await validateCard(keyCards, "refresh");
+				if (refreshState.authenticated) {
+					logger.info("Refresh keycard validated", {
+						userId: refreshState.user.id,
+						// email: refreshState.user.email,
+					});
+					return {
+						type: "refresh",
+						authState: refreshState, // This is still an old state so keycards must be remade in auth system
+					};
+				} else {
+					return {
+						type: "error",
+						error: new InvalidKeyCardError("Invalid Key Card"),
+					};
+				}
+			} catch (error) {
+				return {
+					type: "error",
+					error,
+				};
+			}
+		},
+	};
+};

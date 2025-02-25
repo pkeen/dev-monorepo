@@ -164,6 +164,10 @@ export class AuthSystem {
 				}
 			}
 
+            // Step 3 Add Roles to user
+            console.log("adding roles to user");
+            user = await this.authorizationManager.addRolesToUser(user);
+
 			// Step 3: Create auth state
 			const keyCards = await this.createKeyCardsForUser(user);
 			return {
@@ -415,7 +419,6 @@ export class AuthSystem {
 	async validate(keyCards: KeyCards): Promise<AuthResult> {
 		// TO-DO decide how to deal with missing keycards
 		// its probably early on the game
-		console.log("rolesManager: ", this.rolesManager);
 		if (!keyCards) {
 			return {
 				type: "error",
@@ -424,6 +427,30 @@ export class AuthSystem {
 		}
 
 		const result = await this.strategy.validate(keyCards);
+
+		if (result.type === "success") {
+			this.logger.info("Keycards validated", {
+				userId: result.authState.user.id,
+				email: result.authState.user.email,
+			});
+			return result;
+		} else if (result.type === "refresh") {
+			let user = await this.adapter.getUser(result.authState.user.id);
+			// TODO - add roles to user object
+			user = await this.authorizationManager.addRolesToUser(user);
+			const keyCards = await this.strategy.createKeyCards(user);
+			return {
+				type: "success",
+				authState: {
+					user,
+					authenticated: true,
+					keyCards,
+				},
+			};
+			// pull user info from DB
+			// create new keycards
+		}
+
 		// console.log("AUTH.VALIDATE RESULT: ", result);
 		if (result.type === "error") {
 			// log the error

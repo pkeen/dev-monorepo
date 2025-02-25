@@ -17,22 +17,27 @@ const logger = createLogger({
 });
 
 const authSystem = new AuthSystem(
-	new JwtStrategy({
-		access: {
-			name: "access", // for now the names NEED to be access and refresh
-			secretKey: "asfjsdkfj",
-			algorithm: "HS256",
-			expiresIn: "30 minutes",
-			fields: ["id", "email"],
+	new JwtStrategy(
+		{
+			access: {
+				name: "access", // for now the names NEED to be access and refresh
+				secretKey: "asfjsdkfj",
+				algorithm: "HS256",
+				expiresIn: "30 minutes",
+				fields: ["id", "email"],
+			},
+			refresh: {
+				name: "refresh",
+				secretKey: "jldmff",
+				algorithm: "HS256",
+				expiresIn: "30 days",
+				fields: ["id"],
+			},
 		},
-		refresh: {
-			name: "refresh",
-			secretKey: "jldmff",
-			algorithm: "HS256",
-			expiresIn: "30 days",
-			fields: ["id"],
-		},
-	}),
+		RBAC(db, {
+			name: "User",
+		})
+	),
 	DrizzleAdapter(db),
 	RBAC(db, {
 		name: "User",

@@ -38,11 +38,11 @@ export class JwtStrategy implements AuthStrategy {
 			const keyCards: KeyCards = [];
 
 			const accessToken = await this.tokenService.generate(
-				user,
+				{ user },
 				this.config.access
 			);
 			const refreshToken = await this.tokenService.generate(
-				user,
+				{ user },
 				this.config.refresh
 			);
 			const accessKeyCard: KeyCard = {
@@ -191,6 +191,7 @@ export const JwtStrategyFn = (config: JwtConfig): AuthStrategy => {
 				card.value,
 				config[name]
 			);
+            console.log("VAIDATION RESULT: ", result);
 			return {
 				authenticated: true,
 				user: result.user,
@@ -222,10 +223,40 @@ export const JwtStrategyFn = (config: JwtConfig): AuthStrategy => {
 	};
 
 	return {
-		createKeyCards: async (user: User): Promise<KeyCards> => {},
+		createKeyCards: async (user: User): Promise<KeyCards> => {
+			try {
+				const keyCards: KeyCards = [];
+
+				const accessToken = await tokenService.generate(
+					{ user },
+					config.access
+				);
+				const refreshToken = await tokenService.generate(
+					{ user },
+					config.refresh
+				);
+				const accessKeyCard: KeyCard = {
+					name: config.access.name,
+					value: accessToken,
+					type: "access",
+				};
+				const refreshKeyCard: KeyCard = {
+					name: config.refresh.name,
+					value: refreshToken,
+					type: "refresh",
+				};
+				keyCards.push(accessKeyCard);
+				keyCards.push(refreshKeyCard);
+				return keyCards;
+			} catch (error) {
+				throw new KeyCardCreationError("Key Card Creation Failed");
+			}
+		},
 		validate: async (keyCards: KeyCards): Promise<AuthResult> => {
 			try {
+				console.log("JWT VALIDATE");
 				const accessState = await validateCard(keyCards, "access");
+				console.log("accessState: ", accessState);
 				if (accessState.authenticated) {
 					logger.info("Keycards validated", {
 						userId: accessState.user.id,

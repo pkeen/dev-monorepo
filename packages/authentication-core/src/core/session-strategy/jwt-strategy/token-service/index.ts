@@ -138,40 +138,42 @@ export const JwtTokenService = (): TokenService => {
 		validate: async (
 			token: string,
 			options: JwtOptions
-		): Promise<AccessUser | RefreshUser> => {
-            try {
-                const { payload, protectedHeader } = await jwtVerify(
-                    token,
-                    new TextEncoder().encode(options.secretKey)
+		): Promise<AuthPayload> => {
+			try {
+				const { payload, protectedHeader } = await jwtVerify(
+					token,
+					new TextEncoder().encode(options.secretKey)
+				);
+				console.log("PAYLOAD: ", payload);
+				return payload;
+			} catch (error: any) {
+				if (error.code === "ERR_JWT_EXPIRED") {
+					throw new TokenExpiredError(
+						"Token has expired " +
+							(error.message || "Invalid token")
+					);
+				}
+				logger.warn(
+					"Token validation failed: " +
+						(error.message || "Invalid token")
+				);
 
-                );
-			    return payload.user;
-            } catch (error: any) {
-                if (error.code === "ERR_JWT_EXPIRED") {
-                    throw new TokenExpiredError(
-                        "Token has expired " + (error.message || "Invalid token")
-                    );
-                }
-                logger.warn(
-                    "Token validation failed: " + (error.message || "Invalid token")
-                );
+				// All other JWT errors indicate tampering - throw security error
+				if (
+					error.code.startsWith("ERR_JWT_") ||
+					error.code.startsWith("ERR_JWS_")
+				) {
+					throw new TokenTamperedError(
+						"Token validation failed: " +
+							(error.message || "Invalid token")
+					);
+				}
 
-			// All other JWT errors indicate tampering - throw security error
-                if (
-                    error.code.startsWith("ERR_JWT_") ||
-                    error.code.startsWith("ERR_JWS_")
-                ) {
-                    throw new TokenTamperedError(
-                        "Token validation failed: " +
-                            (error.message || "Invalid token")
-                    );
-                }
-
-                // Re-throw unexpected errors
-                throw error;
-            }
+				// Re-throw unexpected errors
+				throw error;
+			}
 		},
-    };
+	};
 };
 
 export * from "./index.types";

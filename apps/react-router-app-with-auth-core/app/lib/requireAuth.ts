@@ -25,7 +25,7 @@ export const requireAuth = async (
 	}
 
 	const authResult = await authSystem.validate(sessionState.keyCards!);
-	// console.log("AUTH RESULT (IN REQUIRE AUTH): ", authResult);
+	console.log("AUTH RESULT (IN REQUIRE AUTH): ", authResult);
 	if (authResult.type === "error" || authResult.type === "redirect") {
 		if (redirectTo) {
 			throw redirect(redirectTo);

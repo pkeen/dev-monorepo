@@ -8,7 +8,7 @@ import {
 import { createLogger } from "@pete_keen/logger";
 import { AuthSystem } from "@pete_keen/authentication-core";
 import { DrizzleAdapter } from "@pete_keen/authentication-core/adapters";
-import { JwtStrategy } from "@pete_keen/authentication-core";
+import { JwtStrategy, JwtStrategyFn } from "@pete_keen/authentication-core";
 import { RBAC } from "@pete_keen/authentication-core/authorization";
 import db from "~/db";
 
@@ -16,8 +16,10 @@ const logger = createLogger({
 	level: "debug",
 });
 
+
+
 const authSystem = new AuthSystem(
-	new JwtStrategy(
+	JwtStrategyFn(
 		{
 			access: {
 				name: "access", // for now the names NEED to be access and refresh
@@ -34,9 +36,9 @@ const authSystem = new AuthSystem(
 				fields: ["id"],
 			},
 		},
-		RBAC(db, {
-			name: "User",
-		})
+		// RBAC(db, {
+		// 	name: "User",
+		// })
 	),
 	DrizzleAdapter(db),
 	RBAC(db, {

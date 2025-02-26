@@ -55,7 +55,7 @@ export interface KeyCard {
 	value: string;
 	expiresAt?: Date;
 	type?: "access" | "refresh" | "session";
-	storageOptions: CookieOptions;
+	storageOptions?: CookieOptions;
 }
 
 export interface CookieOptions {

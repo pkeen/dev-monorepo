@@ -92,7 +92,6 @@ export class AuthSystem {
 			const p = this.providers[provider];
 			console.log("p:", p);
 			if (!p) {
-				console.log("STOPPING OUT HERE");
 				throw new ProviderNotFoundError(provider);
 			}
 
@@ -140,6 +139,7 @@ export class AuthSystem {
 					adapterAccount.providerAccountId
 				);
 
+				// update user account if exists
 				if (account) {
 					this.logger.info("Account found", {
 						provider: account.provider,
@@ -154,8 +154,7 @@ export class AuthSystem {
 					await this.adapter.updateAccount(adapterAccount);
 				}
 
-				// TODO: create user account if not exists
-				// TODO: update user account if exists
+				// create user account if not exists
 				if (!account) {
 					await this.adapter.createAccountForUser(
 						user,
@@ -163,11 +162,6 @@ export class AuthSystem {
 					);
 				}
 			}
-
-			// Step 3 Add Roles to user
-			console.log("adding roles to user");
-			user = await this.authorizationManager.addRolesToUser(user);
-			// user.roles = await this.authorizationManager.getRoles(user.id);
 
 			// Step 3: Create auth state
 			this.logger.info("Creating keycards ");
@@ -565,7 +559,7 @@ export class AuthSystem {
 		const authSystem = new AuthSystem(
 			strategy,
 			config.adapter,
-			config.authorizationManager,
+			config.authz,
 			logger
 		);
 

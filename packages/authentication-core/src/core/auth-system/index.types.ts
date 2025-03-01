@@ -2,7 +2,7 @@ import { LogLevel } from "@pete_keen/logger";
 import { Adapter, AdapterUser } from "../adapter";
 import { JwtConfig } from "../session-strategy/jwt-strategy/index.types";
 import { SessionConfig } from "../session-strategy/db-strategy/index.types";
-import { ProviderOptions } from "../providers/index.types";
+// import { ProviderOptions } from "../providers/index.types";
 import {
 	Credentials,
 	SignupCredentials,
@@ -22,8 +22,8 @@ export interface AuthConfigBase {
 	adapter?: Adapter;
 	// passwordService?: string;
 	logger?: LoggerOptions;
-	providers?: AuthProvider; // TODO: Make this an array of provider options
-	authorizationManager?: any;
+	providers?: AuthProvider[]; // TODO: Make this an array of provider options
+	authz?: any;
 }
 
 export type AuthConfig =

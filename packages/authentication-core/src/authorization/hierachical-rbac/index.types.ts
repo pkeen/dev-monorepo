@@ -21,3 +21,14 @@ export type RoleHierarchy = Role[];
 export type SelectRole =
 	| { name: string; level?: never }
 	| { level: number; name?: never };
+
+export type RBACConfig = {
+	roles: Role[];
+	defaultRole: SelectRole;
+};
+
+// Define the type for the extra authz data
+export interface AuthzData {
+	roles?: string[]; // Could be an array of role names
+	permissions?: string[]; // Optional permissions array
+}

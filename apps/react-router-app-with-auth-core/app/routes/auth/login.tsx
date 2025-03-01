@@ -13,6 +13,7 @@ export const action = async ({ request }: { request: Request }) => {
 	const headers = new Headers(request.headers);
 	const formData = await request.formData();
 	const provider = formData.get("provider");
+    console.log("PROVIDER in login from form:", provider);
 
 	if (!provider) {
 		redirect("/auth/login");

@@ -8,11 +8,13 @@ import {
 import { eq } from "drizzle-orm";
 import { NeonHttpDatabase } from "drizzle-orm/neon-http";
 import {
+	RBACConfig,
 	Role,
 	RolesAndPermissions,
 	SelectRole,
 } from "./hierachical-rbac/index.types";
 import { defaultRoleHierarchy } from "./hierachical-rbac";
+import type { Authz } from "./index.types";
 
 type DefaultSchema = typeof defaultSchema;
 
@@ -33,7 +35,7 @@ interface UserWithRoles {
 
 export const RBAC = (
 	db: DrizzleDatabase,
-	defaultRole: SelectRole,
+	config: RBACConfig,
 	schema: DefaultSchema = defaultSchema
 ) => {
 	const getRoles = async (userId: string): Promise<RolesAndPermissions> => {
@@ -63,12 +65,25 @@ export const RBAC = (
 		};
 	};
 
+	const findRoleInConfig = (
+		select: SelectRole,
+		config: RBACConfig
+	): Role | null => {
+		if ("name" in select) {
+			// Look up by name
+			return config.roles.find((r) => r.name === select.name) ?? null;
+		} else {
+			// Look up by level
+			return config.roles.find((r) => r.level === select.level) ?? null;
+		}
+	};
+
 	return {
 		seed: async () => {
 			console.log("seeding roles");
 			await db
 				.insert(schema.rolesTable)
-				.values(Object.values(defaultRoleHierarchy))
+				.values(defaultRoleHierarchy)
 				.onConflictDoNothing();
 		},
 		getRoles,
@@ -80,83 +95,90 @@ export const RBAC = (
 				roles: roles.roles,
 			};
 		},
+		enrichToken: async (userId: string): Promise<{ roles: Role[] }> => {
+			const roles = await getRoles(userId);
+			console.log("roles: ", roles);
+			return {
+				roles: roles.roles,
+			};
+		},
 		updateUserRole: async (
 			userId: string,
-			role?: SelectRole
+			select?: SelectRole
 		): Promise<void> => {
-			if (!role) {
-				role = defaultRole;
+			if (!select) {
+				select = config.defaultRole;
 			}
 
-			if (role.name) {
-				const [roleId] = await db
+			if (select.name) {
+				const [role] = await db
 					.select({ id: schema.rolesTable.id })
 					.from(schema.rolesTable)
-					.where(eq(schema.rolesTable.name, role.name));
+					.where(eq(schema.rolesTable.name, select.name));
 
-				if (!roleId) {
-					throw new Error(`Role ${role.name} does not exist`);
+				if (!role) {
+					throw new Error(`Role ${select.name} does not exist`);
 				}
 
 				//update user's role
 				await db
 					.update(schema.userRolesTable)
-					.set({ roleId: roleId.id })
+					.set({ roleId: role.id })
 					.where(eq(schema.userRolesTable.userId, userId));
-			} else if (role.level) {
-				const [roleId] = await db
+			} else if (select.level) {
+				const [role] = await db
 					.select({ id: schema.rolesTable.id })
 					.from(schema.rolesTable)
-					.where(eq(schema.rolesTable.level, role.level));
+					.where(eq(schema.rolesTable.level, select.level));
 
-				if (!roleId) {
+				if (!role) {
 					throw new Error(
-						`Role with level ${role.level} does not exist`
+						`Role with level ${select.level} does not exist`
 					);
 				}
 
 				//update user's role
 				await db
 					.update(schema.userRolesTable)
-					.set({ roleId: roleId.id })
+					.set({ roleId: role.id })
 					.where(eq(schema.userRolesTable.userId, userId));
 			} else {
-				throw new Error(`Invalid role: ${role}`);
+				throw new Error(`Invalid role: ${select}`);
 			}
 		},
 		createUserRole: async (
 			userId: string,
-			role?: SelectRole
+			select?: SelectRole
 		): Promise<void> => {
 			console.log("creating user role");
-			if (!role) {
-				role = defaultRole;
+			if (!select) {
+				select = config.defaultRole;
 			}
-			console.log(role);
+			console.log(select);
 
-			if (role.name) {
-				const [roleId] = await db
+			if (select.name) {
+				const [role] = await db
 					.select({ id: schema.rolesTable.id })
 					.from(schema.rolesTable)
-					.where(eq(schema.rolesTable.name, role.name));
+					.where(eq(schema.rolesTable.name, select.name));
 
-				if (!roleId) {
-					throw new Error(`Role ${role.name} does not exist`);
+				if (!role) {
+					throw new Error(`Role ${select.name} does not exist`);
 				}
 
 				// add user's role
 				await db
 					.insert(schema.userRolesTable)
-					.values({ userId, roleId: roleId.id });
-			} else if (role.level) {
+					.values({ userId, roleId: role.id });
+			} else if (select.level) {
 				const [roleId] = await db
 					.select({ id: schema.rolesTable.id })
 					.from(schema.rolesTable)
-					.where(eq(schema.rolesTable.level, role.level));
+					.where(eq(schema.rolesTable.level, select.level));
 
 				if (!roleId) {
 					throw new Error(
-						`Role with level ${role.level} does not exist`
+						`Role with level ${select.level} does not exist`
 					);
 				}
 
@@ -165,8 +187,49 @@ export const RBAC = (
 					.insert(schema.userRolesTable)
 					.values({ userId, roleId: roleId.id });
 			} else {
-				throw new Error(`Invalid role: ${role}`);
+				throw new Error(`Invalid role: ${select}`);
 			}
+		},
+		/**
+		 * Check if a user has (at least) the required role
+		 * based on numeric "level".
+		 * If you want an exact match on name, adjust accordingly.
+		 */
+		async userHasRequiredRole(
+			userId: string,
+			required: SelectRole
+		): Promise<boolean> {
+			// 1. Find the required role in the config
+			const requiredRoleDef = findRoleInConfig(required, config);
+			if (!requiredRoleDef) {
+				throw new Error(
+					`Invalid required role: ${JSON.stringify(required)}`
+				);
+			}
+
+			// 2. Lookup the user’s current role in DB (including level)
+			// For example, if "userRolesTable" -> "rolesTable" is a simple pivot
+			const row = await db
+				.select({
+					roleId: schema.rolesTable.id,
+					roleName: schema.rolesTable.name,
+					roleLevel: schema.rolesTable.level, // if your table has "level"
+				})
+				.from(schema.rolesTable)
+				.innerJoin(
+					schema.userRolesTable,
+					eq(schema.userRolesTable.roleId, schema.rolesTable.id)
+				)
+				.where(eq(schema.userRolesTable.userId, userId))
+				.limit(1);
+
+			// If user has no role record, block
+			if (!row[0]) return false;
+
+			const userRoleLevel = row[0].roleLevel;
+
+			// 3. Compare levels (assuming a linear approach)
+			return userRoleLevel >= requiredRoleDef.level;
 		},
 	};
 };
@@ -177,4 +240,5 @@ export interface RBAC {
 	addRolesToUser: (user: User) => Promise<UserWithRoles>;
 	updateUserRole: (userId: string, role?: SelectRole) => Promise<void>;
 	createUserRole: (userId: string, role?: SelectRole) => Promise<void>;
+	enrichToken: (userId: string) => Promise<{ roles: Role[] }>;
 }

@@ -47,7 +47,7 @@ export enum AuthErrorCode {
 	INSUFFICIENT_PERMISSIONS = "INSUFFICIENT_PERMISSIONS",
 	INVALID_SCOPE = "INVALID_SCOPE",
 
-	// Login Errors (400s)
+	// SignIn Errors (400s)
 	PROVIDER_NOT_FOUND = "PROVIDER_NOT_FOUND",
 	PROVIDER_NOT_GIVEN = "PROVIDER_NOT_GIVEN",
 }
@@ -172,27 +172,34 @@ export class CsrfError extends AuthError {
 	}
 }
 
-export class ProviderNotGivenError extends AuthError {
+export class OAuthError extends AuthError {
+	constructor(message: string) {
+		super(message, AuthErrorCode.OAUTH_ERROR);
+		this.name = "OAuthError";
+	}
+}
+
+export class SignInError extends AuthError {
+	constructor(message: string, code: AuthErrorCode) {
+		super(message, code);
+		this.name = "SignInError";
+	}
+}
+
+export class ProviderNotGivenError extends SignInError {
 	constructor(message: string) {
 		super(message, AuthErrorCode.PROVIDER_NOT_GIVEN);
 		this.name = "ProviderNotGivenError";
 	}
 }
 
-export class ProviderNotFoundError extends AuthError {
+export class ProviderNotFoundError extends SignInError {
 	constructor(provider: string) {
 		super(
 			`Provider not found: ${provider}`,
 			AuthErrorCode.PROVIDER_NOT_FOUND
 		);
 		this.name = "ProviderNotFoundError";
-	}
-}
-
-export class OAuthError extends AuthError {
-	constructor(message: string) {
-		super(message, AuthErrorCode.OAUTH_ERROR);
-		this.name = "OAuthError";
 	}
 }
 

@@ -191,7 +191,7 @@ export const JwtStrategyFn = (config: JwtConfig): AuthStrategy => {
 				card.value,
 				config[name]
 			);
-            console.log("VAIDATION RESULT: ", result);
+			console.log("VAIDATION RESULT: ", result);
 			return {
 				authenticated: true,
 				user: result.user,
@@ -232,7 +232,7 @@ export const JwtStrategyFn = (config: JwtConfig): AuthStrategy => {
 					config.access
 				);
 				const refreshToken = await tokenService.generate(
-					{ user },
+					{ user: { id: user.id } },
 					config.refresh
 				);
 				const accessKeyCard: KeyCard = {

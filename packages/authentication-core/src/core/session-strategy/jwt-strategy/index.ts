@@ -223,7 +223,7 @@ export const JwtStrategyFn = (config: JwtConfig): AuthStrategy => {
 	};
 
 	return {
-        name: "jwt",
+		name: "jwt",
 		createKeyCards: async (user: User): Promise<KeyCards> => {
 			try {
 				const keyCards: KeyCards = [];
@@ -290,6 +290,15 @@ export const JwtStrategyFn = (config: JwtConfig): AuthStrategy => {
 					error,
 				};
 			}
+		},
+		// TODO add sign out
+		logout: async (keyCards: KeyCards): Promise<AuthState> => {
+			return Promise.resolve({
+				authenticated: false,
+				user: null,
+				keyCards: null,
+				error: null,
+			});
 		},
 	};
 };

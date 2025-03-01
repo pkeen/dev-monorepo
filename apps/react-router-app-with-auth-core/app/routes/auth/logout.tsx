@@ -14,7 +14,7 @@ export const action = async ({ request }: { request: Request }) => {
 			status: 400,
 		});
 	}
-	const authState = await authSystem.logout(previousAuthState.keyCards);
+	const authState = await authSystem.signOut(previousAuthState.keyCards);
 
 	session.set("authState", authState);
 	headers.append("Set-Cookie", await commitSession(session));

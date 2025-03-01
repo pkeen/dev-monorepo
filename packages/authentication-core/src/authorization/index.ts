@@ -196,7 +196,7 @@ export const RBAC = (
 		 * based on numeric "level".
 		 * If you want an exact match on name, adjust accordingly.
 		 */
-		async userHasRequiredRole(
+		async dbUserHasRequiredRole(
 			userId: string,
 			required: SelectRole
 		): Promise<boolean> {

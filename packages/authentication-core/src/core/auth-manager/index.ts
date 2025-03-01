@@ -5,6 +5,8 @@ import {
 	AuthConfig,
 	Authz,
 	AuthzData,
+	KeyCards,
+	AuthState,
 } from "core/types";
 import { SignInSystem, type SignInParams } from "../signin-system";
 import { AuthProvider } from "core/providers";
@@ -12,6 +14,7 @@ import { Adapter as UserRegistry, AdapterUser } from "../adapter";
 import { JwtStrategyFn } from "../session-strategy";
 import { DisplayProvider } from "core/auth-system";
 import { createLogger } from "@pete_keen/logger";
+import { KeyCardMissingError } from "core/error";
 
 export function AuthManager(
 	userRegistry: UserRegistry,
@@ -132,11 +135,11 @@ export function AuthManager(
 				}
 
 				// 4) Create the session (JWT or server-session) with user + extra data
-				const session = await authStrategy.createKeyCards(user);
+				const keyCards = await authStrategy.createKeyCards(user);
 
 				return {
 					type: "success",
-					authState: { authenticated: true, session, user },
+					authState: { authenticated: true, keyCards, user },
 				};
 			} catch (error) {
 				// this.logger.error("Error while signing in: ", {
@@ -152,6 +155,73 @@ export function AuthManager(
 				key: provider.key,
 				style: provider.style,
 			}));
+		},
+		validate: async (keyCards: KeyCards): Promise<AuthResult> => {
+			// TODO decide what works best for session strategy
+			// TO-DO decide how to deal with missing keycards
+			// its probably early on the game
+			if (!keyCards) {
+				return {
+					type: "error",
+					error: new KeyCardMissingError("No keycards found"),
+				};
+			}
+
+			const result = await authStrategy.validate(keyCards);
+
+			if (result.type === "success") {
+				logger.info("Keycards validated", {
+					userId: result.authState.user.id,
+					email: result.authState.user.email,
+				});
+				return result;
+			} else if (result.type === "refresh") {
+				let user = await userRegistry.getUser(result.authState.user.id);
+
+				// 3) Enrich token or session data with roles/permissions (if authz is provided)
+				// This is pointless in a db session strategy though
+				let authzData: AuthzData = {};
+				if (authz && authz.enrichToken) {
+					authzData = await authz.enrichToken(user.id);
+					user = {
+						...user,
+						...authzData,
+					};
+				}
+				const keyCards = await authStrategy.createKeyCards(user);
+				return {
+					type: "success",
+					authState: {
+						user,
+						authenticated: true,
+						keyCards,
+					},
+				};
+				// pull user info from DB
+				// create new keycards
+			}
+
+			// console.log("AUTH.VALIDATE RESULT: ", result);
+			if (result.type === "error") {
+				// log the error
+				this.logger.error("Failed to validate keycards", {
+					message: result.error?.message,
+				});
+			}
+			return result;
+		},
+		signOut: async (
+			keyCards: KeyCards | undefined | null
+		): Promise<AuthState> => {
+			if (!keyCards) {
+				return {
+					authenticated: false,
+					user: null,
+					keyCards: null,
+					error: null,
+				}; // all ready logged out
+			}
+			return await authStrategy.logout(keyCards);
 		},
 
 		// Possibly other methods like signOut, refresh, etc.
@@ -185,6 +255,8 @@ export const createAuthManager = (config: AuthConfig) => {
 };
 
 export interface AuthManager {
-	signIn: (signInParams: SignInParams) => Promise<AuthResult>;
+	login: (signInParams: SignInParams) => Promise<AuthResult>;
 	listProviders: () => DisplayProvider[];
+	validate: (keyCards: KeyCards) => Promise<AuthResult>;
+	signOut: (keyCards: KeyCards) => Promise<AuthState>;
 }

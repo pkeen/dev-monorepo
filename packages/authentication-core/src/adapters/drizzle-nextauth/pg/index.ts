@@ -26,6 +26,7 @@ export function PostgresDrizzleAdapter(
 	} = defineTables(schema);
 
 	return {
+		name: "drizzle-pg",
 		async createUser(user: CreateUser): Promise<AdapterUser> {
 			return client
 				.insert(usersTable)

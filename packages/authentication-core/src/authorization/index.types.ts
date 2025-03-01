@@ -5,6 +5,7 @@ export interface AuthzData {
 }
 
 export interface Authz {
+	name: string;
 	seed: () => void;
 	enrichToken?: (userId: string) => Promise<AuthzData>;
 	createUserRole?: (userId: string, role?: string) => Promise<void>;

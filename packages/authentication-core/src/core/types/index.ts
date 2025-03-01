@@ -1,5 +1,10 @@
 import { AuthError } from "../error";
 import { User } from "../auth-system/index.types";
+import { Adapter } from "core/adapter";
+import { AuthProvider } from "core/providers";
+import { Authz } from "authorization/index.types";
+import { JwtConfig } from "core/session-strategy/jwt-strategy/index.types";
+import { SessionConfig } from "core/session-strategy/db-strategy/index.types";
 
 /*
  The Core Types for the library
@@ -11,6 +16,7 @@ export type AuthState =
 	| { authenticated: false; user: null; keyCards: null; error?: AuthError };
 
 // Define specific result types
+// Not sure this is needed anymore
 export type RedirectResult = {
 	type: "redirect";
 	url: string;
@@ -39,6 +45,7 @@ export type AuthResult =
 	| RefreshResult;
 
 export interface AuthStrategy {
+	name: string;
 	createKeyCards(user: User): Promise<KeyCards>;
 	logout(keyCards: KeyCards): Promise<AuthState>;
 	validate(keyCards: KeyCards): Promise<AuthResult>;
@@ -110,17 +117,6 @@ export interface Resource {
 	status: string;
 }
 
-// Core interfaces that other components must implement
-
-// // This adapter handles the specifics of how tokens are stored in a web browser
-// export interface WebStorageAdapter {
-// 	storeTokens: (tokens: AuthTokens) => Promise<void>;
-// 	getStoredTokens: () => Promise<AuthTokens | null>;
-// 	clearTokens: () => Promise<void>;
-// 	getCookieHeaders: (tokens: AuthTokens) => Record<string, string[]>;
-// 	getRemovalHeaders: () => Record<string, string[]>;
-// }
-
 export interface CsrfOptions {
 	cookieName?: string;
 	headerName?: string;
@@ -135,5 +131,52 @@ export interface VerifyResult {
 }
 
 export type ProviderName = "google" | "github" | "facebook";
+
+export type LogLevel = "debug" | "info" | "warn" | "error";
+
+export interface Logger {
+	// The current threshold (anything below this won’t log)
+	level: LogLevel;
+
+	debug: (message: string, meta?: Record<string, unknown>) => void;
+	info: (message: string, meta?: Record<string, unknown>) => void;
+	warn: (message: string, meta?: Record<string, unknown>) => void;
+	error: (message: string, meta?: Record<string, unknown>) => void;
+}
+
+export interface LoggerOptions {
+	level?: LogLevel;
+	prefix?: string;
+	// filepath?: string; // If they want file logging
+	silent?: boolean; // Disable console logging
+	// format?: LogFormat; // Log format
+}
+
+export interface AuthConfigBase {
+	adapter?: Adapter;
+	logger?: Logger;
+	loggerOptions?: LoggerOptions;
+	providers?: AuthProvider[]; // TODO: Make this an array of provider options
+	authz?: Authz;
+	// passwordService?: string;
+}
+
+export type AuthConfig =
+	| (AuthConfigBase & { strategy: "jwt"; jwtConfig: JwtConfig })
+	| (AuthConfigBase & { strategy: "session"; sessionConfig: SessionConfig });
+
+export interface AuthzData {
+	roles?: string[];
+	permissions?: string[];
+	[key: string]: any;
+}
+
+export interface Authz {
+	name: string;
+	seed: () => void;
+	enrichToken?: (userId: string) => Promise<AuthzData>;
+	createUserRole?: (userId: string, role?: string) => Promise<void>;
+	updateUserRole?: (userId: string, role?: string) => Promise<void>;
+}
 
 export * from "./UserRegistry";

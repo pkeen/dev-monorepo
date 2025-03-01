@@ -90,6 +90,10 @@ export type ProviderType = "oidc" | "oauth" | "email" | "credentials";
  * :::
  */
 export interface Adapter {
+	/*
+	 * indentifier
+	 */
+	name: string;
 	/**
 	 * Creates a user in the database and returns it.
 	 *

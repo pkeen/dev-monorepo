@@ -16,9 +16,9 @@ import { JwtStrategy, JwtStrategyFn } from "@pete_keen/authentication-core";
 import { RBAC } from "@pete_keen/authentication-core/authorization";
 import db from "~/db";
 
-const logger = createLogger({
-	level: "debug",
-});
+// const logger = createLogger({
+// 	level: "debug",
+// });
 
 const authConfig = {
 	strategy: "jwt",
@@ -97,6 +97,10 @@ const authConfig = {
 			name: "User",
 		},
 	}),
+	loggerOptions: {
+		level: "debug",
+		prefix: "Auth",
+	},
 };
 
 const authManager = createAuthManager(authConfig);

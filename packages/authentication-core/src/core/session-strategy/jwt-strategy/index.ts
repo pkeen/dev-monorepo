@@ -223,6 +223,7 @@ export const JwtStrategyFn = (config: JwtConfig): AuthStrategy => {
 	};
 
 	return {
+        name: "jwt",
 		createKeyCards: async (user: User): Promise<KeyCards> => {
 			try {
 				const keyCards: KeyCards = [];

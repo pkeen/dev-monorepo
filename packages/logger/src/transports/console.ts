@@ -1,5 +1,5 @@
 // transports/console.ts
-import { LogLevel, LogTransport } from "../interfaces";
+import type { LogLevel, LogTransport } from "../interfaces";
 
 export class ConsoleTransport implements LogTransport {
 	private colors = {
@@ -20,11 +20,9 @@ export class ConsoleTransport implements LogTransport {
 		const timestamp = new Date().toISOString();
 		const metaStr = meta ? ` ${JSON.stringify(meta)}` : "";
 
-		const formattedMessage = `${color}${
+		const formattedMessage = `${color}[${timestamp}] ${
 			prefix ? `${prefix}: ` : ""
-		}[${timestamp}] ${level.toUpperCase()}: ${message}${metaStr}${
-			this.colors.reset
-		}`;
+		}${level.toUpperCase()}: ${message}${metaStr}${this.colors.reset}`;
 
 		switch (level) {
 			case "error":

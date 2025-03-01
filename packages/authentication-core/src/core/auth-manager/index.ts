@@ -1,39 +1,60 @@
-import { AuthResult, AuthStrategy } from "core/types";
+import {
+	AuthResult,
+	AuthStrategy,
+	Logger,
+	AuthConfig,
+	Authz,
+	AuthzData,
+} from "core/types";
 import { SignInSystem, type SignInParams } from "../signin-system";
 import { AuthProvider } from "core/providers";
-import { Authz, AuthzData } from "../../authorization/index.types";
 import { Adapter as UserRegistry, AdapterUser } from "../adapter";
-import { AuthConfig } from "../auth-system/index.types";
 import { JwtStrategyFn } from "../session-strategy";
 import { DisplayProvider } from "core/auth-system";
+import { createLogger } from "@pete_keen/logger";
 
 export function AuthManager(
 	userRegistry: UserRegistry,
 	authStrategy: AuthStrategy,
 	providers: AuthProvider[],
+	logger: Logger,
 	authz?: Authz // optional, if you want role-based enrichment
 ) {
 	const providersMap = providers.reduce((acc, provider) => {
 		acc[provider.key] = provider;
 		return acc;
 	}, {} as Record<string, AuthProvider>);
+	const signInSystem = SignInSystem(providersMap);
+
+	// Log initialization with structured metadata
+	logger.info("Auth system initialized", {
+		strategy: authStrategy.name,
+		adapter: userRegistry.name,
+		// passwordService: passwordService.constructor.name,
+		authz: authz.name || "none",
+	});
 
 	authz?.seed();
-
-	const signInSystem = SignInSystem(providersMap);
 
 	return {
 		login: async (provider?: string, code?: string) => {
 			try {
 				// 1) Authenticate with external provider (OAuth, etc.)
+				logger.info("Authenticating with provider", {
+					provider,
+				});
 				const signInResult = await signInSystem.signIn(provider, code);
 
 				// 2) Deal with error or redirect result types
-				if (
-					signInResult.type === "error" ||
-					signInResult.type === "redirect" ||
-					signInResult.type !== "success"
-				) {
+				if (signInResult.type === "error") {
+					logger.error("Sign in failed", {
+						error: signInResult.error,
+					});
+					return signInResult;
+				} else if (signInResult.type === "redirect") {
+					logger.info("Redirecting to external provider", {
+						provider,
+					});
 					return signInResult;
 				}
 
@@ -47,9 +68,9 @@ export function AuthManager(
 				// Step 2a: if not existing user create new one
 				// TODO can this be cleaned up?
 				if (!user) {
-					// logger.info("User not found, creating new user", {
-					// 	email: userProfile.email,
-					// });
+					logger.debug("User not found, creating new user", {
+						email: userProfile.email,
+					});
 					user = await userRegistry.createUser({
 						email: userProfile.email,
 						name: userProfile.name,
@@ -64,9 +85,9 @@ export function AuthManager(
 					// TODO: create default user authorization roles/permissions
 					await authz.createUserRole(user.id);
 				} else {
-					// this.logger.info("User found", {
-					// 	email: userProfile.email,
-					// });
+					logger.debug("User found", {
+						email: userProfile.email,
+					});
 					// Step 2b: Select account where user id matches and provider matches
 					const account = await userRegistry.getAccount(
 						adapterAccount.provider,
@@ -75,23 +96,23 @@ export function AuthManager(
 
 					// create user account if not exists
 					if (account) {
-						// this.logger.info("Account found", {
-						// 	provider: account.provider,
-						// 	providerAccountId: account.providerAccountId,
-						// });
-						// Has token changed check - temporary
-						if (
-							account.access_token === adapterAccount.access_token
-						) {
-							console.log("SAME TOKEN");
-						} else {
-							console.log("DIFFERENT TOKEN");
-						}
+						logger.debug("Account found", {
+							provider: account.provider,
+							providerAccountId: account.providerAccountId,
+						});
 						await userRegistry.updateAccount(adapterAccount);
 					}
 
 					// create user account if not exists
 					if (!account) {
+						logger.debug(
+							"Account not found, creating new account",
+							{
+								provider: adapterAccount.provider,
+								providerAccountId:
+									adapterAccount.providerAccountId,
+							}
+						);
 						await userRegistry.createAccountForUser(
 							user,
 							adapterAccount
@@ -147,10 +168,18 @@ export const createAuthManager = (config: AuthConfig) => {
 		throw new Error("Invalid strategy");
 	}
 
+	if (!config.logger) {
+		if (!config.loggerOptions) {
+			config.loggerOptions = { level: "info", prefix: "Auth" };
+		}
+		config.logger = createLogger(config.loggerOptions);
+	}
+
 	return AuthManager(
 		config.adapter,
 		strategy,
 		config.providers,
+		config.logger,
 		config.authz
 	);
 };

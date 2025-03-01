@@ -12,6 +12,7 @@ export type LogLevel = "error" | "warn" | "info" | "debug";
 
 // Core logging interface
 export interface Logger {
+    level: LogLevel;
 	error(message: string, meta?: Record<string, unknown>): Promise<void>;
 	warn(message: string, meta?: Record<string, unknown>): Promise<void>;
 	info(message: string, meta?: Record<string, unknown>): Promise<void>;

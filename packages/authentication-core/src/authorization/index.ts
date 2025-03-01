@@ -79,6 +79,7 @@ export const RBAC = (
 	};
 
 	return {
+		name: "rbac",
 		seed: async () => {
 			console.log("seeding roles");
 			await db
@@ -235,6 +236,7 @@ export const RBAC = (
 };
 
 export interface RBAC {
+	name: string;
 	seed: () => Promise<void>;
 	getRoles: (userId: string) => Promise<RolesAndPermissions>;
 	addRolesToUser: (user: User) => Promise<UserWithRoles>;

@@ -1,14 +1,19 @@
-import { Logger, LogTransport, LogLevel, LoggerOptions } from "./interfaces";
+import type {
+	Logger,
+	LogTransport,
+	LogLevel,
+	LoggerOptions,
+} from "./interfaces";
 import { ConsoleTransport } from "./transports/console";
 // import { FileTransport } from "./transports/file";
 // logger.ts
 export class MultiTransportLogger implements Logger {
 	private transports: LogTransport[] = [];
-	private logLevel: LogLevel;
+	public level: LogLevel;
 	private options: LoggerOptions;
 
 	constructor(options: LoggerOptions = {}, transports: LogTransport[] = []) {
-		this.logLevel = options.level || "debug";
+		this.level = options.level || "debug";
 		this.transports = transports;
 		this.options = options;
 	}
@@ -19,7 +24,7 @@ export class MultiTransportLogger implements Logger {
 
 	private shouldLog(level: LogLevel): boolean {
 		const levels: LogLevel[] = ["error", "warn", "info", "debug"];
-		return levels.indexOf(level) <= levels.indexOf(this.logLevel);
+		return levels.indexOf(level) <= levels.indexOf(this.level);
 	}
 
 	private async logToTransports(

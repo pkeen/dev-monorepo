@@ -232,6 +232,26 @@ export const RBAC = (
 			// 3. Compare levels (assuming a linear approach)
 			return userRoleLevel >= requiredRoleDef.level;
 		},
+		/**
+		 * Check if a user has (at least) the required role jwt
+		 * based on numeric "level".
+		 */
+		async jwtUserHasRequiredRole(
+			user: UserWithRoles,
+			required: SelectRole
+		): Promise<boolean> {
+			// 1. Find the required role in the config
+			const requiredRoleDef = findRoleInConfig(required, config);
+			if (!requiredRoleDef) {
+				throw new Error(
+					`Invalid required role: ${JSON.stringify(required)}`
+				);
+			}
+			// 3. Compare levels (assuming a linear approach)
+			return user.roles.some(
+				(role) => role.level >= requiredRoleDef.level
+			);
+		},
 	};
 };
 

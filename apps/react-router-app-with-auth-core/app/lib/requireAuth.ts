@@ -1,6 +1,7 @@
 import { redirect } from "react-router";
 import { getSession, commitSession } from "../session.server";
 import authSystem from "../auth";
+import { authz } from "../auth";
 import type { User } from "@pete_keen/authentication-core";
 
 /**
@@ -11,7 +12,7 @@ import type { User } from "@pete_keen/authentication-core";
  */
 export const requireAuth = async (
 	request: Request,
-	{ redirectTo }: { redirectTo?: string }
+	{ redirectTo, minRole }: { redirectTo?: string; minRole?: string }
 ): Promise<{ user: User | null; headers?: Headers }> => {
 	const session = await getSession(request.headers.get("Cookie"));
 	const sessionState = session.get("authState");
@@ -39,7 +40,18 @@ export const requireAuth = async (
 		return { user: authResult.authState.user, headers };
 	}
 
+    // if (minRole) {
+    //     authz.checkRole(authResult.authState.user, minRole);
+    // }
+
 	return { user: authResult.authState.user };
+};
+
+export const minRole = (role: string) => {
+    return async (request: Request) => {
+        const { user } = await requireAuth(request);
+        authz.checkRole(user, role);
+    };
 };
 
 // export const useAuth = async ({

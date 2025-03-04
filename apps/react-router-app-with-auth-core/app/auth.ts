@@ -20,7 +20,36 @@ import db from "~/db";
 // 	level: "debug",
 // });
 
+export const authz = RBAC(db, {
+	roles: [
+		{
+			name: "Guest",
+			level: 0,
+		},
+		{
+			name: "User",
+			level: 1,
+		},
+		{
+			name: "Editor",
+			level: 2,
+		},
+		{
+			name: "Admin",
+			level: 3,
+		},
+		{
+			name: "Super Admin",
+			level: 4,
+		},
+	],
+	defaultRole: {
+		name: "User",
+	},
+});
+
 const authConfig = {
+	authz,
 	strategy: "jwt",
 	jwtConfig: {
 		access: {
@@ -70,33 +99,6 @@ const authConfig = {
 			redirectUri: "http://localhost:5173/auth/redirect/facebook",
 		}),
 	],
-	authz: RBAC(db, {
-		roles: [
-			{
-				name: "Guest",
-				level: 0,
-			},
-			{
-				name: "User",
-				level: 1,
-			},
-			{
-				name: "Editor",
-				level: 2,
-			},
-			{
-				name: "Admin",
-				level: 3,
-			},
-			{
-				name: "Super Admin",
-				level: 4,
-			},
-		],
-		defaultRole: {
-			name: "User",
-		},
-	}),
 	loggerOptions: {
 		level: "debug",
 		prefix: "Auth",

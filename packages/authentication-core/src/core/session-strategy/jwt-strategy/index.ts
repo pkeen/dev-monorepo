@@ -300,5 +300,9 @@ export const JwtStrategyFn = (config: JwtConfig): AuthStrategy => {
 				error: null,
 			});
 		},
+		supportsRefresh: () => {
+			// TO-DO decide if this is needed
+			return true;
+		},
 	};
 };

@@ -34,7 +34,7 @@ export function AuthManager(
 		strategy: authStrategy.name,
 		adapter: userRegistry.name,
 		// passwordService: passwordService.constructor.name,
-		authz: authz.name || "none",
+		authz: authz?.name || "none",
 	});
 
 	authz?.seed();
@@ -190,7 +190,7 @@ export function AuthManager(
 				}
 				const keyCards = await authStrategy.createKeyCards(user);
 				return {
-					type: "success",
+					type: "refresh",
 					authState: {
 						user,
 						authenticated: true,
@@ -223,10 +223,25 @@ export function AuthManager(
 			}
 			return await authStrategy.logout(keyCards);
 		},
+		authorize: async (keyCards: KeyCards, role?: string) => {
+			if (!keyCards) {
+				throw new KeyCardMissingError("No keycards found");
+			}
+
+            
+			const validation = await authStrategy.validate(keyCards);
+            
+			if (!role) {
+				return true;
+			}
+
+            
+
+			
+		},
 
 		// Possibly other methods like signOut, refresh, etc.
 	};
-}
 
 export const createAuthManager = (config: AuthConfig) => {
 	let strategy: AuthStrategy;

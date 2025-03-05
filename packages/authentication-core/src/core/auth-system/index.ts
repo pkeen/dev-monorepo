@@ -27,7 +27,7 @@ import {
 	AbstractOAuthProvider,
 	AuthProvider,
 } from "../providers/oauth/oauth-provider";
-import { JwtStrategy } from "../session-strategy";
+import { JwtStrategyFn } from "../session-strategy";
 import crypto from "crypto";
 import type { RBAC } from "../../authorization";
 

@@ -10,6 +10,7 @@ import {
 // import { stateCookie } from "./session.server";
 import {
 	AuthSystem,
+	createAuthManager,
 	type AuthState,
 	type AuthConfig,
 	type User,
@@ -47,7 +48,8 @@ export type WithAuth<T> = (
 export type HandlerFunction<T> = (args: WithAuthHandlerArgs) => Promise<T>;
 
 export const Auth = (config: RRAuthConfig) => {
-	const authSystem = AuthSystem.create(config);
+	// const authSystem = AuthSystem.create(config);
+	const authSystem = createAuthManager(config);
 
 	const { getSession, commitSession, destroySession } =
 		createCookieSessionStorage<SessionData>({
@@ -212,7 +214,7 @@ export const Auth = (config: RRAuthConfig) => {
 		request: Request,
 		{ redirectTo, role }: { redirectTo?: string; role?: string }
 	): Promise<{ user: User | null; headers?: Headers }> => {
-		console.log("ROLE in requireAuth:", role);
+		// console.log("ROLE in requireAuth:", role);
 		const session = await getSession(request.headers.get("Cookie"));
 		// console.log("session: ", session);
 		const sessionState = session.get("authState");
@@ -234,9 +236,9 @@ export const Auth = (config: RRAuthConfig) => {
 			return { user: null };
 		} else if (authResult.type === "refresh") {
 			// Check role authorization before returning refreshed session
-			if (!isAuthorized(authResult?.authState?.user, role)) {
-				throw redirect(redirectTo);
-			}
+			// if (!isAuthorized(authResult?.authState?.user, role)) {
+			// 	throw redirect(redirectTo);
+			// }
 			const headers = new Headers();
 			session.set("authState", authResult.authState);
 			headers.append("Set-Cookie", await commitSession(session));
@@ -259,16 +261,16 @@ export const Auth = (config: RRAuthConfig) => {
 		// }
 
 		// Final authorization check
-		console.log(
-			"AUTHORIZED",
-			isAuthorized(authResult.authState.user, role)
-		);
-		if (
-			!authResult.authState.authenticated ||
-			!isAuthorized(authResult.authState.user, role)
-		) {
-			throw redirect(redirectTo);
-		}
+		// console.log(
+		// 	"AUTHORIZED",
+		// 	isAuthorized(authResult.authState.user, role)
+		// );
+		// if (
+		// 	!authResult.authState.authenticated ||
+		// 	!isAuthorized(authResult.authState.user, role)
+		// ) {
+		// 	throw redirect(redirectTo);
+		// }
 
 		return { user: authResult.authState.user };
 	};
@@ -291,7 +293,7 @@ export const Auth = (config: RRAuthConfig) => {
 			const { request } = args;
 			const { user, headers } = await requireAuth(request, {
 				redirectTo: options.redirectTo,
-				role: options.role,
+				// role: options.role,
 			});
 			// Add user to the loader/action context if needed, e.g. by modifying args or attaching it to locals.
 			const result = await handler({ ...args, user });
@@ -306,18 +308,18 @@ export const Auth = (config: RRAuthConfig) => {
 		};
 	};
 
-	const isAuthorized = (user: User, requiredRole?: string) => {
-		console.log("REQUIRED ROLE:", requiredRole);
-		console.log("USER ROLE:", user.role);
-		if (!requiredRole) {
-			return true;
-		}
-		// If role is required but user has no role, deny access
-		if (!user?.role) {
-			return false;
-		}
-		return user.role === requiredRole;
-	};
+	// const isAuthorized = (user: User, requiredRole?: string) => {
+	// 	console.log("REQUIRED ROLE:", requiredRole);
+	// 	console.log("USER ROLE:", user.role);
+	// 	if (!requiredRole) {
+	// 		return true;
+	// 	}
+	// 	// If role is required but user has no role, deny access
+	// 	if (!user?.role) {
+	// 		return false;
+	// 	}
+	// 	return user.role === requiredRole;
+	// };
 
 	/**
 	 * This function will return user from session

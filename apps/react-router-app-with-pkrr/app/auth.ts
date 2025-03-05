@@ -9,6 +9,7 @@ import {
 	Facebook,
 	LinkedIn,
 } from "@pete_keen/authentication-core/providers";
+import { RBAC } from "@pete_keen/authentication-core/authorization";
 
 if (!process.env.JWT_ACCESS_SECRET) {
 	// throw new Error("JWT_ACCESS_SECRET not found in process.env");
@@ -44,6 +45,34 @@ const jwtOptions = {
 		fields: ["id"],
 	},
 };
+
+export const authz = RBAC(db, {
+	roles: [
+		{
+			name: "Guest",
+			level: 0,
+		},
+		{
+			name: "User",
+			level: 1,
+		},
+		{
+			name: "Editor",
+			level: 2,
+		},
+		{
+			name: "Admin",
+			level: 3,
+		},
+		{
+			name: "Super Admin",
+			level: 4,
+		},
+	],
+	defaultRole: {
+		name: "User",
+	},
+});
 
 const databaseAdapter = DrizzleAdapter(db);
 
@@ -83,7 +112,7 @@ const config: RRAuthConfig = {
 			redirectUri: "http://localhost:5173/auth/redirect/linkedin",
 		}),
 	],
-	logger: {
+	loggerOptions: {
 		level: "debug",
 	},
 	redirectAfterLogin: "/",

@@ -264,3 +264,54 @@ export interface RBAC {
 	createUserRole: (userId: string, role?: SelectRole) => Promise<void>;
 	enrichToken: (userId: string) => Promise<{ roles: Role[] }>;
 }
+
+interface authz {
+	roles: Role[];
+}
+
+interface AuthenticatedUser {
+	id: string;
+	authz: authz;
+}
+
+export type Policy = (
+	user: AuthenticatedUser,
+	context?: any
+) => boolean | Promise<boolean>;
+
+export const and = (...policies: Policy[]) => {
+	return async (user, context) => {
+		for (const p of policies) {
+			if (!(await p(user, context))) return false;
+		}
+		return true;
+	};
+};
+
+export const or = (...policies: Policy[]) => {
+	return async (user, context) => {
+		for (const p of policies) {
+			if (await p(user, context)) return true;
+		}
+		return false;
+	};
+};
+
+export const not = (policy: Policy) => {
+	return async (user, context) => {
+		return !(await policy(user, context));
+	};
+};
+
+const isOwner: Policy = (
+	user: AuthenticatedUser,
+	resource: { ownerId: string }
+) => {
+	return user.id === resource.ownerId;
+};
+
+const isRole: Policy = (user: AuthenticatedUser, role: SelectRole) => {
+    
+};
+
+export const defaultPolicies: Policy[] = [isOwner];

@@ -15,8 +15,9 @@ export const requireAuth = async (
 	{ redirectTo, minRole }: { redirectTo?: string; minRole?: string }
 ): Promise<{ user: User | null; headers?: Headers }> => {
 	const session = await getSession(request.headers.get("Cookie"));
+    console.log("Session Cookie", session)
 	const sessionState = session.get("authState");
-	// console.log("sessionState: ", sessionState);
+	console.log("sessionState: ", sessionState);
 
 	if (!sessionState) {
 		if (redirectTo) {
@@ -47,12 +48,12 @@ export const requireAuth = async (
 	return { user: authResult.authState.user };
 };
 
-export const minRole = (role: string) => {
-    return async (request: Request) => {
-        const { user } = await requireAuth(request);
-        authz.checkRole(user, role);
-    };
-};
+// export const minRole = (role: string) => {
+//     return async (request: Request) => {
+//         const { user } = await requireAuth(request);
+//         authz.checkRole(user, role);
+//     };
+// };
 
 // export const useAuth = async ({
 // 	request,

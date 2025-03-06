@@ -19,7 +19,7 @@ export interface User {
 	name?: string | null;
 	email?: string;
 	image?: string | null;
-	role?: Role;
+	roles?: Role;
 }
 
 export interface IAuthSystem {

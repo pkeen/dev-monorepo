@@ -1,4 +1,4 @@
-import { Policy } from '../types
+import { Policy } from '../types'
 
 export class AuthorizationSystem {
 	private policies: Record<string, Policy<any>> = {};

@@ -223,25 +223,27 @@ export function AuthManager(
 			}
 			return await authStrategy.logout(keyCards);
 		},
-		authorize: async (keyCards: KeyCards, role?: string) => {
-			if (!keyCards) {
-				throw new KeyCardMissingError("No keycards found");
-			}
+		// authorize: async (keyCards: KeyCards, role?: string) => {
+		// 	if (!keyCards) {
+		// 		throw new KeyCardMissingError("No keycards found");
+		// 	}
 
-            
-			const validation = await authStrategy.validate(keyCards);
-            
-			if (!role) {
-				return true;
-			}
+		// 	const validation = await authStrategy.validate(keyCards);
 
-            
+		// 	if (!role) {
+		// 		return true;
+		// 	}
 
-			
-		},
+		// 	if (validation.type === "error" || validation.type ===) {
+		// 		return false;
+		// 	}
+
+		// 	return true;
+		// },
 
 		// Possibly other methods like signOut, refresh, etc.
 	};
+}
 
 export const createAuthManager = (config: AuthConfig) => {
 	let strategy: AuthStrategy;

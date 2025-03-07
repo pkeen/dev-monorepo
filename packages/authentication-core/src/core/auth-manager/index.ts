@@ -29,11 +29,9 @@ export function AuthManager(
 	}, {} as Record<string, AuthProvider>);
 	const signInSystem = SignInSystem(providersMap);
 
-	// Log initialization with structured metadata
 	logger.info("Auth system initialized", {
 		strategy: authStrategy.name,
 		adapter: userRegistry.name,
-		// passwordService: passwordService.constructor.name,
 		authz: authz?.name || "none",
 	});
 
@@ -86,8 +84,10 @@ export function AuthManager(
 					);
 
 					// TODO: create default user authorization roles/permissions
+					// This is something either needed to be provided by the authz module and exposed here as a callback, or the authz module needs to be fully integrated in auth
 					await authz.createUserRole(user.id);
 				} else {
+					// there is a user
 					logger.debug("User found", {
 						email: userProfile.email,
 					});
@@ -121,17 +121,26 @@ export function AuthManager(
 							adapterAccount
 						);
 					}
+
+					// TODO: should we also add a authz role if not exists?
+					// I'm leaning towards probably yes
+					// if not we should at least always assume the lowest level of access when role data not found
+					// TODO: create default user authorization roles/permissions
+					// const userRoles = await authz.getRolesForUser(user.id);
 				}
 
 				// 3) Enrich token or session data with roles/permissions (if authz is provided)
 				// This is pointless in a db session strategy though
-				let authzData: AuthzData = {};
-				if (authz && authz.enrichToken) {
-					authzData = await authz.enrichToken(user.id);
-					user = {
-						...user,
-						...authzData,
-					};
+				// adding the if statment makes it only for jwt
+				if (authStrategy.name === "jwt") {
+					let authzData: AuthzData = {};
+					if (authz && authz.enrichToken) {
+						authzData = await authz.enrichToken(user.id);
+						user = {
+							...user,
+							...authzData,
+						};
+					}
 				}
 
 				// 4) Create the session (JWT or server-session) with user + extra data
@@ -142,10 +151,9 @@ export function AuthManager(
 					authState: { authenticated: true, keyCards, user },
 				};
 			} catch (error) {
-				// this.logger.error("Error while signing in: ", {
-				// 	error,
-				// });
-				console.log("Error while signing in: ", error);
+				logger.error("Error while signing in: ", {
+					error,
+				});
 				return { type: "error", error };
 			}
 		},
@@ -179,7 +187,7 @@ export function AuthManager(
 				let user = await userRegistry.getUser(result.authState.user.id);
 
 				// 3) Enrich token or session data with roles/permissions (if authz is provided)
-				// This is pointless in a db session strategy though
+				// This is pointless in a db session strategy though - this is not actually pointless in a db session strategy we should STILL enrich the USER object
 				let authzData: AuthzData = {};
 				if (authz && authz.enrichToken) {
 					authzData = await authz.enrichToken(user.id);

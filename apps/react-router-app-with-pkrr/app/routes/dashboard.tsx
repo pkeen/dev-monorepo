@@ -31,6 +31,7 @@ import type { WithAuthHandlerArgs } from "@pete_keen/react-router-auth";
 // };
 
 const handler = async ({ request, user }: WithAuthHandlerArgs) => {
+	console.log("USER IN LOADER");
 	return { user };
 };
 

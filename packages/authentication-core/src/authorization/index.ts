@@ -10,11 +10,13 @@ import { NeonHttpDatabase } from "drizzle-orm/neon-http";
 import {
 	RBACConfig,
 	Role,
+	RoleConfigEntry,
 	RolesAndPermissions,
 	SelectRole,
 } from "./hierachical-rbac/index.types";
 import { defaultRoleHierarchy } from "./hierachical-rbac";
 import type { Authz } from "./index.types";
+import type { Policy } from "./policy";
 
 type DefaultSchema = typeof defaultSchema;
 
@@ -33,12 +35,21 @@ interface UserWithRoles {
 	roles: Role[];
 }
 
-export const RBAC = (
+export const RBAC = <T extends ReadonlyArray<RoleConfigEntry>>(
 	db: DrizzleDatabase,
-	config: RBACConfig,
+	config: RBACConfig<T>,
 	schema: DefaultSchema = defaultSchema
 ) => {
-	const getRoles = async (userId: string): Promise<RolesAndPermissions> => {
+	// ❸ Derive *dynamic* unions for name & level from T
+	type RoleNameUnion = T[number]["name"]; // e.g. "Guest" | "User" | ...
+	type RoleLevelUnion = T[number]["level"]; // e.g. 0 | 1 | 2 | 3 | ...
+
+	// ❹ Create a specialized "SelectRole" type *just for this config*
+	type ExtendedSelectRole =
+		| { name: RoleNameUnion; level?: never }
+		| { level: RoleLevelUnion; name?: never };
+
+	const getRoles = async (userId: string): Promise<Role[]> => {
 		// Drizzle returns an array of joined rows.
 		// We'll select specific columns from `rolesTable` so it's typed more cleanly.
 		const rows = await db
@@ -60,15 +71,10 @@ export const RBAC = (
 			level: row.roleLevel,
 		}));
 
-		return {
-			roles,
-		};
+		return roles;
 	};
 
-	const findRoleInConfig = (
-		select: SelectRole,
-		config: RBACConfig
-	): Role | null => {
+	const findRoleInConfig = (select: ExtendedSelectRole): Role | null => {
 		if ("name" in select) {
 			// Look up by name
 			return config.roles.find((r) => r.name === select.name) ?? null;
@@ -78,14 +84,61 @@ export const RBAC = (
 		}
 	};
 
+	const exactRole: Policy = (
+		user: { id: string; roles: Role[] },
+		role: ExtendedSelectRole
+	) => {
+		const foundRole = findRoleInConfig(role);
+		if (!foundRole) {
+			throw new Error(`Invalid role: ${JSON.stringify(role)}`);
+		}
+		// ISSUE: in a jwt strategy yes the user object contains roles, but in a session strategy no
+		// but also perhaps by providing that callback for getUserRoles() etc we could achieve the same
+		// OR we could have a db check fall back
+		// if (!user.roles) {
+		//     user.roles = await getRoles(user.id);
+		// }
+
+		// TODO: decide if we want this fallback or not
+		return user.roles.some((r) => r.name === foundRole.name);
+	};
+
+	const minRole: Policy = (
+		user: { id: string; roles: Role[] },
+		role: ExtendedSelectRole
+	) => {
+		const foundRole = findRoleInConfig(role);
+		if (!foundRole) {
+			throw new Error(`Invalid role: ${JSON.stringify(role)}`);
+		}
+
+		return user.roles.some((r) => r.level >= foundRole.level);
+	};
+
+	const maxRole: Policy = (
+		user: { id: string; roles: Role[] },
+		role: ExtendedSelectRole
+	) => {
+		const foundRole = findRoleInConfig(role);
+		if (!foundRole) {
+			throw new Error(`Invalid role: ${JSON.stringify(role)}`);
+		}
+
+		return user.roles.some((r) => r.level <= foundRole.level);
+	};
+
 	return {
 		name: "rbac",
 		seed: async () => {
-			console.log("seeding roles");
 			await db
 				.insert(schema.rolesTable)
 				.values(defaultRoleHierarchy)
 				.onConflictDoNothing();
+		},
+		policies: {
+			exactRole,
+			minRole,
+			maxRole,
 		},
 		getRoles,
 		addRolesToUser: async (user: User): Promise<UserWithRoles> => {
@@ -93,19 +146,20 @@ export const RBAC = (
 			console.log("roles: ", roles);
 			return {
 				...user,
-				roles: roles.roles,
+				roles,
 			};
 		},
+		// ISSUE: should perhaps be called enrichUser to make more sense in the db session strategy
 		enrichToken: async (userId: string): Promise<{ roles: Role[] }> => {
 			const roles = await getRoles(userId);
 			console.log("roles: ", roles);
 			return {
-				roles: roles.roles,
+				roles,
 			};
 		},
 		updateUserRole: async (
 			userId: string,
-			select?: SelectRole
+			select?: ExtendedSelectRole
 		): Promise<void> => {
 			if (!select) {
 				select = config.defaultRole;
@@ -149,12 +203,13 @@ export const RBAC = (
 		},
 		createUserRole: async (
 			userId: string,
-			select?: SelectRole
+			select?: ExtendedSelectRole
 		): Promise<void> => {
 			console.log("creating user role");
 			if (!select) {
 				select = config.defaultRole;
 			}
+
 			console.log(select);
 
 			if (select.name) {
@@ -198,10 +253,10 @@ export const RBAC = (
 		 */
 		async dbUserHasRequiredRole(
 			userId: string,
-			required: SelectRole
+			required: ExtendedSelectRole
 		): Promise<boolean> {
 			// 1. Find the required role in the config
-			const requiredRoleDef = findRoleInConfig(required, config);
+			const requiredRoleDef = findRoleInConfig(required);
 			if (!requiredRoleDef) {
 				throw new Error(
 					`Invalid required role: ${JSON.stringify(required)}`
@@ -238,10 +293,10 @@ export const RBAC = (
 		 */
 		async jwtUserHasRequiredRole(
 			user: UserWithRoles,
-			required: SelectRole
+			required: ExtendedSelectRole
 		): Promise<boolean> {
 			// 1. Find the required role in the config
-			const requiredRoleDef = findRoleInConfig(required, config);
+			const requiredRoleDef = findRoleInConfig(required);
 			if (!requiredRoleDef) {
 				throw new Error(
 					`Invalid required role: ${JSON.stringify(required)}`
@@ -269,49 +324,50 @@ interface authz {
 	roles: Role[];
 }
 
-interface AuthenticatedUser {
-	id: string;
-	authz: authz;
-}
+// export type Policy = (
+// 	user: AuthenticatedUser,
+// 	context?: any
+// ) => boolean | Promise<boolean>;
 
-export type Policy = (
-	user: AuthenticatedUser,
-	context?: any
-) => boolean | Promise<boolean>;
+// export const and = (...policies: Policy[]) => {
+// 	return async (user, context) => {
+// 		for (const p of policies) {
+// 			if (!(await p(user, context))) return false;
+// 		}
+// 		return true;
+// 	};
+// };
 
-export const and = (...policies: Policy[]) => {
-	return async (user, context) => {
-		for (const p of policies) {
-			if (!(await p(user, context))) return false;
-		}
-		return true;
-	};
-};
+// export const or = (...policies: Policy[]) => {
+// 	return async (user, context) => {
+// 		for (const p of policies) {
+// 			if (await p(user, context)) return true;
+// 		}
+// 		return false;
+// 	};
+// };
 
-export const or = (...policies: Policy[]) => {
-	return async (user, context) => {
-		for (const p of policies) {
-			if (await p(user, context)) return true;
-		}
-		return false;
-	};
-};
+// export const not = (policy: Policy) => {
+// 	return async (user, context) => {
+// 		return !(await policy(user, context));
+// 	};
+// };
 
-export const not = (policy: Policy) => {
-	return async (user, context) => {
-		return !(await policy(user, context));
-	};
-};
+// const isOwner: Policy = (
+// 	user: AuthenticatedUser,
+// 	resource: { ownerId: string }
+// ) => {
+// 	return user.id === resource.ownerId;
+// };
 
-const isOwner: Policy = (
-	user: AuthenticatedUser,
-	resource: { ownerId: string }
-) => {
-	return user.id === resource.ownerId;
-};
+// const isRole: Policy = (user: AuthenticatedUser, role: SelectRole) => {
+// 	if (role.name) {
+// 		return user.roles.some((r) => r.name === role.name);
+// 	} else if (role.level) {
+// 		return user.roles.some((r) => r.level >= role.level);
+// 	} else {
+// 		throw new Error(`Invalid role: ${JSON.stringify(role)}`);
+// 	}
+// };
 
-const isRole: Policy = (user: AuthenticatedUser, role: SelectRole) => {
-    
-};
-
-export const defaultPolicies: Policy[] = [isOwner];
+// export const defaultPolicies: Policy[] = [isOwner];

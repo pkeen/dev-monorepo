@@ -9,12 +9,14 @@ export type RolesAndPermissions = {
 	// permissions?: string[];
 };
 
-export type Role = {
+export interface Role {
 	name: string;
 	level: number;
 	// inherits?: string[];
 	// permissions?: string[];
-};
+}
+
+export interface RoleConfigEntry extends Role {}
 
 export type RoleHierarchy = Role[];
 
@@ -22,9 +24,16 @@ export type SelectRole =
 	| { name: string; level?: never }
 	| { level: number; name?: never };
 
-export type RBACConfig = {
-	roles: Role[];
-	defaultRole: SelectRole;
+// SOme typscript stuff that allows the type to be inferred from RolesConfig
+// ❶ Make RBACConfig generic in T, a *readonly* array of RoleConfigEntry
+export type RBACConfig<T extends ReadonlyArray<RoleConfigEntry>> = {
+	roles: T;
+
+	// For the defaultRole, we now use the same pattern of
+	// generating a union from T[number]['name'] or T[number]['level']:
+	defaultRole:
+		| { name: T[number]["name"]; level?: never }
+		| { level: T[number]["level"]; name?: never };
 };
 
 // Define the type for the extra authz data

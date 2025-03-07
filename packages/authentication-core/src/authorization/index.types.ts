@@ -4,6 +4,11 @@ export interface AuthzData {
 	[key: string]: any;
 }
 
+interface AuthenticatedUser {
+	id: string;
+	authz: AuthzData;
+}
+
 export interface Authz {
 	name: string;
 	seed: () => void;

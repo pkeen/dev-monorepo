@@ -12,7 +12,7 @@ import {
 	createAuthManager,
 } from "@pete_keen/authentication-core";
 import { DrizzleAdapter } from "@pete_keen/authentication-core/adapters";
-import { JwtStrategy, JwtStrategyFn } from "@pete_keen/authentication-core";
+// import { JwtStrategy, JwtStrategyFn } from "@pete_keen/authentication-core";
 import { RBAC } from "@pete_keen/authentication-core/authorization";
 import db from "~/db";
 
@@ -20,29 +20,31 @@ import db from "~/db";
 // 	level: "debug",
 // });
 
+const roles = [
+	{
+		name: "Guest",
+		level: 0,
+	},
+	{
+		name: "User",
+		level: 1,
+	},
+	{
+		name: "Editor",
+		level: 2,
+	},
+	{
+		name: "Admin",
+		level: 3,
+	},
+	{
+		name: "Super Admin",
+		level: 4,
+	},
+] as const; // marking as const allows Typescript to infer elements as literal types
+
 export const authz = RBAC(db, {
-	roles: [
-		{
-			name: "Guest",
-			level: 0,
-		},
-		{
-			name: "User",
-			level: 1,
-		},
-		{
-			name: "Editor",
-			level: 2,
-		},
-		{
-			name: "Admin",
-			level: 3,
-		},
-		{
-			name: "Super Admin",
-			level: 4,
-		},
-	],
+	roles,
 	defaultRole: {
 		name: "User",
 	},

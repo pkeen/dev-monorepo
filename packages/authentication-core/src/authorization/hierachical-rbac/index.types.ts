@@ -10,15 +10,18 @@ export type RolesAndPermissions = {
 };
 
 export interface Role {
+	id: string;
 	name: string;
 	level: number;
 	// inherits?: string[];
 	// permissions?: string[];
 }
 
-export interface RoleConfigEntry extends Role {}
+export interface RoleConfigEntry extends Role {
+	id: never;
+}
 
-export type RoleHierarchy = Role[];
+export type RoleHierarchy = RoleConfigEntry[];
 
 export type SelectRole =
 	| { name: string; level?: never }

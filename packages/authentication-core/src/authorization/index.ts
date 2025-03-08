@@ -32,6 +32,7 @@ interface User {
 
 interface UserWithRoles {
 	id: string;
+	/** An array of roles associated with the user */
 	roles: Role[];
 }
 
@@ -164,42 +165,51 @@ export const RBAC = <T extends ReadonlyArray<RoleConfigEntry>>(
 			if (!select) {
 				select = config.defaultRole;
 			}
-
-			if (select.name) {
-				const [role] = await db
-					.select({ id: schema.rolesTable.id })
-					.from(schema.rolesTable)
-					.where(eq(schema.rolesTable.name, select.name));
-
-				if (!role) {
-					throw new Error(`Role ${select.name} does not exist`);
-				}
-
-				//update user's role
-				await db
-					.update(schema.userRolesTable)
-					.set({ roleId: role.id })
-					.where(eq(schema.userRolesTable.userId, userId));
-			} else if (select.level) {
-				const [role] = await db
-					.select({ id: schema.rolesTable.id })
-					.from(schema.rolesTable)
-					.where(eq(schema.rolesTable.level, select.level));
-
-				if (!role) {
-					throw new Error(
-						`Role with level ${select.level} does not exist`
-					);
-				}
-
-				//update user's role
-				await db
-					.update(schema.userRolesTable)
-					.set({ roleId: role.id })
-					.where(eq(schema.userRolesTable.userId, userId));
-			} else {
-				throw new Error(`Invalid role: ${select}`);
+			// check select is in role config
+			const foundRole = findRoleInConfig(select);
+			if (!foundRole) {
+				throw new Error(`Invalid role: ${JSON.stringify(select)}`);
 			}
+
+            // update user's role
+            
+
+
+			// if (select.name) {
+			// 	const [role] = await db
+			// 		.select({ id: schema.rolesTable.id })
+			// 		.from(schema.rolesTable)
+			// 		.where(eq(schema.rolesTable.name, select.name));
+
+			// 	if (!role) {
+			// 		throw new Error(`Role ${select.name} does not exist`);
+			// 	}
+
+			// 	//update user's role
+			// 	await db
+			// 		.update(schema.userRolesTable)
+			// 		.set({ roleId: role.id })
+			// 		.where(eq(schema.userRolesTable.userId, userId));
+			// } else if (select.level) {
+			// 	const [role] = await db
+			// 		.select({ id: schema.rolesTable.id })
+			// 		.from(schema.rolesTable)
+			// 		.where(eq(schema.rolesTable.level, select.level));
+
+			// 	if (!role) {
+			// 		throw new Error(
+			// 			`Role with level ${select.level} does not exist`
+			// 		);
+			// 	}
+
+			// 	//update user's role
+			// 	await db
+			// 		.update(schema.userRolesTable)
+			// 		.set({ roleId: role.id })
+			// 		.where(eq(schema.userRolesTable.userId, userId));
+			// } else {
+			// 	throw new Error(`Invalid role: ${select}`);
+			// }
 		},
 		createUserRole: async (
 			userId: string,

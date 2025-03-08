@@ -1,11 +1,6 @@
 // import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import {
-	PgDatabase,
-	type PgQueryResultHKT,
-	pgSchema,
-} from "drizzle-orm/pg-core";
+import { PgDatabase, type PgQueryResultHKT } from "drizzle-orm/pg-core";
 import { NeonHttpDatabase } from "drizzle-orm/neon-http";
-// import { courses as Schema } from '~/lib/courses/db/schema';
 import * as defaultSchema from "./schema";
 import type { CourseInput, Course } from "../index.types";
 import { eq } from "drizzle-orm";

@@ -29,7 +29,7 @@ export const DrizzlePGAdapter = (
 				.where(eq(schema.userRolesTable.userId, userId));
 
 			// Transform to your "Role" type
-			const roles: Role[] = rows.map((row) => ({
+			const roles: Omit<Role, "id">[] = rows.map((row) => ({
 				name: row.roleName,
 				level: row.roleLevel,
 			}));
@@ -44,10 +44,23 @@ export const DrizzlePGAdapter = (
 				.set({ roleId: roles[0].id })
 				.where(eq(schema.userRolesTable.userId, userId));
 		},
+		createUserRoles: async (userId: string, roles: Role[]) => {
+			await db.insert(schema.userRolesTable).values(
+				roles.map((role) => ({
+					userId,
+					roleId: role.id,
+				}))
+			);
+		},
+		deleteUserRoles: async (userId: string) => {
+			await db
+				.delete(schema.userRolesTable)
+				.where(eq(schema.userRolesTable.userId, userId));
+		},
 	};
 };
 
-export interface DrizzlePGAdapter {
+export interface RolesDBAdapter {
 	getUserRoles: (userId: string) => Promise<Role[]>;
 	createUserRoles: (userId: string, roles: Role[]) => Promise<void>;
 	updateUserRoles: (userId: string, roles: Role[]) => Promise<void>;

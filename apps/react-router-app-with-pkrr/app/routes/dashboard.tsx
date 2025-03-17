@@ -13,6 +13,7 @@ import {
 } from "react-router";
 import { useEffect } from "react";
 import { requireAuth, withAuth, logout } from "../auth";
+import { authz } from "../auth";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import type { User } from "@pete_keen/authentication-core";
 import type { WithAuthHandlerArgs } from "@pete_keen/react-router-auth";
@@ -31,37 +32,23 @@ import type { WithAuthHandlerArgs } from "@pete_keen/react-router-auth";
 // };
 
 const handler = async ({ request, user }: WithAuthHandlerArgs) => {
-	console.log("USER IN LOADER");
+	if (user) {
+		if (!authz.policies.minRole(user, { name: "User" })) {
+			throw new Response("Unauthorized", { status: 401 });
+		}
+	}
 	return { user };
 };
 
 export const loader = withAuth(handler);
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-	console.log("ACTION USER: ");
-	await new Promise((resolve) => setTimeout(resolve, 1000));
-	const { user, headers } = await requireAuth(request, {
-		redirectTo: "/auth/login",
-	});
-	const form = await request.formData();
-	const count = form.get("count") || 0;
-	console.log("count: ", count);
-	return { count };
+	return null;
 };
 
 export default function Dashboard() {
-	const actionData = useActionData();
+	// const actionData = useActionData();
 	const { user } = useLoaderData();
-	const fetcher = useFetcher();
-	const navigation = useNavigation();
-	const count = actionData?.count ?? 0;
-	// const [count, setCount] = useState(0);
-	const submit = useSubmit();
-
-	useEffect(() => {
-		console.log("fetcher.state:", fetcher.state);
-		console.log("navigation.state:", navigation.state);
-	}, [fetcher.state, navigation.state]);
 
 	return (
 		<div>
@@ -69,13 +56,12 @@ export default function Dashboard() {
 			<p> Hi 🖐🏻, {user.email} </p>
 			<br />
 			<div>
-				<Form method="post" onSubmit={() => submit(count)}>
-					<input type="hidden" name="count" value={count} />
-					<button type="submit">Protected Button</button>
-				</Form>
-			</div>
-			<div>
-				<p>Count: {count}</p>
+				<ul>
+					Your roles are:
+					{user.roles.map((role: { level: number; name: string }) => (
+						<li key={role.level}>{role.name}</li>
+					))}
+				</ul>
 			</div>
 			<Form action="/auth/logout" method="post">
 				<button type="submit">Logout</button>

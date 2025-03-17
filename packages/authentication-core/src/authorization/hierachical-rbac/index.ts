@@ -46,31 +46,6 @@ export const RBAC = <T extends ReadonlyArray<RoleConfigEntry>>(
 		return await db.getUserRoles(userId);
 	};
 
-	// const getRoles = async (userId: string): Promise<Role[]> => {
-	// 	// Drizzle returns an array of joined rows.
-	// 	// We'll select specific columns from `rolesTable` so it's typed more cleanly.
-	// 	const rows = await db
-	// 		.select({
-	// 			// roleId: schema.rolesTable.id,
-	// 			roleName: schema.rolesTable.name,
-	// 			roleLevel: schema.rolesTable.level,
-	// 		})
-	// 		.from(schema.rolesTable)
-	// 		.innerJoin(
-	// 			schema.userRolesTable,
-	// 			eq(schema.userRolesTable.roleId, schema.rolesTable.id)
-	// 		)
-	// 		.where(eq(schema.userRolesTable.userId, userId));
-
-	// 	// Transform to your "Role" type
-	// 	const roles: RoleConfigEntry[] = rows.map((row) => ({
-	// 		name: row.roleName,
-	// 		level: row.roleLevel,
-	// 	}));
-
-	// 	return roles;
-	// };
-
 	const findRoleInConfig = (select: ExtendedSelectRole): Role | null => {
 		if ("name" in select) {
 			// Look up by name
@@ -95,12 +70,13 @@ export const RBAC = <T extends ReadonlyArray<RoleConfigEntry>>(
 		// if (!user.roles) {
 		//     user.roles = await getRoles(user.id);
 		// }
+		// perhaps this useDB? option should be handled in the config?
 
 		// TODO: decide if we want this fallback or not
 		return user.roles.some((r) => r.name === foundRole.name);
 	};
 
-	const minRole: Policy = (
+	const minRole: Policy<{ id: string; roles: Role[] }, ExtendedSelectRole> = (
 		user: { id: string; roles: Role[] },
 		role: ExtendedSelectRole
 	) => {
@@ -127,11 +103,8 @@ export const RBAC = <T extends ReadonlyArray<RoleConfigEntry>>(
 	return {
 		name: "rbac",
 		seed: async () => {
-			await db
-				.insert(schema.rolesTable)
-				// The key is this: wrap in [... ] to create a new (mutable) array.
-				.values([...config.roles])
-				.onConflictDoNothing();
+			await db.seed([...config.roles]);
+			// The array spreading is because it is a readonly type made mutable
 		},
 		policies: {
 			exactRole,
@@ -139,14 +112,14 @@ export const RBAC = <T extends ReadonlyArray<RoleConfigEntry>>(
 			maxRole,
 		},
 		getRoles,
-		addRolesToUser: async (user: User): Promise<UserWithRoles> => {
-			const roles = await getRoles(user.id);
-			console.log("roles: ", roles);
-			return {
-				...user,
-				roles,
-			};
-		},
+		// addRolesToUser: async (user: User): Promise<UserWithRoles> => {
+		// 	const roles = await getRoles(user.id);
+		// 	console.log("roles: ", roles);
+		// 	return {
+		// 		...user,
+		// 		roles,
+		// 	};
+		// },
 		// ISSUE: should perhaps be called enrichUser to make more sense in the db session strategy
 		enrichToken: async (userId: string): Promise<{ roles: Role[] }> => {
 			const roles = await getRoles(userId);
@@ -217,6 +190,8 @@ export const RBAC = <T extends ReadonlyArray<RoleConfigEntry>>(
 			if (!foundRole) {
 				throw new Error(`Invalid role: ${JSON.stringify(select)}`);
 			}
+
+			return await db.createUserRoles(userId, [foundRole]);
 		},
 		// createUserRole: async (
 		// 	userId: string,
@@ -308,29 +283,29 @@ export const RBAC = <T extends ReadonlyArray<RoleConfigEntry>>(
 		 * Check if a user has (at least) the required role jwt
 		 * based on numeric "level".
 		 */
-		async jwtUserHasRequiredRole(
-			user: UserWithRoles,
-			required: ExtendedSelectRole
-		): Promise<boolean> {
-			// 1. Find the required role in the config
-			const requiredRoleDef = findRoleInConfig(required);
-			if (!requiredRoleDef) {
-				throw new Error(
-					`Invalid required role: ${JSON.stringify(required)}`
-				);
-			}
-			// 3. Compare levels (assuming a linear approach)
-			return user.roles.some(
-				(role) => role.level >= requiredRoleDef.level
-			);
-		},
+		// async jwtUserHasRequiredRole(
+		// 	user: UserWithRoles,
+		// 	required: ExtendedSelectRole
+		// ): Promise<boolean> {
+		// 	// 1. Find the required role in the config
+		// 	const requiredRoleDef = findRoleInConfig(required);
+		// 	if (!requiredRoleDef) {
+		// 		throw new Error(
+		// 			`Invalid required role: ${JSON.stringify(required)}`
+		// 		);
+		// 	}
+		// 	// 3. Compare levels (assuming a linear approach)
+		// 	return user.roles.some(
+		// 		(role) => role.level >= requiredRoleDef.level
+		// 	);
+		// },
 	};
 };
 
 export interface RBAC {
 	name: string;
-	seed: () => Promise<void>;
-	getRoles: (userId: string) => Promise<RolesAndPermissions>;
+	seed: (roles: RoleConfigEntry[]) => Promise<void>;
+	getRoles: (userId: string) => Promise<Role[]>;
 	addRolesToUser: (user: User) => Promise<UserWithRoles>;
 	updateUserRole: (userId: string, role?: SelectRole) => Promise<void>;
 	createUserRole: (userId: string, role?: SelectRole) => Promise<void>;
@@ -407,4 +382,5 @@ interface authz {
 // };
 
 export * as schema from "./db/schema";
+export { DrizzlePGAdapter as RolesDrizzlePGAdapter } from "./db/drizzle-pg";
 export { RoleHierarchy };

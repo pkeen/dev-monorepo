@@ -155,10 +155,10 @@ export const Auth = (config: RRAuthConfig) => {
 
 		try {
 			// Getting here
-			// console.log("GETTING HERE");
+			console.log("GETTING HERE");
 
 			const authResult = await authSystem.login(provider, code);
-			// console.log("authResult:", authResult);
+			console.log("authResult:", authResult);
 
 			if (authResult.type === "success") {
 				// console.log("SUCCESS");
@@ -193,7 +193,7 @@ export const Auth = (config: RRAuthConfig) => {
 				status: 400,
 			});
 		}
-		const authState = await authSystem.logout(previousAuthState.keyCards);
+		const authState = await authSystem.signOut(previousAuthState.keyCards);
 
 		session.set("authState", authState);
 		headers.append("Set-Cookie", await commitSession(session));
@@ -207,12 +207,12 @@ export const Auth = (config: RRAuthConfig) => {
 	 * This function will check authentication and return the User and headers
 	 * The headers are there to be appended to the response to update the cookies
 	 * @param request
-	 * @param { redirectTo?: string, role?: string}
+	 * @param { redirectTo?: string}
 	 * @returns { user: User | null; headers?: Headers }
 	 */
 	const requireAuth = async (
 		request: Request,
-		{ redirectTo, role }: { redirectTo?: string; role?: string }
+		{ redirectTo }: { redirectTo?: string }
 	): Promise<{ user: User | null; headers?: Headers }> => {
 		// console.log("ROLE in requireAuth:", role);
 		const session = await getSession(request.headers.get("Cookie"));
@@ -284,9 +284,9 @@ export const Auth = (config: RRAuthConfig) => {
 	 */
 	const withAuth = <T>(
 		handler: HandlerFunction<T>,
-		options: { redirectTo?: string; role?: string | null } = {
+		options: { redirectTo?: string } = {
 			redirectTo: "/",
-			role: null,
+			// role: null,
 		}
 	) => {
 		return async (args: LoaderFunctionArgs | ActionFunctionArgs) => {

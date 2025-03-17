@@ -17,8 +17,10 @@ export interface Role {
 	// permissions?: string[];
 }
 
-export interface RoleConfigEntry extends Role {
-	id: never;
+export interface RoleConfigEntry {
+	name: string;
+	level: number;
+	// any other fields you want config-based roles to have
 }
 
 export type RoleHierarchy = RoleConfigEntry[];

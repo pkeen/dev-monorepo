@@ -45,9 +45,11 @@ export default function Dashboard() {
 			<div>
 				<ul>
 					Your roles are:
-					{loaderData.roles.map((role) => (
-						<li key={role.level}>{role.name}</li>
-					))}
+					{loaderData.roles.map(
+						(role: { level: number; name: string }) => (
+							<li key={role.level}>{role.name}</li>
+						)
+					)}
 				</ul>
 			</div>
 			<Form action="/auth/logout" method="post">

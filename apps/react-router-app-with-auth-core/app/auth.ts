@@ -12,6 +12,7 @@ import {
 	createAuthManager,
 } from "@pete_keen/authentication-core";
 import { DrizzleAdapter } from "@pete_keen/authentication-core/adapters";
+import { RolesDrizzlePGAdapter } from "@pete_keen/authentication-core/authorization";
 // import { JwtStrategy, JwtStrategyFn } from "@pete_keen/authentication-core";
 import { RBAC } from "@pete_keen/authentication-core/authorization";
 import db from "~/db";
@@ -43,7 +44,7 @@ const roles = [
 	},
 ] as const; // marking as const allows Typescript to infer elements as literal types
 
-export const authz = RBAC(db, {
+export const authz = RBAC(RolesDrizzlePGAdapter(db), {
 	roles,
 	defaultRole: {
 		name: "User",

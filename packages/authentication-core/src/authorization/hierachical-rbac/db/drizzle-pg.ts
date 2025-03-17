@@ -2,7 +2,7 @@ import * as defaultSchema from "./schema";
 import { PgDatabase, type PgQueryResultHKT } from "drizzle-orm/pg-core";
 import { NeonHttpDatabase } from "drizzle-orm/neon-http";
 import { eq } from "drizzle-orm";
-import { Role } from "../index.types";
+import { Role, RoleConfigEntry } from "../index.types";
 
 type DefaultSchema = typeof defaultSchema;
 type DrizzleDatabase = PgDatabase<PgQueryResultHKT, any> | NeonHttpDatabase;
@@ -12,6 +12,13 @@ export const DrizzlePGAdapter = (
 	schema: DefaultSchema = defaultSchema
 ) => {
 	return {
+		seed: async (roles: RoleConfigEntry[]) => {
+			await db
+				.insert(schema.rolesTable)
+				// The key is this: wrap in [... ] to create a new (mutable) array.
+				.values([...roles])
+				.onConflictDoNothing();
+		},
 		getUserRoles: async (userId: string) => {
 			// Drizzle returns an array of joined rows.
 			// We'll select specific columns from `rolesTable` so it's typed more cleanly.
@@ -61,7 +68,8 @@ export const DrizzlePGAdapter = (
 };
 
 export interface RolesDBAdapter {
-	getUserRoles: (userId: string) => Promise<Role[]>;
+	seed: (roles: RoleConfigEntry[]) => Promise<void>;
+	getUserRoles: (userId: string) => Promise<Omit<Role, "id">[]>;
 	createUserRoles: (userId: string, roles: Role[]) => Promise<void>;
 	updateUserRoles: (userId: string, roles: Role[]) => Promise<void>;
 	deleteUserRoles: (userId: string) => Promise<void>;

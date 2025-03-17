@@ -9,7 +9,10 @@ import {
 	Facebook,
 	LinkedIn,
 } from "@pete_keen/authentication-core/providers";
-import { RBAC } from "@pete_keen/authentication-core/authorization";
+import {
+	RBAC,
+	RolesDrizzlePGAdapter,
+} from "@pete_keen/authentication-core/authorization";
 
 if (!process.env.JWT_ACCESS_SECRET) {
 	// throw new Error("JWT_ACCESS_SECRET not found in process.env");
@@ -46,7 +49,7 @@ const jwtOptions = {
 	},
 };
 
-export const authz = RBAC(db, {
+export const authz = RBAC(RolesDrizzlePGAdapter(db), {
 	roles: [
 		{
 			name: "Guest",
@@ -68,7 +71,7 @@ export const authz = RBAC(db, {
 			name: "Super Admin",
 			level: 4,
 		},
-	],
+	] as const,
 	defaultRole: {
 		name: "User",
 	},
@@ -77,6 +80,7 @@ export const authz = RBAC(db, {
 const databaseAdapter = DrizzleAdapter(db);
 
 const config: RRAuthConfig = {
+	authz,
 	strategy: "jwt",
 	jwtConfig: jwtOptions,
 	adapter: databaseAdapter,

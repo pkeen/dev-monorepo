@@ -1,5 +1,5 @@
 {
-	"name": "@pete_keen/authorization",
+	"name": "@pete_keen/authz",
 	"version": "0.0.1",
 	"main": "src/index.ts",
 	"types": "src/index.d.ts",

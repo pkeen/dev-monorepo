@@ -1,34 +1,17 @@
-import { Policy } from '../types'
+export interface Entity {
+	name: string;
+	pluralName?: string;
+	hierachical?: boolean;
+}
 
-export class AuthorizationSystem {
-	private policies: Record<string, Policy<any>> = {};
-	public rules: Record<string, (context: any) => boolean> = {};
+type HeierachicalEntity = Entity & { hierachical: true; level: number };
 
-	// Add a rule
-	addRule<Context>(name: string, rule: (context: Context) => boolean) {
-		this.rules[name] = rule;
-	}
+export interface AuthZ {
+	// Heres the choice, do we take an entities object/array and put all Roles, Permissions, Orgs etc in there
+	// or do we have a Roles object, a Permissions object, and a custom entities object?
 
-	// Evaluate a rule
-	rule(name: string, context: any): boolean {
-		const rule = this.rules[name];
-		if (!rule) {
-			throw new Error(`Rule "${name}" not found`);
-		}
-		return rule(context);
-	}
+	entities: Record<string, Entity>;
+	// should the schema and table be returned to user to add to their own migrations? probably yes
+	schemaName?: string; // ???
 
-	// Register a policy dynamically
-	addPolicy<Context>(name: string, policy: Policy<Context>) {
-		this.policies[name] = policy;
-	}
-
-	// Evaluate a registered policy
-	policy(name: string, context: any): boolean {
-		const policy = this.policies[name];
-		if (!policy) {
-			throw new Error(`Policy "${name}" not found`);
-		}
-		return policy(context);
-	}
 }

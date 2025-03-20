@@ -17,6 +17,7 @@
 		"react-router": "^7.1.1",
 		"@pete_keen/authentication-core": "workspace:*",
 		"@pete_keen/logger": "workspace:*",
+		"@pete_keen/authz": "workspace:*",
 		"drizzle-orm": "^0.36.3"
 	},
 	"devDependencies": {

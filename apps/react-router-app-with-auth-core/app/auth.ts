@@ -14,42 +14,43 @@ import {
 import { DrizzleAdapter } from "@pete_keen/authentication-core/adapters";
 import { RolesDrizzlePGAdapter } from "@pete_keen/authentication-core/authorization";
 // import { JwtStrategy, JwtStrategyFn } from "@pete_keen/authentication-core";
-import { RBAC } from "@pete_keen/authentication-core/authorization";
+// import { RBAC } from "@pete_keen/authentication-core/authorization";
 import db from "~/db";
+import { authz } from "./authz";
 
 // const logger = createLogger({
 // 	level: "debug",
 // });
 
-const roles = [
-	{
-		name: "Guest",
-		level: 0,
-	},
-	{
-		name: "User",
-		level: 1,
-	},
-	{
-		name: "Editor",
-		level: 2,
-	},
-	{
-		name: "Admin",
-		level: 3,
-	},
-	{
-		name: "Super Admin",
-		level: 4,
-	},
-] as const; // marking as const allows Typescript to infer elements as literal types
+// const roles = [
+// 	{
+// 		name: "Guest",
+// 		level: 0,
+// 	},
+// 	{
+// 		name: "User",
+// 		level: 1,
+// 	},
+// 	{
+// 		name: "Editor",
+// 		level: 2,
+// 	},
+// 	{
+// 		name: "Admin",
+// 		level: 3,
+// 	},
+// 	{
+// 		name: "Super Admin",
+// 		level: 4,
+// 	},
+// ] as const; // marking as const allows Typescript to infer elements as literal types
 
-export const authz = RBAC(RolesDrizzlePGAdapter(db), {
-	roles,
-	defaultRole: {
-		name: "User",
-	},
-});
+// export const authz = RBAC(RolesDrizzlePGAdapter(db), {
+// 	roles,
+// 	defaultRole: {
+// 		name: "User",
+// 	},
+// });
 
 const authConfig = {
 	authz,

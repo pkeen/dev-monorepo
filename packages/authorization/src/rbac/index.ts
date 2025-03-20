@@ -7,7 +7,7 @@ import {
 	SelectRole,
 } from "./index.types";
 // import type { Authz } from "./index.types";
-import type { Policy } from "../policy";
+import type { Policy } from "../core/policy";
 import type { RolesDBAdapter } from "./db/drizzle-pg";
 
 // // These shouldnt be needed soon

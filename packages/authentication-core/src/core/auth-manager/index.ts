@@ -85,6 +85,10 @@ export function AuthManager(
 
 					// TODO: create default user authorization roles/permissions
 					// This is something either needed to be provided by the authz module and exposed here as a callback, or the authz module needs to be fully integrated in auth
+					// something like
+					// if (config.userCreateCallback) {
+					//     await config.userCreateCallback(user);
+					// }
 					await authz.createUserRole(user.id);
 				} else {
 					// there is a user

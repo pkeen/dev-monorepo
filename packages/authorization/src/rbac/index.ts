@@ -1,11 +1,5 @@
 import { RoleHierarchy } from "./index.types";
-import {
-	RBACConfig,
-	Role,
-	RoleConfigEntry,
-	RolesAndPermissions,
-	SelectRole,
-} from "./index.types";
+import { RBACConfig, Role, RoleConfigEntry, SelectRole } from "./index.types";
 // import type { Authz } from "./index.types";
 import type { Policy } from "../core/policy";
 import type { RolesDBAdapter } from "./db/drizzle-pg";
@@ -121,7 +115,9 @@ export const RBAC = <T extends ReadonlyArray<RoleConfigEntry>>(
 		// 	};
 		// },
 		// ISSUE: should perhaps be called enrichUser to make more sense in the db session strategy
-		enrichToken: async (userId: string): Promise<{ roles: Role[] }> => {
+		enrichToken: async (
+			userId: string
+		): Promise<{ roles: Omit<Role, "id">[] }> => {
 			const roles = await getRoles(userId);
 			console.log("roles: ", roles);
 			return {

@@ -2,7 +2,8 @@ import { RoleHierarchy } from "./index.types";
 import { RBACConfig, Role, RoleConfigEntry, SelectRole } from "./index.types";
 // import type { Authz } from "./index.types";
 import type { Policy } from "../core/policy";
-import type { RolesDBAdapter } from "./db/drizzle-pg";
+import type { RBACAdapter } from "../adapters/drizzle/rbac/rbac";
+import { Module } from "core";
 
 // // These shouldnt be needed soon
 // type DefaultSchema = typeof defaultSchema;
@@ -24,9 +25,9 @@ interface UserWithRoles {
 }
 
 export const RBAC = <T extends ReadonlyArray<RoleConfigEntry>>(
-	db: RolesDBAdapter,
+	db: RBACAdapter,
 	config: RBACConfig<T>
-) => {
+): Module<{ roles: Omit<Role, "id">[] }> => {
 	// ❸ Derive *dynamic* unions for name & level from T
 	type RoleNameUnion = T[number]["name"]; // e.g. "Guest" | "User" | ...
 	type RoleLevelUnion = T[number]["level"]; // e.g. 0 | 1 | 2 | 3 | ...
@@ -96,9 +97,14 @@ export const RBAC = <T extends ReadonlyArray<RoleConfigEntry>>(
 
 	return {
 		name: "rbac",
-		seed: async () => {
+		init: async () => {
 			await db.seed([...config.roles]);
 			// The array spreading is because it is a readonly type made mutable
+		},
+		enrichUser: async (userId: string) => {
+			const roles = await getRoles(userId);
+			console.log("ENRICH USER roles: ", roles);
+			return roles;
 		},
 		policies: {
 			exactRole,
@@ -115,15 +121,15 @@ export const RBAC = <T extends ReadonlyArray<RoleConfigEntry>>(
 		// 	};
 		// },
 		// ISSUE: should perhaps be called enrichUser to make more sense in the db session strategy
-		enrichToken: async (
-			userId: string
-		): Promise<{ roles: Omit<Role, "id">[] }> => {
-			const roles = await getRoles(userId);
-			console.log("roles: ", roles);
-			return {
-				roles,
-			};
-		},
+		// enrichToken: async (
+		// 	userId: string
+		// ): Promise<{ roles: Omit<Role, "id">[] }> => {
+		// 	const roles = await getRoles(userId);
+		// 	console.log("roles: ", roles);
+		// 	return {
+		// 		roles,
+		// 	};
+		// },
 		updateUserRole: async (
 			userId: string,
 			select?: ExtendedSelectRole
@@ -177,17 +183,26 @@ export const RBAC = <T extends ReadonlyArray<RoleConfigEntry>>(
 			// 	throw new Error(`Invalid role: ${select}`);
 			// }
 		},
-		createUserRole: async (userId: string, select: ExtendedSelectRole) => {
-			if (!select) {
-				select = config.defaultRole;
-			}
+		createUserRole: async (
+			userId: string,
+			select: ExtendedSelectRole = config.defaultRole
+		) => {
+			// if (!select) {
+			// 	select = config.defaultRole;
+			// }
 			// check select is in role config
 			const foundRole = findRoleInConfig(select);
+			console.log("foundRole: ", foundRole);
 			if (!foundRole) {
 				throw new Error(`Invalid role: ${JSON.stringify(select)}`);
 			}
 
-			return await db.createUserRoles(userId, [foundRole]);
+			const role = await db.getRole(foundRole.name);
+			if (!role) {
+				throw new Error(`Role ${foundRole.name} does not exist`);
+			}
+
+			return await db.createUserRoles(userId, [role]);
 		},
 		// createUserRole: async (
 		// 	userId: string,
@@ -305,78 +320,8 @@ export interface RBAC {
 	addRolesToUser: (user: User) => Promise<UserWithRoles>;
 	updateUserRole: (userId: string, role?: SelectRole) => Promise<void>;
 	createUserRole: (userId: string, role?: SelectRole) => Promise<void>;
-	enrichToken: (userId: string) => Promise<{ roles: Role[] }>;
+	enrichToken: (userId: string) => Promise<Omit<Role, "id">[]>;
+	enrichUser: (userId: string) => Promise<Role[]>;
 }
 
-interface authz {
-	roles: Role[];
-}
-
-/**
- * Default role hierarchy
- */
-// export const defaultRoleHierarchy: RoleHierarchy = [
-// 	{
-// 		name: "Guest",
-// 		level: 0,
-// 		// permissions: ["read:public"],
-// 	},
-// 	{
-// 		name: "User",
-// 		level: 1,
-// 		// inherits: ["guest"],
-// 		// permissions: ["read:own_profile"],
-// 	},
-// 	{
-// 		name: "Editor",
-// 		level: 2,
-// 		// inherits: ["user"],
-// 		// permissions: ["edit:posts", "delete:own_posts"],
-// 	},
-// 	{
-// 		name: "Admin",
-// 		level: 3,
-// 		// inherits: ["editor"],
-// 		// permissions: ["manage:users", "delete:any_post"],
-// 	},
-// 	{
-// 		name: "Super Admin",
-// 		level: 4,
-// 		// inherits: ["admin"],
-// 		// permissions: ["manage:system"],
-// 	},
-// ];
-// 	guest: {
-// 		name: "Guest",
-// 		level: 0,
-// 		// permissions: ["read:public"],
-// 	},
-// 	user: {
-// 		name: "User",
-// 		level: 1,
-// 		// inherits: ["guest"],
-// 		// permissions: ["read:own_profile"],
-// 	},
-// 	editor: {
-// 		name: "Editor",
-// 		level: 2,
-// 		// inherits: ["user"],
-// 		// permissions: ["edit:posts", "delete:own_posts"],
-// 	},
-// 	admin: {
-// 		name: "Admin",
-// 		level: 3,
-// 		// inherits: ["editor"],
-// 		// permissions: ["manage:users", "delete:any_post"],
-// 	},
-// 	superAdmin: {
-// 		name: "Super Admin",
-// 		level: 4,
-// 		// inherits: ["admin"],
-// 		// permissions: ["manage:system"],
-// 	},
-// };
-
-export * as schema from "./db/schema";
-export { DrizzlePGAdapter as RolesDrizzlePGAdapter } from "./db/drizzle-pg";
 export { RoleHierarchy };

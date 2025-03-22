@@ -2,7 +2,7 @@ import { AuthError } from "../error";
 import { User } from "../auth-system/index.types";
 import { Adapter } from "core/adapter";
 import { AuthProvider } from "core/providers";
-import { Authz } from "authorization/index.types";
+// import { Authz } from "authorization/index.types";
 import { JwtConfig } from "core/session-strategy/jwt-strategy/index.types";
 import { SessionConfig } from "core/session-strategy/db-strategy/index.types";
 
@@ -152,12 +152,13 @@ export interface LoggerOptions {
 	// format?: LogFormat; // Log format
 }
 
-export interface AuthConfigBase {
+interface AuthConfigBase<T extends Record<string, any> = {}> {
 	adapter?: Adapter;
 	logger?: Logger;
 	loggerOptions?: LoggerOptions;
 	providers?: AuthProvider[]; // TODO: Make this an array of provider options
-	authz?: Authz;
+	// authz?: Authz;
+	callbacks?: AuthNCallbacks<T>;
 	// passwordService?: string;
 }
 
@@ -165,18 +166,47 @@ export type AuthConfig =
 	| (AuthConfigBase & { strategy: "jwt"; jwtConfig: JwtConfig })
 	| (AuthConfigBase & { strategy: "session"; sessionConfig: SessionConfig });
 
-export interface AuthzData {
-	roles?: string[];
-	permissions?: string[];
-	[key: string]: any;
+// Ensure T is always an object type
+type EnrichedUser<T extends Record<string, any> = {}> = User & T;
+
+export interface AuthNCallbacks<T extends Record<string, any> = {}> {
+	/**
+	 * Called after a new user is created.
+	 * Can be used to initialize default AuthZ data (e.g., roles/permissions).
+	 */
+	onUserCreated?: (user: User) => Promise<void> | void;
+
+	/**
+	 * Called after a user is updated.
+	 * Can be used to update default AuthZ data (e.g., roles/permissions).
+	 */
+	onUserUpdated?: (user: User) => void;
+
+	/**
+	 * Called after a user is deleted.
+	 * Can be used to clean up default AuthZ data (e.g., roles/permissions).
+	 */
+	onUserDeleted?: (userId: string) => void;
+
+	/**
+	 * Called when a user is retrieved from the database.
+	 * Allows enrichment with roles/permissions before being returned or added to a JWT.
+	 */
+	enrichUser?: (user: User) => Promise<EnrichedUser<T>>;
 }
 
-export interface Authz {
-	name: string;
-	seed: () => void;
-	enrichToken?: (userId: string) => Promise<AuthzData>;
-	createUserRole?: (userId: string, role?: string) => Promise<void>;
-	updateUserRole?: (userId: string, role?: string) => Promise<void>;
-}
+// export interface AuthzData {
+// 	roles?: string[];
+// 	permissions?: string[];
+// 	[key: string]: any;
+// }
+
+// export interface Authz {
+// 	name: string;
+// 	seed: () => void;
+// 	enrichToken?: (userId: string) => Promise<AuthzData>;
+// 	createUserRole?: (userId: string, role?: string) => Promise<void>;
+// 	updateUserRole?: (userId: string, role?: string) => Promise<void>;
+// }
 
 export * from "./UserRegistry";

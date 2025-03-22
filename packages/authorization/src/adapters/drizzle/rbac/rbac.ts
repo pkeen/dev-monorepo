@@ -64,6 +64,13 @@ export const RBACAdapter = (
 				.delete(schema.userRolesTable)
 				.where(eq(schema.userRolesTable.userId, userId));
 		},
+		getRole: async (name: string) => {
+			const [role] = await db
+				.select()
+				.from(schema.rolesTable)
+				.where(eq(schema.rolesTable.name, name));
+			return role;
+		},
 	};
 };
 
@@ -73,4 +80,5 @@ export interface RBACAdapter {
 	createUserRoles: (userId: string, roles: Role[]) => Promise<void>;
 	updateUserRoles: (userId: string, roles: Role[]) => Promise<void>;
 	deleteUserRoles: (userId: string) => Promise<void>;
+	getRole: (name: string) => Promise<Role | null>;
 }

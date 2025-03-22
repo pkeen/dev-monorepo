@@ -52,6 +52,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 			console.log("REDIRECT");
 			return redirect(authResult.url);
 		} else {
+			console.log("UNKNOWN AUTHRESULT TYPE:", authResult);
 			throw new Error("Unknown authResult type");
 		}
 	} catch (e) {

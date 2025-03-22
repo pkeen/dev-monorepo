@@ -1,4 +1,4 @@
-import { LogLevel } from "@pete_keen/logger";
+// import { LogLevel } from "@pete_keen/logger";
 import { Adapter, AdapterUser } from "../adapter";
 import { JwtConfig } from "../session-strategy/jwt-strategy/index.types";
 import { SessionConfig } from "../session-strategy/db-strategy/index.types";

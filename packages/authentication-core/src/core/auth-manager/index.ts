@@ -3,10 +3,9 @@ import {
 	AuthStrategy,
 	Logger,
 	AuthConfig,
-	Authz,
-	AuthzData,
 	KeyCards,
 	AuthState,
+	AuthNCallbacks,
 } from "core/types";
 import { SignInSystem, type SignInParams } from "../signin-system";
 import { AuthProvider } from "core/providers";
@@ -21,7 +20,7 @@ export function AuthManager(
 	authStrategy: AuthStrategy,
 	providers: AuthProvider[],
 	logger: Logger,
-	authz?: Authz // optional, if you want role-based enrichment
+	callbacks?: AuthNCallbacks
 ) {
 	const providersMap = providers.reduce((acc, provider) => {
 		acc[provider.key] = provider;
@@ -32,10 +31,9 @@ export function AuthManager(
 	logger.info("Auth system initialized", {
 		strategy: authStrategy.name,
 		adapter: userRegistry.name,
-		authz: authz?.name || "none",
 	});
 
-	authz?.seed();
+	// authz?.seed();
 
 	return {
 		login: async (provider?: string, code?: string) => {
@@ -82,14 +80,10 @@ export function AuthManager(
 						user,
 						adapterAccount
 					);
-
-					// TODO: create default user authorization roles/permissions
-					// This is something either needed to be provided by the authz module and exposed here as a callback, or the authz module needs to be fully integrated in auth
-					// something like
-					// if (config.userCreateCallback) {
-					//     await config.userCreateCallback(user);
-					// }
-					await authz.createUserRole(user.id);
+					// Callback for user creation
+					if (callbacks?.onUserCreated) {
+						await callbacks.onUserCreated(user);
+					}
 				} else {
 					// there is a user
 					logger.debug("User found", {
@@ -136,16 +130,9 @@ export function AuthManager(
 				// 3) Enrich token or session data with roles/permissions (if authz is provided)
 				// This is pointless in a db session strategy though
 				// adding the if statment makes it only for jwt
-				if (authStrategy.name === "jwt") {
-					let authzData: AuthzData = {};
-					if (authz && authz.enrichToken) {
-						authzData = await authz.enrichToken(user.id);
-						user = {
-							...user,
-							...authzData,
-						};
-					}
-				}
+				// this should perhaps be moved into the JWT Strategy as is only relevant there
+				user = await callbacks.enrichUser(user);
+				// TODO fix type mismathc
 
 				// 4) Create the session (JWT or server-session) with user + extra data
 				const keyCards = await authStrategy.createKeyCards(user);
@@ -192,14 +179,11 @@ export function AuthManager(
 
 				// 3) Enrich token or session data with roles/permissions (if authz is provided)
 				// This is pointless in a db session strategy though - this is not actually pointless in a db session strategy we should STILL enrich the USER object
-				let authzData: AuthzData = {};
-				if (authz && authz.enrichToken) {
-					authzData = await authz.enrichToken(user.id);
-					user = {
-						...user,
-						...authzData,
-					};
-				}
+				// no need for if
+				user = await callbacks.enrichUser(user);
+				// does this syntax work fine?
+				// TODO: fix type issue adapter user vs User
+
 				const keyCards = await authStrategy.createKeyCards(user);
 				return {
 					type: "refresh",
@@ -274,12 +258,20 @@ export const createAuthManager = (config: AuthConfig) => {
 		config.logger = createLogger(config.loggerOptions);
 	}
 
+	const safeCallbacks: AuthNCallbacks = {
+		onUserCreated: async () => {}, // No-op function
+		onUserUpdated: async () => {}, // No-op function
+		onUserDeleted: async () => {}, // No-op function
+		enrichUser: async (user) => user, // Return user unchanged
+		...config.callbacks, // Merge with user-defined callbacks (if any)
+	};
+
 	return AuthManager(
 		config.adapter,
 		strategy,
 		config.providers,
 		config.logger,
-		config.authz
+		safeCallbacks
 	);
 };
 

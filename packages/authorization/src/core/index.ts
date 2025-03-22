@@ -1,11 +1,12 @@
 import { Policy } from "./policy";
 
-export interface Module {
+export interface Module<EnrichedData extends Record<string, any> = {}> {
 	name: string;
 	policies: Record<string, Policy<any>>;
 	pluralName?: string;
 	hierachical?: boolean;
 	init?: () => void;
+	enrichUser?: (userId: string) => Promise<EnrichedData>;
 	// level?: number;
 }
 
@@ -33,7 +34,7 @@ export interface AuthZConfig {
 	// policies: Record<string, Policy<any>>; // maybe not policy creation for now
 }
 
-export const authZ = (config: AuthZConfig) => {
+export const AuthZ = (config: AuthZConfig) => {
 	// Ensure reduce returns Record<string, AnyModule>
 	const modulesDict = config.modules.reduce(
 		(acc, module) => {
@@ -54,8 +55,19 @@ export const authZ = (config: AuthZConfig) => {
 		return acc;
 	}, {} as Record<string, Record<string, Policy<any>>>);
 
+	const enrichUser = async (user: { id: string }) => {
+		for (const modName in modulesDict) {
+			if (modulesDict[modName].enrichUser) {
+				const enriched = await modulesDict[modName].enrichUser(user.id);
+				return { ...user, ...enriched };
+			}
+		}
+		return user;
+	};
+
 	return {
 		modules: modulesDict,
 		policies: policiesDict,
+		enrichUser,
 	};
 };

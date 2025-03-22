@@ -10,13 +10,15 @@ import {
 	AuthSystem,
 	AuthManager,
 	createAuthManager,
+	type AuthNCallbacks,
+	type AuthConfig,
 } from "@pete_keen/authentication-core";
 import { DrizzleAdapter } from "@pete_keen/authentication-core/adapters";
 import { RolesDrizzlePGAdapter } from "@pete_keen/authentication-core/authorization";
 // import { JwtStrategy, JwtStrategyFn } from "@pete_keen/authentication-core";
 // import { RBAC } from "@pete_keen/authentication-core/authorization";
 import db from "~/db";
-import { authz } from "./authz";
+import { authz, rbac } from "./authz";
 
 // const logger = createLogger({
 // 	level: "debug",
@@ -52,8 +54,7 @@ import { authz } from "./authz";
 // 	},
 // });
 
-const authConfig = {
-	authz,
+const authConfig: AuthConfig = {
 	strategy: "jwt",
 	jwtConfig: {
 		access: {
@@ -106,6 +107,16 @@ const authConfig = {
 	loggerOptions: {
 		level: "debug",
 		prefix: "Auth",
+	},
+	callbacks: {
+		enrichUser: async (user) => {
+			const roles = await rbac.enrichUser(user.id);
+			console.log("ENRICH USER roles: ", roles);
+			return { ...user, roles };
+		},
+		onUserCreated: async (user) => {
+			return await rbac.createUserRole(user.id);
+		},
 	},
 };
 

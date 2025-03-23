@@ -3,7 +3,7 @@ import { RBACConfig, Role, RoleConfigEntry, SelectRole } from "./index.types";
 // import type { Authz } from "./index.types";
 import type { Policy } from "../core/policy";
 import type { RBACAdapter } from "../adapters/drizzle/rbac/rbac";
-import { Module } from "core";
+import { Module, User } from "../core/types";
 
 // // These shouldnt be needed soon
 // type DefaultSchema = typeof defaultSchema;
@@ -13,10 +13,6 @@ import { Module } from "core";
 // 	PgDatabase<PgQueryResultHKT, any> | NeonHttpDatabase;
 
 // const toDBId = (id: string): number => parseInt(id, 10);
-
-interface User {
-	id: string;
-}
 
 interface UserWithRoles {
 	id: string;
@@ -101,10 +97,10 @@ export const RBAC = <T extends ReadonlyArray<RoleConfigEntry>>(
 			await db.seed([...config.roles]);
 			// The array spreading is because it is a readonly type made mutable
 		},
-		enrichUser: async (userId: string) => {
-			const roles = await getRoles(userId);
+		enrichUser: async (user: User) => {
+			const roles = await getRoles(user.id);
 			console.log("ENRICH USER roles: ", roles);
-			return roles;
+			return { ...user, roles };
 		},
 		policies: {
 			exactRole,
@@ -316,7 +312,7 @@ export const RBAC = <T extends ReadonlyArray<RoleConfigEntry>>(
 export interface RBAC {
 	name: string;
 	seed: (roles: RoleConfigEntry[]) => Promise<void>;
-	getRoles: (userId: string) => Promise<Role[]>;
+	getRoles: (userId: string) => Promise<Omit<Role, "id">[]>;
 	addRolesToUser: (user: User) => Promise<UserWithRoles>;
 	updateUserRole: (userId: string, role?: SelectRole) => Promise<void>;
 	createUserRole: (userId: string, role?: SelectRole) => Promise<void>;

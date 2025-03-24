@@ -15,7 +15,7 @@ export const requireAuth = async (
 	{ redirectTo, minRole }: { redirectTo?: string; minRole?: string }
 ): Promise<{ user: User | null; headers?: Headers }> => {
 	const session = await getSession(request.headers.get("Cookie"));
-    console.log("Session Cookie", session)
+	console.log("Session Cookie", session);
 	const sessionState = session.get("authState");
 	console.log("sessionState: ", sessionState);
 
@@ -28,6 +28,7 @@ export const requireAuth = async (
 
 	const authResult = await authSystem.validate(sessionState.keyCards!);
 	console.log("AUTH RESULT (IN REQUIRE AUTH): ", authResult);
+	console.log("KEYCARDS IN AUTH RESPONSE: ", authResult.authState.keyCards);
 	if (authResult.type === "error" || authResult.type === "redirect") {
 		if (redirectTo) {
 			throw redirect(redirectTo);
@@ -35,18 +36,45 @@ export const requireAuth = async (
 		return { user: null };
 	} else if (authResult.type === "refresh") {
 		const headers = new Headers();
+		console.log("GETTING TO REFRESH PART ON FRONT END");
 		session.set("authState", authResult.authState);
 		headers.append("Set-Cookie", await commitSession(session));
 		// Return both the updated user and headers so the caller can forward them
 		return { user: authResult.authState.user, headers };
 	}
 
-    // if (minRole) {
-    //     authz.checkRole(authResult.authState.user, minRole);
-    // }
+	// if (minRole) {
+	//     authz.checkRole(authResult.authState.user, minRole);
+	// }
 
 	return { user: authResult.authState.user };
 };
+
+// const withAuth = <T>(
+// 	handler: HandlerFunction<T>,
+// 	options: { redirectTo?: string } = {
+// 		redirectTo: "/",
+// 		// role: null,
+// 	}
+// ) => {
+// 	return async (args: LoaderFunctionArgs | ActionFunctionArgs) => {
+// 		const { request } = args;
+// 		const { user, headers } = await requireAuth(request, {
+// 			redirectTo: options.redirectTo,
+// 			// role: options.role,
+// 		});
+// 		// Add user to the loader/action context if needed, e.g. by modifying args or attaching it to locals.
+// 		const result = await handler({ ...args, user });
+// 		// If the handler returns a response, merge the headers (ensuring updated cookies are sent)
+// 		// if (result instanceof Response) {
+// 		// 	for (let [key, value] of headers?.entries() || []) {
+// 		// 		result.headers.append(key, value);
+// 		// 	}
+// 		// 	return result;
+// 		// }
+// 		return Response.json({ ...result, user }, { headers });
+// 	};
+// };
 
 // export const minRole = (role: string) => {
 //     return async (request: Request) => {

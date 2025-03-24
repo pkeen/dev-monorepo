@@ -1,37 +1,24 @@
 import { Policy } from "./policy";
+import { Module, HierachicalModule, User } from "./module";
 
-export interface User {
-	id: string;
-}
-
-// export type HierachicalModule = Module & { hierachical: true; level: number };
-export interface HierachicalModule<
-	EnrichedData extends Record<string, any> = {}
-> extends Module<EnrichedData> {
-	hierachical: true;
-	level: number;
-}
+// export interface User {
+// 	id: string;
+// }
 
 export type AnyModule = Module<any> | HierachicalModule<any>;
 
-export interface Module<EnrichedData extends Record<string, any> = {}> {
-	name: string;
-	policies: Record<string, Policy<any>>;
-	pluralName?: string;
-	hierachical?: boolean;
-	init?: () => void;
-	enrichUser?: (user: User) => Promise<User & EnrichedData>;
-}
-
-export interface IAuthZ {
+export interface IAuthZ<M extends Record<string, AnyModule>> {
 	// Heres the choice, do we take an entities object/array and put all Roles, Permissions, Orgs etc in there
 	// or do we have a Roles object, a Permissions object, and a custom entities object?
 
-	modules: Record<string, AnyModule>;
+	modules: M;
 	// should the schema and table be returned to user to add to their own migrations? probably yes
 	// schemaName?: string; // ??? this needs to actually be at the level of the adpater I think
 
-	policies: Record<string, Policy<any>>;
+	// policies: Record<string, Record<string, Policy<any>>>;
+	policies: {
+		[K in keyof M]: M[K] extends Module<any> ? M[K]["policies"] : never;
+	};
 
 	userLifecycle: {
 		enrichUser: (user: User) => Promise<User & Record<string, any>>;
@@ -39,7 +26,8 @@ export interface IAuthZ {
 	};
 }
 
-export interface AuthZConfig {
-	modules: Array<AnyModule>;
-	// policies: Record<string, Policy<any>>; // maybe not policy creation for now
+// Let A be a tuple of modules, e.g. [RbacModule, PbacModule, ...]
+export interface AuthZConfig<A extends AnyModule[]> {
+	modules: [...A];
 }
+export { User };

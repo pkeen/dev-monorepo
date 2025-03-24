@@ -1,14 +1,24 @@
 import { Policy } from "./policy";
-import type { User, IAuthZ, AuthZConfig, AnyModule } from "./types";
+import type { User, AnyModule, AuthZConfig, IAuthZ } from "./types";
 
-export const AuthZ = (config: AuthZConfig): IAuthZ => {
+type ModuleName<M extends AnyModule> = M["name"] extends string
+	? M["name"]
+	: never;
+
+type ModulesArrayToDict<A extends AnyModule[]> = {
+	[Mod in A[number] as ModuleName<Mod>]: Mod;
+};
+
+export const AuthZ = <A extends AnyModule[]>(
+	config: AuthZConfig<A>
+): IAuthZ<ModulesArrayToDict<A>> => {
 	// Ensure reduce returns Record<string, AnyModule>
 	const modulesDict = config.modules.reduce(
 		(acc, module) => {
 			acc[module.name] = module; // Explicitly assigning the module object
 			return acc;
 		},
-		{} as Record<string, AnyModule> // TypeScript will now infer correctly
+		{} as ModulesArrayToDict<A> // TypeScript will now infer correctly
 	);
 
 	// Optionally, you can initialize them or do more logic here
@@ -20,7 +30,7 @@ export const AuthZ = (config: AuthZConfig): IAuthZ => {
 	const policiesDict = config.modules.reduce((acc, module) => {
 		acc[module.name] = module.policies ?? {};
 		return acc;
-	}, {} as Record<string, Record<string, Policy<any>>>);
+	}, {} as IAuthZ<ModulesArrayToDict<A>>["policies"]);
 
 	const enrichUser = async (user: User) => {
 		for (const modName in modulesDict) {
@@ -56,3 +66,6 @@ export const AuthZ = (config: AuthZConfig): IAuthZ => {
 		},
 	};
 };
+
+export * from "./module";
+export * from "./rbac";

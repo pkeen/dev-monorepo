@@ -74,14 +74,12 @@ const authConfig: AuthConfig = {
 		prefix: "Auth",
 	},
 	callbacks: {
-		enrichUser: async (user) => {
-			const enrichedUser = await authz.enrichUser(user);
-			// const enrichedUser = await rbac.enrichUser(user);
-			console.log("ENRICH USER roles: ", enrichedUser);
-			return enrichedUser;
-		},
+		// enrichUser: async (user) => {
+		// 	return await authz.userLifecycle.enrichUser(user);
+		// },
+		enrichUser: authz.userLifecycle.enrichUser,
 		onUserCreated: async (user) => {
-			return await rbac.createUserRole(user.id);
+			return await authz.userLifecycle.onUserCreated(user);
 		},
 	},
 };

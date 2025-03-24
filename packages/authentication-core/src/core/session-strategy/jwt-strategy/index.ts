@@ -255,6 +255,7 @@ export const JwtStrategyFn = (config: JwtConfig): AuthStrategy => {
 		},
 		validate: async (keyCards: KeyCards): Promise<AuthResult> => {
 			try {
+				console.log("JWT CONFIG: ", config);
 				console.log("JWT VALIDATE");
 				const accessState = await validateCard(keyCards, "access");
 				console.log("accessState: ", accessState);

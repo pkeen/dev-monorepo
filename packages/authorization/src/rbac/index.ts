@@ -3,7 +3,7 @@ import { RBACConfig, Role, RoleConfigEntry, SelectRole } from "./index.types";
 // import type { Authz } from "./index.types";
 import type { Policy } from "../core/policy";
 import type { RBACAdapter } from "../adapters/drizzle/rbac/rbac";
-import { Module, User } from "../core/types";
+import { Module, User, HierachicalModule } from "../core/types";
 
 // // These shouldnt be needed soon
 // type DefaultSchema = typeof defaultSchema;
@@ -47,7 +47,7 @@ export const RBAC = <T extends ReadonlyArray<RoleConfigEntry>>(
 		}
 	};
 
-	const exactRole: Policy = (
+	const exact: Policy = (
 		user: { id: string; roles: Role[] },
 		role: ExtendedSelectRole
 	) => {
@@ -67,7 +67,7 @@ export const RBAC = <T extends ReadonlyArray<RoleConfigEntry>>(
 		return user.roles.some((r) => r.name === foundRole.name);
 	};
 
-	const minRole: Policy<{ id: string; roles: Role[] }, ExtendedSelectRole> = (
+	const min: Policy<{ id: string; roles: Role[] }, ExtendedSelectRole> = (
 		user: { id: string; roles: Role[] },
 		role: ExtendedSelectRole
 	) => {
@@ -79,7 +79,7 @@ export const RBAC = <T extends ReadonlyArray<RoleConfigEntry>>(
 		return user.roles.some((r) => r.level >= foundRole.level);
 	};
 
-	const maxRole: Policy = (
+	const max: Policy = (
 		user: { id: string; roles: Role[] },
 		role: ExtendedSelectRole
 	) => {
@@ -99,13 +99,12 @@ export const RBAC = <T extends ReadonlyArray<RoleConfigEntry>>(
 		},
 		enrichUser: async (user: User) => {
 			const roles = await getRoles(user.id);
-			console.log("ENRICH USER roles: ", roles);
 			return { ...user, roles };
 		},
 		policies: {
-			exactRole,
-			minRole,
-			maxRole,
+			exact,
+			min,
+			max,
 		},
 		getRoles,
 		// addRolesToUser: async (user: User): Promise<UserWithRoles> => {
@@ -200,124 +199,24 @@ export const RBAC = <T extends ReadonlyArray<RoleConfigEntry>>(
 
 			return await db.createUserRoles(userId, [role]);
 		},
-		// createUserRole: async (
-		// 	userId: string,
-		// 	select?: ExtendedSelectRole
-		// ): Promise<void> => {
-		// 	console.log("creating user role");
-		// 	if (!select) {
-		// 		select = config.defaultRole;
-		// 	}
-
-		// 	console.log(select);
-
-		// 	if (select.name) {
-		// 		const [role] = await db
-		// 			.select({ id: schema.rolesTable.id })
-		// 			.from(schema.rolesTable)
-		// 			.where(eq(schema.rolesTable.name, select.name));
-
-		// 		if (!role) {
-		// 			throw new Error(`Role ${select.name} does not exist`);
-		// 		}
-
-		// 		// add user's role
-		// 		await db
-		// 			.insert(schema.userRolesTable)
-		// 			.values({ userId, roleId: role.id });
-		// 	} else if (select.level) {
-		// 		const [roleId] = await db
-		// 			.select({ id: schema.rolesTable.id })
-		// 			.from(schema.rolesTable)
-		// 			.where(eq(schema.rolesTable.level, select.level));
-
-		// 		if (!roleId) {
-		// 			throw new Error(
-		// 				`Role with level ${select.level} does not exist`
-		// 			);
-		// 		}
-
-		// 		// add user's role
-		// 		await db
-		// 			.insert(schema.userRolesTable)
-		// 			.values({ userId, roleId: roleId.id });
-		// 	} else {
-		// 		throw new Error(`Invalid role: ${select}`);
-		// 	}
-		// },
-		/**
-		 * Check if a user has (at least) the required role
-		 * based on numeric "level".
-		 * If you want an exact match on name, adjust accordingly.
-		 */
-		// async dbUserHasRequiredRole(
-		// 	userId: string,
-		// 	required: ExtendedSelectRole
-		// ): Promise<boolean> {
-		// 	// 1. Find the required role in the config
-		// 	const requiredRoleDef = findRoleInConfig(required);
-		// 	if (!requiredRoleDef) {
-		// 		throw new Error(
-		// 			`Invalid required role: ${JSON.stringify(required)}`
-		// 		);
-		// 	}
-
-		// 	// 2. Lookup the user’s current role in DB (including level)
-		// 	// For example, if "userRolesTable" -> "rolesTable" is a simple pivot
-		// 	const row = await db
-		// 		.select({
-		// 			roleId: schema.rolesTable.id,
-		// 			roleName: schema.rolesTable.name,
-		// 			roleLevel: schema.rolesTable.level, // if your table has "level"
-		// 		})
-		// 		.from(schema.rolesTable)
-		// 		.innerJoin(
-		// 			schema.userRolesTable,
-		// 			eq(schema.userRolesTable.roleId, schema.rolesTable.id)
-		// 		)
-		// 		.where(eq(schema.userRolesTable.userId, userId))
-		// 		.limit(1);
-
-		// 	// If user has no role record, block
-		// 	if (!row[0]) return false;
-
-		// 	const userRoleLevel = row[0].roleLevel;
-
-		// 	// 3. Compare levels (assuming a linear approach)
-		// 	return userRoleLevel >= requiredRoleDef.level;
-		// },
-		/**
-		 * Check if a user has (at least) the required role jwt
-		 * based on numeric "level".
-		 */
-		// async jwtUserHasRequiredRole(
-		// 	user: UserWithRoles,
-		// 	required: ExtendedSelectRole
-		// ): Promise<boolean> {
-		// 	// 1. Find the required role in the config
-		// 	const requiredRoleDef = findRoleInConfig(required);
-		// 	if (!requiredRoleDef) {
-		// 		throw new Error(
-		// 			`Invalid required role: ${JSON.stringify(required)}`
-		// 		);
-		// 	}
-		// 	// 3. Compare levels (assuming a linear approach)
-		// 	return user.roles.some(
-		// 		(role) => role.level >= requiredRoleDef.level
-		// 	);
-		// },
 	};
 };
 
-export interface RBAC {
+export interface RBACModule extends HierachicalModule {
 	name: string;
-	seed: (roles: RoleConfigEntry[]) => Promise<void>;
+	init: () => Promise<void>;
 	getRoles: (userId: string) => Promise<Omit<Role, "id">[]>;
-	addRolesToUser: (user: User) => Promise<UserWithRoles>;
+	// addRolesToUser: (user: User) => Promise<UserWithRoles>;
 	updateUserRole: (userId: string, role?: SelectRole) => Promise<void>;
 	createUserRole: (userId: string, role?: SelectRole) => Promise<void>;
-	enrichToken: (userId: string) => Promise<Omit<Role, "id">[]>;
-	enrichUser: (userId: string) => Promise<Role[]>;
+	// enrichToken: (userId: string) => Promise<Omit<Role, "id">[]>;
+	// enrichUser: (userId: string) => Promise<Omit<Role, "id"> & User>;
+	// policies: {
+	// 	exact: Policy;
+	// 	min: Policy;
+	// 	max: Policy;
+	// };
+	// hierachical: true;
 }
 
 export { RoleHierarchy };

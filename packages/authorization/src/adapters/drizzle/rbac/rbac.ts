@@ -2,7 +2,8 @@ import * as defaultSchema from "./schema";
 import { PgDatabase, type PgQueryResultHKT } from "drizzle-orm/pg-core";
 import { NeonHttpDatabase } from "drizzle-orm/neon-http";
 import { eq } from "drizzle-orm";
-import { Role, RoleConfigEntry } from "../../../types";
+import { Role } from "../../../core/rbac";
+// import { Role, RoleConfigEntry } from "../../../types";
 
 type DefaultSchema = typeof defaultSchema;
 type DrizzleDatabase = PgDatabase<PgQueryResultHKT, any> | NeonHttpDatabase;
@@ -12,7 +13,7 @@ export const RBACAdapter = (
 	schema: DefaultSchema = defaultSchema
 ): RBACAdapter => {
 	return {
-		seed: async (roles: RoleConfigEntry[]) => {
+		seed: async (roles: Role[]) => {
 			await db
 				.insert(schema.rolesTable)
 				// The key is this: wrap in [... ] to create a new (mutable) array.
@@ -37,6 +38,7 @@ export const RBACAdapter = (
 
 			// Transform to your "Role" type
 			const roles: Omit<Role, "id">[] = rows.map((row) => ({
+				key: "default",
 				name: row.roleName,
 				level: row.roleLevel,
 			}));
@@ -46,6 +48,7 @@ export const RBACAdapter = (
 		updateUserRoles: async (userId: string, roles: Role[]) => {
 			//update user's role
 			// TODO: check if works
+
 			await db
 				.update(schema.userRolesTable)
 				.set({ roleId: roles[0].id })
@@ -69,14 +72,14 @@ export const RBACAdapter = (
 				.select()
 				.from(schema.rolesTable)
 				.where(eq(schema.rolesTable.name, name));
-			return role;
+			return role ? { ...role, key: "default" } : null;
 		},
 	};
 };
 
 export interface RBACAdapter {
-	seed: (roles: RoleConfigEntry[]) => Promise<void>;
-	getUserRoles: (userId: string) => Promise<Omit<Role, "id">[]>;
+	seed: (roles: Role[]) => Promise<void>;
+	getUserRoles: (userId: string) => Promise<Role[]>;
 	createUserRoles: (userId: string, roles: Role[]) => Promise<void>;
 	updateUserRoles: (userId: string, roles: Role[]) => Promise<void>;
 	deleteUserRoles: (userId: string) => Promise<void>;

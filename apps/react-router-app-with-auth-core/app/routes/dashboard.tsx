@@ -16,7 +16,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 		redirectTo: "/auth/login",
 	});
 	console.log("LOADER USER: ", user);
-    if (rbac.policies.min(user, ))
+	if (!user || !rbac.policies.min(user, { name: "Admin" })) {
+		return redirect("/auth/login");
+	}
+
+	// if (rbac.policies.min(user, { key: "admin" })) {
+	// }
 
 	// console.log("USER ROLES", user.roles);
 	return Response.json({ ...user }, { headers });

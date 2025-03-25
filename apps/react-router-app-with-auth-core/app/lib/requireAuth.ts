@@ -1,7 +1,7 @@
 import { redirect } from "react-router";
 import { getSession, commitSession } from "../session.server";
 import authSystem from "../auth";
-import { authz } from "../auth";
+// import { authz } from "../auth";
 import type { User } from "@pete_keen/authentication-core";
 
 /**

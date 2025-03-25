@@ -32,32 +32,53 @@ export interface RBACEnrichedData extends AttributeData {
 	roles: Role[];
 }
 
-export interface RBACModule extends HierachicalModule<AttributeData> {
+type RbacPolicies<T extends ReadonlyArray<Role>> = {
+	exact: Policy<{ id: string } & RBACEnrichedData, ExtendedSelectRole<T>>;
+	min: Policy<{ id: string; roles: Role[] }, ExtendedSelectRole<T>>;
+	max: Policy<{ id: string; roles: Role[] }, ExtendedSelectRole<T>>;
+};
+
+export interface RBACModule<T extends ReadonlyArray<Role>>
+	extends HierachicalModule<RbacPolicies<T>, RBACEnrichedData> {
 	updateUserRole: (userId: string, select) => Promise<void>;
 	createUserRole: (userId: string, select) => Promise<void>;
 	enrichUser: (user: User) => Promise<User & RBACEnrichedData>;
 }
 
+/**
+ * This is generic. We only finalize it when we pass a specific T extends ReadonlyArray<Role>
+ */
+export type ExtendedSelectRole<T extends ReadonlyArray<Role>> =
+	| { name: T[number]["name"]; level?: never; key?: never }
+	| { level: T[number]["level"]; name?: never; key?: never }
+	| { key: T[number]["key"]; name?: never; level?: never };
+
+// export interface RBACModule extends HierachicalModule<AttributeData> {
+// 	updateUserRole: (userId: string, select) => Promise<void>;
+// 	createUserRole: (userId: string, select) => Promise<void>;
+// 	enrichUser: (user: User) => Promise<User & RBACEnrichedData>;
+// }
+
 export const rbacModule = <T extends ReadonlyArray<Role>>(
 	db: RBACAdapter,
 	config: RBACConfig<T>
-): RBACModule => {
+): RBACModule<T> => {
 	// ❸ Derive *dynamic* unions for name & level from T
 	type RoleNameUnion = T[number]["name"]; // e.g. "Guest" | "User" | ...
 	type RoleLevelUnion = T[number]["level"]; // e.g. 0 | 1 | 2 | 3 | ...
 	type RoleKeyUnion = T[number]["key"]; // e.g. "guest" | "user" | ...
 
-	// ❹ Create a specialized "SelectRole" type *just for this config*
-	type ExtendedSelectRole =
-		| { name: RoleNameUnion; level?: never; key?: never }
-		| { level: RoleLevelUnion; name?: never; key?: never }
-		| { key: RoleKeyUnion; name?: never; level?: never };
+	// // ❹ Create a specialized "SelectRole" type *just for this config*
+	// type ExtendedSelectRole =
+	// 	| { name: RoleNameUnion; level?: never; key?: never }
+	// 	| { level: RoleLevelUnion; name?: never; key?: never }
+	// 	| { key: RoleKeyUnion; name?: never; level?: never };
 
 	const getItemsForUser = async (user: User) => {
 		return await db.getUserRoles(user.id);
 	};
 
-	const findItemInConfig = (select: ExtendedSelectRole): Role | null => {
+	const findItemInConfig = (select: ExtendedSelectRole<T>): Role | null => {
 		if ("name" in select) {
 			// Look up by name
 			return config.items.find((r) => r.name === select.name) ?? null;
@@ -67,9 +88,9 @@ export const rbacModule = <T extends ReadonlyArray<Role>>(
 		}
 	};
 
-	const exact: Policy = (
+	const exact: RbacPolicies<T>["exact"] = (
 		user: { id: string } & RBACEnrichedData,
-		role: ExtendedSelectRole
+		role: ExtendedSelectRole<T>
 	) => {
 		const foundRole = findItemInConfig(role);
 		if (!foundRole) {
@@ -87,10 +108,7 @@ export const rbacModule = <T extends ReadonlyArray<Role>>(
 		return user.roles?.some((r) => r.name === foundRole.name) ?? false;
 	};
 
-	const min: Policy<{ id: string; roles: Role[] }, ExtendedSelectRole> = (
-		user: { id: string; roles: Role[] },
-		role: ExtendedSelectRole
-	) => {
+	const min: RbacPolicies<T>["min"] = (user, role) => {
 		const foundRole = findItemInConfig(role);
 		if (!foundRole) {
 			throw new Error(`Invalid role: ${JSON.stringify(role)}`);

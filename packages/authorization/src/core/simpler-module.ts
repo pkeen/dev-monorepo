@@ -19,9 +19,12 @@ export interface AttributeBase {
 
 export interface AttributeData extends Record<string, any> {}
 
-export interface Module<AttributeData = {}> {
+export interface Module<
+	Policies extends Record<string, Policy<any>>,
+	AttributeData = {}
+> {
 	name: Readonly<string>;
-	policies: Record<string, Policy>;
+	policies: Policies;
 	pluralName?: string;
 	hierarchical?: boolean;
 	init?: () => Promise<void>;
@@ -32,14 +35,16 @@ export interface Module<AttributeData = {}> {
 	// createUserItem?: (userId: string, item: ConfigEntryBase) => Promise<void>;
 }
 
-export interface HierachicalModule<AttributeData = {}>
-	extends Module<AttributeData> {
+export interface HierachicalModule<
+	Policies extends Record<string, Policy<any>> & {
+		min: Policy<any, any>;
+		max: Policy<any, any>;
+		exact: Policy<any, any>;
+	},
+	AttributeData = {}
+> extends Module<Policies, AttributeData> {
 	hierarchical: true;
-	policies: Record<string, Policy> & {
-		min: Policy;
-		max: Policy;
-		exact: Policy;
-	};
+	policies: Policies;
 }
 
 export type AnyModule = Module<any> | HierachicalModule<any>;

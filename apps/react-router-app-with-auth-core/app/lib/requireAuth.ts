@@ -28,8 +28,9 @@ export const requireAuth = async (
 
 	const authResult = await authSystem.validate(sessionState.keyCards!);
 	console.log("AUTH RESULT (IN REQUIRE AUTH): ", authResult);
-	console.log("KEYCARDS IN AUTH RESPONSE: ", authResult.authState.keyCards);
+	// console.log("KEYCARDS IN AUTH RESPONSE: ", authResult.authState.keyCards); // this was causing an error when keycards not present
 	if (authResult.type === "error" || authResult.type === "redirect") {
+		console.log("SHOULD BE REDIRECTED");
 		if (redirectTo) {
 			throw redirect(redirectTo);
 		}

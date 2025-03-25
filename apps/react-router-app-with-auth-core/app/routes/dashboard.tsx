@@ -7,7 +7,7 @@
 import { Form, useFetcher, useLoaderData, redirect } from "react-router";
 import { requireAuth } from "~/lib/requireAuth";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
-import { authz } from "~/authz";
+import { rbac, enrichUser } from "~/authz";
 
 // import { Route } from "+types/dashboard";
 
@@ -16,10 +16,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 		redirectTo: "/auth/login",
 	});
 	console.log("LOADER USER: ", user);
-	console.log("AUTHZ type", typeof authz.policies.rbac);
-	if (!authz.policies.rbac.min(user, { name: "Admin" })) {
-		throw redirect("/");
-	}
+    if (rbac.policies.min(user, ))
+
 	// console.log("USER ROLES", user.roles);
 	return Response.json({ ...user }, { headers });
 };

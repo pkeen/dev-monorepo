@@ -1,3 +1,4 @@
+import { Module } from "./module";
 import { Policy } from "./policy";
 import type { User, AnyModule, AuthZConfig, IAuthZ } from "./types";
 
@@ -34,8 +35,9 @@ export const AuthZ = <A extends AnyModule[]>(
 
 	const enrichUser = async (user: User) => {
 		for (const modName in modulesDict) {
-			if (modulesDict[modName].enrichUser) {
-				const enriched = await modulesDict[modName].enrichUser(user);
+			const mod = modulesDict[modName] as Module<any, any>;
+			if (mod.enrichUser) {
+				const enriched = await mod.enrichUser(user);
 				return { ...user, ...enriched };
 			}
 		}
@@ -67,5 +69,8 @@ export const AuthZ = <A extends AnyModule[]>(
 	};
 };
 
-export * from "./module";
-export * from "./rbac";
+// export * from "./module";
+// export * from "./rbac";
+export * from "./simpler-rbac";
+export * from "./simpler-module";
+export * from "./initAuthz";

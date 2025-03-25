@@ -21,7 +21,7 @@ export interface RBACConfig<T extends ReadonlyArray<Role>>
 	// 	| { key: T[number]["key"]; name?: never; level?: never };
 }
 
-type RBACEnrichedData = {roles: Role[]}
+type RBACEnrichedData = { roles: Role[] };
 
 export const createRBAC = <T extends ReadonlyArray<Role>>(
 	db: RBACAdapter,
@@ -42,9 +42,7 @@ export const createRBAC = <T extends ReadonlyArray<Role>>(
 		return await db.getUserRoles(userId);
 	};
 
-	const findItemInConfig = (
-		select: ExtendedSelectRole
-	): Role | null => {
+	const findItemInConfig = (select: ExtendedSelectRole): Role | null => {
 		if ("name" in select) {
 			// Look up by name
 			return config.items.find((r) => r.name === select.name) ?? null;
@@ -54,39 +52,8 @@ export const createRBAC = <T extends ReadonlyArray<Role>>(
 		}
 	};
 
-    // const policies: Record<string, Policy> = {
-    //     exact: (user: { id: string } & RBACEnrichedData, role: ExtendedSelectRole) => {
-    //         const foundRole = findItemInConfig(role);
-    //         if (!foundRole) {
-    //             throw new Error(`Invalid role: ${JSON.stringify(role)}`);
-    //         }
-    //         // ISSUE: in a jwt strategy yes the user object contains roles, but in a session strategy no
-    //         // but also perhaps by providing that callback for getUserRoles() etc we could achieve the same
-    //         // OR we could have a db check fall back
-    //         // if (!user.roles) {
-    //         //     user.roles = await getRoles(user.id);
-    //         // }
-    //         // perhaps this useDB? option should be handled in the config?
-
-    //         // TODO: decide if we want this fallback or not
-    //         return user.roles?.some((r) => r.name === foundRole.name) ?? false;
-    //     },
-    //     min: (
-	// 	user: { id: string; roles: Role[] },
-	// 	role: ExtendedSelectRole
-	// ) => {
-	// 	const foundRole = findItemInConfig(role);
-	// 	if (!foundRole) {
-	// 		throw new Error(`Invalid role: ${JSON.stringify(role)}`);
-	// 	}
-
-	// 	return user.roles.some((r) => r.level >= foundRole.level);
-	// },
-
-    // }
-
 	const exact: Policy = (
-		user: { id: string} & RBACEnrichedData,
+		user: { id: string } & RBACEnrichedData,
 		role: ExtendedSelectRole
 	) => {
 		const foundRole = findItemInConfig(role);
@@ -129,11 +96,10 @@ export const createRBAC = <T extends ReadonlyArray<Role>>(
 		return user.roles.some((r) => r.level <= foundRole.level);
 	};
 
-    const policies = {exact, min, max}
-
+	const policies = { exact, min, max };
 
 	return createModule<typeof policies, RBACEnrichedData>({
-		name: "rbac" as const,// <-- key point: literal type
+		name: "rbac" as const, // <-- key point: literal type
 		policies,
 		init: async () => {
 			await db.seed([...config.items]);
@@ -144,8 +110,8 @@ export const createRBAC = <T extends ReadonlyArray<Role>>(
 			return { ...user, roles };
 		},
 		getItemsForUser: async (user: User) => {
-            const roles = await db.getUserRoles(user.id);
-			return {roles};
+			const roles = await db.getUserRoles(user.id);
+			return { roles };
 		},
 
 		updateUserRole: async (
@@ -185,5 +151,5 @@ export const createRBAC = <T extends ReadonlyArray<Role>>(
 
 			return await db.createUserRoles(userId, [role]);
 		},
-	};
+	});
 };

@@ -181,6 +181,7 @@ export function AuthManager(
 				// This is pointless in a db session strategy though - this is not actually pointless in a db session strategy we should STILL enrich the USER object
 				// no need for if
 				user = await callbacks.enrichUser(user);
+				// console.log("ENRICH USER CALLBACK RESULT:", user);
 				// does this syntax work fine?
 				// TODO: fix type issue adapter user vs User
 

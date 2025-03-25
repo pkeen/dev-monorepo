@@ -15,6 +15,7 @@ export interface Module<
 	init?: () => Promise<void>;
 	enrichUser?: (user: User) => Promise<User & EnrichedData>;
 	getItemsForUser: (user: User) => Promise<EnrichedData>;
+	createUserItem: (userId: string, item: ConfigEntryBase) => Promise<void>;
 }
 
 // export type HierachicalModule = Module & { hierachical: true; level: number };
@@ -29,6 +30,8 @@ export interface HierachicalModule<
 		exact: Policy;
 	};
 }
+
+
 
 export const createModule = <
 	Policies extends Record<string, Policy<any>>,

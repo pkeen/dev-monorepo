@@ -17,7 +17,7 @@ import { DrizzleAdapter } from "@pete_keen/authentication-core/adapters";
 // import { JwtStrategy, JwtStrategyFn } from "@pete_keen/authentication-core";
 // import { RBAC } from "@pete_keen/authentication-core/authorization";
 import db from "~/db";
-import { authz, rbac } from "./authz";
+import { rbac, enrichUser, onUserCreated } from "./authz";
 
 const authConfig: AuthConfig = {
 	strategy: "jwt",
@@ -74,13 +74,8 @@ const authConfig: AuthConfig = {
 		prefix: "Auth",
 	},
 	callbacks: {
-		// enrichUser: async (user) => {
-		// 	return await authz.userLifecycle.enrichUser(user);
-		// },
-		enrichUser: authz.userLifecycle.enrichUser,
-		onUserCreated: async (user) => {
-			return await authz.userLifecycle.onUserCreated(user);
-		},
+		enrichUser,
+		onUserCreated: onUserCreated,
 	},
 };
 

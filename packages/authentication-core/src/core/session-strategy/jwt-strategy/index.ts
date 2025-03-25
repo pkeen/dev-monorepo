@@ -191,7 +191,7 @@ export const JwtStrategyFn = (config: JwtConfig): AuthStrategy => {
 				card.value,
 				config[name]
 			);
-			console.log("VAIDATION RESULT: ", result);
+			// console.log("VAIDATION RESULT: ", result);
 			return {
 				authenticated: true,
 				user: result.user,
@@ -255,10 +255,10 @@ export const JwtStrategyFn = (config: JwtConfig): AuthStrategy => {
 		},
 		validate: async (keyCards: KeyCards): Promise<AuthResult> => {
 			try {
-				console.log("JWT CONFIG: ", config);
-				console.log("JWT VALIDATE");
+				// console.log("JWT CONFIG: ", config);
+				// console.log("JWT VALIDATE");
 				const accessState = await validateCard(keyCards, "access");
-				console.log("accessState: ", accessState);
+				// console.log("accessState: ", accessState);
 				if (accessState.authenticated) {
 					logger.info("Keycards validated", {
 						userId: accessState.user.id,

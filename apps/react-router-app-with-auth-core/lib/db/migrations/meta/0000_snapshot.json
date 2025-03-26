@@ -1,5 +1,5 @@
 {
-  "id": "ec4cf09f-6065-447f-aadb-35caed6fc55a",
+  "id": "92de0388-6203-474e-91b8-1f4d99a40a4a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -106,9 +106,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "authorization.roles": {
+    "rbac_schema.roles": {
       "name": "roles",
-      "schema": "authorization",
+      "schema": "rbac_schema",
       "columns": {
         "id": {
           "name": "id",
@@ -116,6 +116,12 @@
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
+        },
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
         },
         "name": {
           "name": "name",
@@ -137,6 +143,21 @@
         }
       },
       "indexes": {
+        "key_idx": {
+          "name": "key_idx",
+          "columns": [
+            {
+              "expression": "key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "name_level_idx": {
           "name": "name_level_idx",
           "columns": [
@@ -157,41 +178,18 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
-        },
-        "level_idx": {
-          "name": "level_idx",
-          "columns": [
-            {
-              "expression": "level",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "name_idx": {
-          "name": "name_idx",
-          "columns": [
-            {
-              "expression": "name",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
+        "roles_key_unique": {
+          "name": "roles_key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "key"
+          ]
+        },
         "roles_name_unique": {
           "name": "roles_name_unique",
           "nullsNotDistinct": false,
@@ -211,9 +209,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "authorization.user_roles": {
+    "rbac_schema.user_roles": {
       "name": "user_roles",
-      "schema": "authorization",
+      "schema": "rbac_schema",
       "columns": {
         "id": {
           "name": "id",
@@ -358,7 +356,7 @@
   "enums": {},
   "schemas": {
     "auth": "auth",
-    "authorization": "authorization"
+    "rbac_schema": "rbac_schema"
   },
   "sequences": {},
   "roles": {},

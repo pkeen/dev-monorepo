@@ -33,14 +33,24 @@ type ModulesEnrichedData<A extends AnyModule[]> = UnionToIntersection<
 	ExtractEnrichedData<A[number]>
 >;
 
+export interface AuthZOptions<A extends AnyModule[]> {
+	modules: A;
+	seed?: boolean;
+}
+
 /**
  * Takes an array of modules, calls init() if present,
  * and returns an object of combined lifecycle methods.
  */
-export async function buildAuthZ<A extends AnyModule[]>(modules: A) {
+export async function buildAuthZ<A extends AnyModule[]>(
+	options: AuthZOptions<A>
+) {
+	const modules = options.modules;
 	// 1) Initialize all modules
-	for (const mod of modules) {
-		await mod.init?.();
+	if (options.seed) {
+		for (const mod of modules) {
+			await mod.init?.();
+		}
 	}
 
 	// 2) We'll produce a typed aggregator function

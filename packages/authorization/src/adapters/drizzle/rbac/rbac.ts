@@ -1,12 +1,16 @@
-import * as defaultSchema from "./schema";
+// import * as defaultSchema from "./schema";
+import type { RBACSchema as DefaultSchema } from "./schema";
+import { createSchema } from "./schema";
 import { PgDatabase, type PgQueryResultHKT } from "drizzle-orm/pg-core";
 import { NeonHttpDatabase } from "drizzle-orm/neon-http";
 import { eq } from "drizzle-orm";
 import { Role } from "../../../core/rbac";
 // import { Role, RoleConfigEntry } from "../../../types";
 
-type DefaultSchema = typeof defaultSchema;
+// type DefaultSchema = typeof defaultSchema;
 type DrizzleDatabase = PgDatabase<PgQueryResultHKT, any> | NeonHttpDatabase;
+
+const defaultSchema = createSchema("rbac_schema");
 
 export const RBACAdapter = (
 	db: DrizzleDatabase,

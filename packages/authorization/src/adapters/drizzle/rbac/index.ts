@@ -1,6 +1,7 @@
 export * from "./rbac";
-export * as rbacSchema from "./schema"; 
-// import { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
+export * as rbacSchema from "./schema";
+export { createSchema } from "./schema";
+// import { PgDatabase, PgQueryResultHKT }   from "drizzle-orm/pg-core";
 // import { RBACAdapter } from "./rbac";
 // import * as rbacSchema from "./schema";
 // import { NeonHttpDatabase } from "drizzle-orm/neon-http";

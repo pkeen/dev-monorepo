@@ -40,8 +40,14 @@ type RbacPolicies<T extends ReadonlyArray<Role>> = {
 
 export interface RBACModule<T extends ReadonlyArray<Role>>
 	extends HierachicalModule<RbacPolicies<T>, RBACEnrichedData> {
-	updateUserRole: (userId: string, select) => Promise<void>;
-	createUserRole: (userId: string, select) => Promise<void>;
+	updateUserRole: (
+		userId: string,
+		select: ExtendedSelectRole<T>
+	) => Promise<void>;
+	createUserRole: (
+		userId: string,
+		select: ExtendedSelectRole<T>
+	) => Promise<void>;
 	enrichUser: (user: User) => Promise<User & RBACEnrichedData>;
 }
 
@@ -75,7 +81,8 @@ export const rbacModule = <T extends ReadonlyArray<Role>>(
 	// 	| { key: RoleKeyUnion; name?: never; level?: never };
 
 	const getItemsForUser = async (user: User) => {
-		return await db.getUserRoles(user.id);
+		const roles = await db.getUserRoles(user.id);
+		return { roles };
 	};
 
 	const findItemInConfig = (select: ExtendedSelectRole<T>): Role | null => {
@@ -117,10 +124,7 @@ export const rbacModule = <T extends ReadonlyArray<Role>>(
 		return user.roles.some((r) => r.level >= foundRole.level);
 	};
 
-	const max: Policy = (
-		user: { id: string; roles: Role[] },
-		role: ExtendedSelectRole
-	) => {
+	const max: RbacPolicies<T>["max"] = (user, role) => {
 		const foundRole = findItemInConfig(role);
 		if (!foundRole) {
 			throw new Error(`Invalid role: ${JSON.stringify(role)}`);
@@ -138,12 +142,15 @@ export const rbacModule = <T extends ReadonlyArray<Role>>(
 		enrichUser: async (user: User) => {
 			console.log("GETTING INTO ENRICH USER");
 			const roles = await getItemsForUser(user);
-			return { ...user, roles };
+			return { ...user, ...roles };
+		},
+		init: async () => {
+			await db.seed([...config.items]);
 		},
 		getItemsForUser,
 		updateUserRole: async (
 			userId: string,
-			select?: ExtendedSelectRole
+			select?: ExtendedSelectRole<T>
 		): Promise<void> => {
 			if (!select) {
 				select = config.defaultAssignment;
@@ -163,7 +170,7 @@ export const rbacModule = <T extends ReadonlyArray<Role>>(
 		},
 		createUserRole: async (
 			userId: string,
-			select: ExtendedSelectRole = config.defaultAssignment
+			select: ExtendedSelectRole<T> = config.defaultAssignment
 		) => {
 			// check select is in role config
 			const foundRole = findItemInConfig(select);

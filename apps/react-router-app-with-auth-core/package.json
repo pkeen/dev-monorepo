@@ -6,19 +6,20 @@
 		"build": "react-router build",
 		"dev": "react-router dev",
 		"start": "react-router-serve ./build/server/index.js",
-		"typecheck": "react-router typegen && tsc"
+		"typecheck": "react-router typegen && tsc",
+		"seed:roles": "tsx lib/db/seed/roles.ts"
 	},
 	"dependencies": {
+		"@pete_keen/authentication-core": "workspace:*",
+		"@pete_keen/authz": "workspace:*",
+		"@pete_keen/logger": "workspace:*",
 		"@react-router/node": "^7.1.1",
 		"@react-router/serve": "^7.1.1",
+		"drizzle-orm": "^0.36.3",
 		"isbot": "^5.1.17",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
-		"react-router": "^7.1.1",
-		"@pete_keen/authentication-core": "workspace:*",
-		"@pete_keen/logger": "workspace:*",
-		"@pete_keen/authz": "workspace:*",
-		"drizzle-orm": "^0.36.3"
+		"react-router": "^7.1.1"
 	},
 	"devDependencies": {
 		"@react-router/dev": "^7.1.1",
@@ -26,11 +27,12 @@
 		"@types/react": "^19.0.1",
 		"@types/react-dom": "^19.0.1",
 		"autoprefixer": "^10.4.20",
+		"dotenv": "^16.4.5",
+		"drizzle-kit": "^0.28.1",
 		"postcss": "^8.4.49",
 		"tailwindcss": "^3.4.16",
 		"typescript": "^5.7.2",
 		"vite": "^5.4.11",
-		"vite-tsconfig-paths": "^5.1.4",
-		"drizzle-kit": "^0.28.1"
+		"vite-tsconfig-paths": "^5.1.4"
 	}
 }

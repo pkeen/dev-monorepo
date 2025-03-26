@@ -1,9 +1,9 @@
 import { RBACAdapter } from "@pete_keen/authz/adapters";
-import { AuthZ, rbacModule, buildAuthZ } from "@pete_keen/authz";
+import { rbacModule, buildAuthZ } from "@pete_keen/authz";
+import { createSchema } from "@pete_keen/authz/adapters";
 import db from "~/db";
-import type { AuthZConfig } from "node_modules/@pete_keen/authz/dist/core/types";
 
-const roles = [
+export const roles = [
 	{
 		key: "guest",
 		name: "Guest",
@@ -33,31 +33,12 @@ const roles = [
 
 const dbAdapter = RBACAdapter(db);
 
-// export const rbac = createRBAC(dbAdapter, {
-// 	items: roles,
-// 	defaultAssignment: {
-// 		key: "user",
-// 	},
-// });
-
-// const authzConfig = {
-// 	modules: [rbac],
-// } satisfies AuthZConfig<[typeof rbac]>;
-
-// export const authz = AuthZ(authzConfig);
-
-// export const authz = RBAC(RBACAdapter(db), {
-// 	roles,
-// 	defaultRole: {
-// 		name: "User",
-// 	},
-// });
-
-// this going to be circular dependency, so we need to extract it to a separate file
-
 export const rbac = rbacModule(dbAdapter, {
 	items: roles,
 	defaultAssignment: { key: "user" }, // TODO this seems kinda pointless now, we might aswell always select by key - a lot simpler
 });
 
-export const { enrichUser, onUserCreated } = await buildAuthZ([rbac]);
+export const { enrichUser, onUserCreated } = await buildAuthZ({
+	modules: [rbac],
+	// seed: true,
+});

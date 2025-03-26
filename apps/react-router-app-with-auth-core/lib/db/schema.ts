@@ -33,8 +33,7 @@ const roles = [
 	},
 ];
 
-export const { rbacSchema, rolesTable, userRolesTable } =
-	createSchema("rbac_schema");
+export const { rbacSchema, rolesTable, userRolesTable } = createSchema();
 
 // export const { schema, rolesTable, userRolesTable } = AuthorizationSchema;
 // export const { rolesTable, userRolesTable, rbacSchema } = rbacAuthSchema;

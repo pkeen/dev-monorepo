@@ -1,6 +1,5 @@
 import { RBACAdapter } from "@pete_keen/authz/adapters";
 import { rbacModule, buildAuthZ } from "@pete_keen/authz";
-import { createSchema } from "@pete_keen/authz/adapters";
 import db from "~/db";
 
 export const roles = [

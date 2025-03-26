@@ -46,13 +46,13 @@ import {
 
 // export type RBACSchema = typeof rbacSchema;
 
-interface schemaConfig {
-	name?: string;
-	roles: Array<{ key: string; name: string; level: number }>;
-}
+// interface schemaConfig {
+// 	name?: string;
+// 	roles: Array<{ key: string; name: string; level: number }>;
+// }
 
 // What if we created a function to return the schema and the tables?
-export const createSchema = (name: string) => {
+export const createSchema = (name?: string) => {
 	const rbacSchema = name ? pgSchema(name) : pgSchema("rbac_schema");
 
 	const rolesTable = rbacSchema.table(

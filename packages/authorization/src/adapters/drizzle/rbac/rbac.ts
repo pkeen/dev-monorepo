@@ -4,8 +4,15 @@ import { createSchema } from "./schema";
 import { PgDatabase, type PgQueryResultHKT } from "drizzle-orm/pg-core";
 import { NeonHttpDatabase } from "drizzle-orm/neon-http";
 import { eq } from "drizzle-orm";
-import { Role } from "../../../core/rbac";
-// import { Role, RoleConfigEntry } from "../../../types";
+import { Role } from "../../../core/simpler-rbac";
+
+/**
+ * Ive got to single role per user for now
+ */
+
+interface DBRole extends Role {
+	id: string;
+}
 
 // type DefaultSchema = typeof defaultSchema;
 type DrizzleDatabase = PgDatabase<PgQueryResultHKT, any> | NeonHttpDatabase;
@@ -16,7 +23,16 @@ export const RBACAdapter = (
 	db: DrizzleDatabase,
 	schema: DefaultSchema = defaultSchema
 ): RBACAdapter => {
+	const getRole = async (key: string): Promise<DBRole> => {
+		const [role] = await db
+			.select()
+			.from(schema.rolesTable)
+			.where(eq(schema.rolesTable.key, key));
+		return role ?? null;
+	};
+
 	return {
+		getRole,
 		seed: async (roles: Role[]) => {
 			await db
 				.insert(schema.rolesTable)
@@ -24,12 +40,12 @@ export const RBACAdapter = (
 				.values([...roles])
 				.onConflictDoNothing();
 		},
-		getUserRoles: async (userId: string) => {
+		getUserRole: async (userId: string) => {
 			// Drizzle returns an array of joined rows.
 			// We'll select specific columns from `rolesTable` so it's typed more cleanly.
 			const rows = await db
 				.select({
-					// roleId: schema.rolesTable.id,
+					roleKey: schema.rolesTable.key,
 					roleName: schema.rolesTable.name,
 					roleLevel: schema.rolesTable.level,
 				})
@@ -41,51 +57,62 @@ export const RBACAdapter = (
 				.where(eq(schema.userRolesTable.userId, userId));
 
 			// Transform to your "Role" type
-			const roles: Omit<Role, "id">[] = rows.map((row) => ({
-				key: "default",
+			const roles: Omit<DBRole, "id">[] = rows.map((row) => ({
+				key: row.roleKey,
 				name: row.roleName,
 				level: row.roleLevel,
 			}));
 
-			return roles;
+			return roles[0] ?? null;
 		},
-		updateUserRoles: async (userId: string, roles: Role[]) => {
-			//update user's role
-			// TODO: check if works
+		// updateUserRoles: async (userId: string, roles: Role[]) => {
+		// 	//update user's role
+		// 	// TODO: check if works
+
+		// 	await db
+		// 		.update(schema.userRolesTable)
+		// 		.set({ roleId: roles[0].id })
+		// 		.where(eq(schema.userRolesTable.userId, userId));
+		// },
+		// createUserRoles: async (userId: string, roles: Role[]) => {
+		// 	await db.insert(schema.userRolesTable).values(
+		// 		roles.map((role) => ({
+		// 			userId,
+		// 			roleId: role.id,
+		// 		}))
+		// 	);
+		// },
+
+		assignRole: async (userId: string, role: Role) => {
+			const dbRole = await getRole(role.key);
+
+			await db
+				.insert(schema.userRolesTable)
+				.values({ userId, roleId: dbRole.id });
+		},
+		updateUserRole: async (userId: string, role: Role) => {
+			const dbRole = await getRole(role.key);
+			if (!dbRole) return;
 
 			await db
 				.update(schema.userRolesTable)
-				.set({ roleId: roles[0].id })
+				.set({ roleId: dbRole.id })
 				.where(eq(schema.userRolesTable.userId, userId));
-		},
-		createUserRoles: async (userId: string, roles: Role[]) => {
-			await db.insert(schema.userRolesTable).values(
-				roles.map((role) => ({
-					userId,
-					roleId: role.id,
-				}))
-			);
 		},
 		deleteUserRoles: async (userId: string) => {
 			await db
 				.delete(schema.userRolesTable)
 				.where(eq(schema.userRolesTable.userId, userId));
 		},
-		getRole: async (name: string) => {
-			const [role] = await db
-				.select()
-				.from(schema.rolesTable)
-				.where(eq(schema.rolesTable.name, name));
-			return role ? { ...role, key: "default" } : null;
-		},
 	};
 };
 
 export interface RBACAdapter {
 	seed: (roles: Role[]) => Promise<void>;
-	getUserRoles: (userId: string) => Promise<Role[]>;
-	createUserRoles: (userId: string, roles: Role[]) => Promise<void>;
-	updateUserRoles: (userId: string, roles: Role[]) => Promise<void>;
+	getUserRole: (userId: string) => Promise<Role>;
+	// createUserRoles: (userId: string, roles: Role[]) => Promise<void>;
+	updateUserRole: (userId: string, role: Role) => Promise<void>;
 	deleteUserRoles: (userId: string) => Promise<void>;
 	getRole: (name: string) => Promise<Role | null>;
+	assignRole: (userId: string, role: Role) => Promise<void>;
 }

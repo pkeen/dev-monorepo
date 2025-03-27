@@ -29,13 +29,15 @@ export interface RBACConfig<T extends ReadonlyArray<Role>>
 }
 
 export interface RBACEnrichedData extends AttributeData {
-	roles: Role[];
+	role: Role;
 }
 
+type UserOptionalRBAC = User & Partial<RBACEnrichedData>;
+
 type RbacPolicies<T extends ReadonlyArray<Role>> = {
-	exact: Policy<{ id: string } & RBACEnrichedData, ExtendedSelectRole<T>>;
-	min: Policy<{ id: string; roles: Role[] }, ExtendedSelectRole<T>>;
-	max: Policy<{ id: string; roles: Role[] }, ExtendedSelectRole<T>>;
+	exact: Policy<UserOptionalRBAC, ExtendedSelectRole<T>>;
+	min: Policy<UserOptionalRBAC, ExtendedSelectRole<T>>;
+	max: Policy<UserOptionalRBAC, ExtendedSelectRole<T>>;
 };
 
 export interface RBACModule<T extends ReadonlyArray<Role>>
@@ -44,11 +46,12 @@ export interface RBACModule<T extends ReadonlyArray<Role>>
 		userId: string,
 		select: ExtendedSelectRole<T>
 	) => Promise<void>;
-	createUserRole: (
+	assignRole: (
 		userId: string,
 		select: ExtendedSelectRole<T>
 	) => Promise<void>;
 	enrichUser: (user: User) => Promise<User & RBACEnrichedData>;
+	getUserRole: (user: User) => Promise<RBACEnrichedData>;
 }
 
 /**
@@ -80,18 +83,22 @@ export const rbacModule = <T extends ReadonlyArray<Role>>(
 	// 	| { level: RoleLevelUnion; name?: never; key?: never }
 	// 	| { key: RoleKeyUnion; name?: never; level?: never };
 
-	const getItemsForUser = async (user: User) => {
-		const roles = await db.getUserRoles(user.id);
-		return { roles };
+	const getUserRole = async (user: User) => {
+		const role = await db.getUserRole(user.id);
+		console.log("ROLES IN GETITEMS FOR USER", role);
+		return { role };
 	};
 
 	const findItemInConfig = (select: ExtendedSelectRole<T>): Role | null => {
 		if ("name" in select) {
 			// Look up by name
 			return config.items.find((r) => r.name === select.name) ?? null;
-		} else {
+		} else if ("level" in select) {
 			// Look up by level
 			return config.items.find((r) => r.level === select.level) ?? null;
+		} else {
+			// Look up by key
+			return config.items.find((r) => r.key === select.key) ?? null;
 		}
 	};
 
@@ -111,8 +118,9 @@ export const rbacModule = <T extends ReadonlyArray<Role>>(
 		// }
 		// perhaps this useDB? option should be handled in the config?
 
-		// TODO: decide if we want this fallback or not
-		return user.roles?.some((r) => r.name === foundRole.name) ?? false;
+		// // TODO: decide if we want this fallback or not
+		// return user.roles?.some((r) => r.name === foundRole.name) ?? false;
+		return user.role.key === foundRole.key;
 	};
 
 	const min: RbacPolicies<T>["min"] = (user, role) => {
@@ -121,7 +129,8 @@ export const rbacModule = <T extends ReadonlyArray<Role>>(
 			throw new Error(`Invalid role: ${JSON.stringify(role)}`);
 		}
 
-		return user.roles.some((r) => r.level >= foundRole.level);
+		// return user.roles.some((r) => r.level >= foundRole.level);
+		return user.role.level >= foundRole.level;
 	};
 
 	const max: RbacPolicies<T>["max"] = (user, role) => {
@@ -130,7 +139,21 @@ export const rbacModule = <T extends ReadonlyArray<Role>>(
 			throw new Error(`Invalid role: ${JSON.stringify(role)}`);
 		}
 
-		return user.roles.some((r) => r.level <= foundRole.level);
+		// return user.roles.some((r) => r.level <= foundRole.level);
+		return user.role.level <= foundRole.level;
+	};
+
+	const assignRole = async (
+		userId: string,
+		select: ExtendedSelectRole<T> = config.defaultAssignment
+	) => {
+		// check select is in role config
+		const foundRole = findItemInConfig(select);
+		if (!foundRole) {
+			throw new Error(`Invalid role: ${JSON.stringify(select)}`);
+		}
+
+		return await db.assignRole(userId, foundRole);
 	};
 
 	const policies = { exact, min, max };
@@ -141,13 +164,13 @@ export const rbacModule = <T extends ReadonlyArray<Role>>(
 		policies,
 		enrichUser: async (user: User) => {
 			console.log("GETTING INTO ENRICH USER");
-			const roles = await getItemsForUser(user);
-			return { ...user, ...roles };
+			const role = await getUserRole(user);
+			return { ...user, ...role };
 		},
 		init: async () => {
 			await db.seed([...config.items]);
 		},
-		getItemsForUser,
+		getUserRole,
 		updateUserRole: async (
 			userId: string,
 			select?: ExtendedSelectRole<T>
@@ -166,155 +189,25 @@ export const rbacModule = <T extends ReadonlyArray<Role>>(
 				throw new Error(`Role ${foundRole.name} does not exist`);
 			}
 
-			return db.updateUserRoles(userId, [role]);
+			return db.updateUserRole(userId, role);
 		},
-		createUserRole: async (
-			userId: string,
-			select: ExtendedSelectRole<T> = config.defaultAssignment
-		) => {
-			// check select is in role config
-			const foundRole = findItemInConfig(select);
-			if (!foundRole) {
-				throw new Error(`Invalid role: ${JSON.stringify(select)}`);
-			}
-
-			const role = await db.getRole(foundRole.name);
-			if (!role) {
-				throw new Error(`Role ${foundRole.name} does not exist`);
-			}
-
-			return await db.createUserRoles(userId, [role]);
+		assignRole,
+		onUserCreated: async (user: User) => {
+			await assignRole(user.id, config.defaultAssignment);
+		},
+		onUserDeleted: async (user: User) => {
+			await db.deleteUserRoles(user.id);
 		},
 	};
 };
 
-// export const createRBAC = <T extends ReadonlyArray<Role>>(
-// 	db: RBACAdapter,
-// 	config: RBACConfig<T>
-// ) => {
-// 	// ❸ Derive *dynamic* unions for name & level from T
-// 	type RoleNameUnion = T[number]["name"]; // e.g. "Guest" | "User" | ...
-// 	type RoleLevelUnion = T[number]["level"]; // e.g. 0 | 1 | 2 | 3 | ...
-// 	type RoleKeyUnion = T[number]["key"]; // e.g. "guest" | "user" | ...
+/**
+ * These types are for if we decide to add optional multiple roles per user
+ */
+type EnrichedUserSingleRole = User & { role: Role };
+type EnrichedUserMultiRole = User & { roles: Role[] };
 
-// 	// ❹ Create a specialized "SelectRole" type *just for this config*
-// 	type ExtendedSelectRole =
-// 		| { name: RoleNameUnion; level?: never; key?: never }
-// 		| { level: RoleLevelUnion; name?: never; key?: never }
-// 		| { key: RoleKeyUnion; name?: never; level?: never };
-
-// 	const getItemsForUser = async (userId: string) => {
-// 		return await db.getUserRoles(userId);
-// 	};
-
-// 	const findItemInConfig = (select: ExtendedSelectRole): Role | null => {
-// 		if ("name" in select) {
-// 			// Look up by name
-// 			return config.items.find((r) => r.name === select.name) ?? null;
-// 		} else {
-// 			// Look up by level
-// 			return config.items.find((r) => r.level === select.level) ?? null;
-// 		}
-// 	};
-
-// 	const exact: Policy = (
-// 		user: { id: string } & RBACEnrichedData,
-// 		role: ExtendedSelectRole
-// 	) => {
-// 		const foundRole = findItemInConfig(role);
-// 		if (!foundRole) {
-// 			throw new Error(`Invalid role: ${JSON.stringify(role)}`);
-// 		}
-// 		// ISSUE: in a jwt strategy yes the user object contains roles, but in a session strategy no
-// 		// but also perhaps by providing that callback for getUserRoles() etc we could achieve the same
-// 		// OR we could have a db check fall back
-// 		// if (!user.roles) {
-// 		//     user.roles = await getRoles(user.id);
-// 		// }
-// 		// perhaps this useDB? option should be handled in the config?
-
-// 		// TODO: decide if we want this fallback or not
-// 		return user.roles?.some((r) => r.name === foundRole.name) ?? false;
-// 	};
-
-// 	const min: Policy<{ id: string; roles: Role[] }, ExtendedSelectRole> = (
-// 		user: { id: string; roles: Role[] },
-// 		role: ExtendedSelectRole
-// 	) => {
-// 		const foundRole = findItemInConfig(role);
-// 		if (!foundRole) {
-// 			throw new Error(`Invalid role: ${JSON.stringify(role)}`);
-// 		}
-
-// 		return user.roles.some((r) => r.level >= foundRole.level);
-// 	};
-
-// 	const max: Policy = (
-// 		user: { id: string; roles: Role[] },
-// 		role: ExtendedSelectRole
-// 	) => {
-// 		const foundRole = findItemInConfig(role);
-// 		if (!foundRole) {
-// 			throw new Error(`Invalid role: ${JSON.stringify(role)}`);
-// 		}
-
-// 		return user.roles.some((r) => r.level <= foundRole.level);
-// 	};
-
-// 	const policies = { exact, min, max };
-
-// 	return createModule<typeof policies, RBACEnrichedData>({
-// 		name: "rbac" as const, // <-- key point: literal type
-// 		policies,
-// 		init: async () => {
-// 			await db.seed([...config.items]);
-// 			// The array spreading is because it is a readonly type made mutable
-// 		},
-// 		enrichUser: async (user: User) => {
-// 			const roles = await getItemsForUser(user.id);
-// 			return { ...user, roles };
-// 		},
-// 		getItemsForUser: async (user: User) => {
-// 			const roles = await db.getUserRoles(user.id);
-// 			return { roles };
-// 		},
-
-// 		updateUserRole: async (
-// 			userId: string,
-// 			select?: ExtendedSelectRole
-// 		): Promise<void> => {
-// 			if (!select) {
-// 				select = config.defaultAssignment;
-// 			}
-// 			// check select is in role config
-// 			const foundRole = findItemInConfig(select);
-// 			if (!foundRole) {
-// 				throw new Error(`Invalid role: ${JSON.stringify(select)}`);
-// 			}
-
-// 			const role = await db.getRole(foundRole.name);
-// 			if (!role) {
-// 				throw new Error(`Role ${foundRole.name} does not exist`);
-// 			}
-
-// 			return db.updateUserRoles(userId, [role]);
-// 		},
-// 		createUserRole: async (
-// 			userId: string,
-// 			select: ExtendedSelectRole = config.defaultAssignment
-// 		) => {
-// 			// check select is in role config
-// 			const foundRole = findItemInConfig(select);
-// 			if (!foundRole) {
-// 				throw new Error(`Invalid role: ${JSON.stringify(select)}`);
-// 			}
-
-// 			const role = await db.getRole(foundRole.name);
-// 			if (!role) {
-// 				throw new Error(`Role ${foundRole.name} does not exist`);
-// 			}
-
-// 			return await db.createUserRoles(userId, [role]);
-// 		},
-// 	});
-// };
+type EnrichedUser<Config extends { multipleRoles: boolean }> =
+	Config["multipleRoles"] extends true
+		? EnrichedUserMultiRole
+		: EnrichedUserSingleRole;

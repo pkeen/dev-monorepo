@@ -37,7 +37,7 @@ export const rbac = rbacModule(dbAdapter, {
 	defaultAssignment: { key: "user" }, // TODO this seems kinda pointless now, we might aswell always select by key - a lot simpler
 });
 
-export const { enrichUser, onUserCreated } = await buildAuthZ({
+export const authz = await buildAuthZ({
 	modules: [rbac],
 	// seed: true,
 });

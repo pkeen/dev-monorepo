@@ -11,8 +11,8 @@ import { SessionConfig } from "core/session-strategy/db-strategy/index.types";
 */
 
 // Basic return type for Authentication functions
-export type AuthState =
-	| { authenticated: true; user: User; keyCards: KeyCards }
+export type AuthState<E = {}> =
+	| { authenticated: true; user: User & E; keyCards: KeyCards }
 	| { authenticated: false; user: null; keyCards: null; error?: AuthError };
 
 // Define specific result types
@@ -23,9 +23,9 @@ export type RedirectResult = {
 	state?: string;
 };
 
-export type SuccessResult = {
+export type SuccessResult<E = {}> = {
 	type: "success";
-	authState: AuthState;
+	authState: AuthState<E>;
 };
 
 export type ErrorResult = {
@@ -33,16 +33,16 @@ export type ErrorResult = {
 	error: AuthError;
 };
 
-export type RefreshResult = {
+export type RefreshResult<E = {}> = {
 	type: "refresh";
-	authState: AuthState;
+	authState: AuthState<E>;
 };
 
-export type AuthResult =
-	| SuccessResult
+export type AuthResult<E = {}> =
+	| SuccessResult<E>
 	| ErrorResult
 	| RedirectResult
-	| RefreshResult;
+	| RefreshResult<E>;
 
 export interface AuthStrategy {
 	name: string;
@@ -169,7 +169,7 @@ export type AuthConfig =
 // Ensure T is always an object type
 type EnrichedUser<T extends Record<string, any> = {}> = User & T;
 
-export interface AuthNCallbacks<T extends Record<string, any> = {}> {
+export interface AuthNCallbacks<Extra = {}> {
 	/**
 	 * Called after a new user is created.
 	 * Can be used to initialize default AuthZ data (e.g., roles/permissions).
@@ -192,7 +192,7 @@ export interface AuthNCallbacks<T extends Record<string, any> = {}> {
 	 * Called when a user is retrieved from the database.
 	 * Allows enrichment with roles/permissions before being returned or added to a JWT.
 	 */
-	enrichUser?: (user: User) => Promise<EnrichedUser<T>>;
+	enrichUser?: (user: User) => Promise<User & Extra>;
 }
 
 // export interface AuthzData {

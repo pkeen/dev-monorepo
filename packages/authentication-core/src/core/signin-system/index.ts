@@ -38,7 +38,7 @@ export type Providers = {
 export interface SignInParams {
 	// type: "oauth" | "credentials";
 	provider?: string;
-	credentials?: any;
+    	credentials?: any;
 	code?: string;
 }
 
@@ -89,7 +89,7 @@ export const SignInSystem = (providers: Providers) => {
 		signIn: async (provider?: string, code?: string) => {
 			if (provider) {
 				return oAuthSignIn(provider, code);
-			}
+			}    
 		},
 	};
 };

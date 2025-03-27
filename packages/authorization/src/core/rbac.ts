@@ -151,5 +151,11 @@ export const createRBAC = <T extends ReadonlyArray<Role>>(
 
 			return await db.createUserRoles(userId, [role]);
 		},
+		onUserCreated: async (user: User) => {
+			await db.createUserRoles(user.id, config.defaultAssignment);
+		},
+		onUserDeleted: async (user: User) => {
+			await db.deleteUserRoles(user.id);
+		},
 	});
 };

@@ -31,7 +31,7 @@ export interface Module<
 	enrichUser?: (user: User) => Promise<User & AttributeData>;
 	onUserCreated?: (user: User) => Promise<void>;
 	onUserDeleted?: (user: User) => Promise<void>;
-	getItemsForUser: (user: User) => Promise<AttributeData>;
+	// getItemsForUser: (user: User) => Promise<AttributeData>;
 	// createUserItem?: (userId: string, item: ConfigEntryBase) => Promise<void>;
 }
 
@@ -50,17 +50,17 @@ export interface HierachicalModule<
 export type AnyModule = Module<any> | HierachicalModule<any>;
 
 export const createModule = <
-	Policies extends Record<string, Policy<any>>,
-	AD extends AttributeData = {}
+	P extends Record<string, Policy<any>>,
+	A extends AttributeData = {}
 >(config: {
 	name: string;
-	policies: Policies;
+	policies: P;
 	pluralName?: string;
 	hierarchical?: boolean;
 	init?: () => Promise<void>;
-	enrichUser?: (user: User) => Promise<User & AD>;
-	getItemsForUser: (user: User) => Promise<AD>;
-}): Module<AttributeData> => {
+	enrichUser?: (user: User) => Promise<User & A>;
+	getItemsForUser: (user: User) => Promise<A>;
+}): Module<P, A> => {
 	return {
 		name: config.name,
 		policies: config.policies,
@@ -68,7 +68,7 @@ export const createModule = <
 		init: config.init,
 		hierarchical: config.hierarchical,
 		enrichUser: config.enrichUser,
-		getItemsForUser: config.getItemsForUser,
+		// getItemsForUser: config.getItemsForUser,
 	};
 };
 

@@ -6,22 +6,23 @@ import {
 	KeyCards,
 	AuthState,
 	AuthNCallbacks,
+	DatabaseUser,
 } from "core/types";
 import { SignInSystem, type SignInParams } from "../signin-system";
 import { AuthProvider } from "core/providers";
 import { Adapter as UserRegistry, AdapterUser } from "../adapter";
 import { JwtStrategyFn } from "../session-strategy";
-import { DisplayProvider } from "core/auth-system";
+import { DisplayProvider, User } from "core/auth-system";
 import { createLogger } from "@pete_keen/logger";
-import { KeyCardMissingError } from "core/error";
+import { KeyCardMissingError, UserNotFoundError } from "core/error";
 
-export function AuthManager(
+export function AuthManager<E>(
 	userRegistry: UserRegistry,
 	authStrategy: AuthStrategy,
 	providers: AuthProvider[],
 	logger: Logger,
-	callbacks?: AuthNCallbacks
-) {
+	callbacks?: AuthNCallbacks<E>
+): IAuthManager<E> {
 	const providersMap = providers.reduce((acc, provider) => {
 		acc[provider.key] = provider;
 		return acc;
@@ -33,10 +34,20 @@ export function AuthManager(
 		adapter: userRegistry.name,
 	});
 
+	const sanitizeUser = (dbUser: DatabaseUser): User => {
+		return {
+			id: dbUser.id,
+			name: dbUser.name,
+			email: dbUser.email,
+			image: dbUser.image,
+		};
+	};
+
 	// authz?.seed();
 
 	return {
-		login: async (provider?: string, code?: string) => {
+		login: async (signInParams: SignInParams) => {
+			const { provider, code } = signInParams;
 			try {
 				// 1) Authenticate with external provider (OAuth, etc.)
 				logger.info("Authenticating with provider", {
@@ -49,12 +60,19 @@ export function AuthManager(
 					logger.error("Sign in failed", {
 						error: signInResult.error,
 					});
-					return signInResult;
+					return {
+						type: "error",
+						error: signInResult.error,
+					} satisfies AuthResult<E>;
 				} else if (signInResult.type === "redirect") {
 					logger.info("Redirecting to external provider", {
 						provider,
 					});
-					return signInResult;
+					return {
+						type: "redirect",
+						url: signInResult.url,
+						state: signInResult.state,
+					} satisfies AuthResult<E>;
 				}
 
 				if (signInResult.type !== "success") {
@@ -126,12 +144,12 @@ export function AuthManager(
 					// TODO: create default user authorization roles/permissions
 					// const userRoles = await authz.getRolesForUser(user.id);
 				}
-
+				const sanitizedUser = sanitizeUser(user);
 				// 3) Enrich token or session data with roles/permissions (if authz is provided)
 				// This is pointless in a db session strategy though
 				// adding the if statment makes it only for jwt
 				// this should perhaps be moved into the JWT Strategy as is only relevant there
-				user = await callbacks.enrichUser(user);
+				const enrichedUser = await callbacks.enrichUser(sanitizedUser);
 				// TODO fix type mismathc
 
 				// 4) Create the session (JWT or server-session) with user + extra data
@@ -139,8 +157,12 @@ export function AuthManager(
 
 				return {
 					type: "success",
-					authState: { authenticated: true, keyCards, user },
-				};
+					authState: {
+						authenticated: true,
+						keyCards,
+						user: enrichedUser,
+					},
+				} satisfies AuthResult<E>;
 			} catch (error) {
 				logger.error("Error while signing in: ", {
 					error,
@@ -155,7 +177,7 @@ export function AuthManager(
 				style: provider.style,
 			}));
 		},
-		validate: async (keyCards: KeyCards): Promise<AuthResult> => {
+		validate: async (keyCards: KeyCards): Promise<AuthResult<E>> => {
 			// TODO decide what works best for session strategy
 			// TO-DO decide how to deal with missing keycards
 			// its probably early on the game
@@ -163,7 +185,7 @@ export function AuthManager(
 				return {
 					type: "error",
 					error: new KeyCardMissingError("No keycards found"),
-				};
+				} satisfies AuthResult<E>;
 			}
 
 			const result = await authStrategy.validate(keyCards);
@@ -173,14 +195,30 @@ export function AuthManager(
 					userId: result.authState.user.id,
 					email: result.authState.user.email,
 				});
-				return result;
+				// return result as AuthResult<E>;
+				return {
+					type: "success",
+					authState: {
+						authenticated: true,
+						user: result.authState.user as User & E,
+						keyCards: result.authState.keyCards,
+					},
+				} satisfies AuthResult<E>;
 			} else if (result.type === "refresh") {
 				let user = await userRegistry.getUser(result.authState.user.id);
+				if (!user) {
+					return {
+						type: "error",
+						error: new UserNotFoundError("User not found"),
+					} satisfies AuthResult<E>;
+				}
+
+				const sanitizedUser = sanitizeUser(user);
 
 				// 3) Enrich token or session data with roles/permissions (if authz is provided)
 				// This is pointless in a db session strategy though - this is not actually pointless in a db session strategy we should STILL enrich the USER object
 				// no need for if
-				user = await callbacks.enrichUser(user);
+				const enrichedUser = await callbacks.enrichUser(sanitizedUser);
 				// console.log("ENRICH USER CALLBACK RESULT:", user);
 				// does this syntax work fine?
 				// TODO: fix type issue adapter user vs User
@@ -189,11 +227,11 @@ export function AuthManager(
 				return {
 					type: "refresh",
 					authState: {
-						user,
+						user: enrichedUser,
 						authenticated: true,
 						keyCards,
 					},
-				};
+				} satisfies AuthResult<E>;
 				// pull user info from DB
 				// create new keycards
 			}
@@ -209,7 +247,7 @@ export function AuthManager(
 		},
 		signOut: async (
 			keyCards: KeyCards | undefined | null
-		): Promise<AuthState> => {
+		): Promise<AuthState<E>> => {
 			if (!keyCards) {
 				return {
 					authenticated: false,
@@ -242,9 +280,47 @@ export function AuthManager(
 	};
 }
 
-export const createAuthManager = (config: AuthConfig) => {
+// export const createAuthManager = <ExtraData = {}>(
+// 	config: AuthConfig
+// ): IAuthManager<ExtraData> => {
+// 	let strategy: AuthStrategy;
+// 	if (config.strategy === "jwt") {
+// 		strategy = JwtStrategyFn(config.jwtConfig);
+// 	} else if (config.strategy === "session") {
+// 		throw new Error("Session strategy not implemented yet");
+// 	} else {
+// 		throw new Error("Invalid strategy");
+// 	}
+
+// 	if (!config.logger) {
+// 		if (!config.loggerOptions) {
+// 			config.loggerOptions = { level: "info", prefix: "Auth" };
+// 		}
+// 		config.logger = createLogger(config.loggerOptions);
+// 	}
+
+// 	const safeCallbacks = createAuthCallbacks<ExtraData>(config.callbacks);
+
+// 	return AuthManager<ExtraData>(
+// 		config.adapter,
+// 		strategy,
+// 		config.providers,
+// 		config.logger,
+// 		safeCallbacks
+// 	);
+// };
+
+export const createAuthManager = <Callbacks extends AuthNCallbacks<any>>(
+	config: Omit<AuthConfig, "callbacks"> & { callbacks: Callbacks }
+): IAuthManager<
+	Callbacks extends AuthNCallbacks<infer Extra> ? Extra : never
+> => {
 	let strategy: AuthStrategy;
+
 	if (config.strategy === "jwt") {
+		if (!config.jwtConfig) {
+			throw new Error("Missing jwtConfig for JWT strategy");
+		}
 		strategy = JwtStrategyFn(config.jwtConfig);
 	} else if (config.strategy === "session") {
 		throw new Error("Session strategy not implemented yet");
@@ -253,19 +329,12 @@ export const createAuthManager = (config: AuthConfig) => {
 	}
 
 	if (!config.logger) {
-		if (!config.loggerOptions) {
-			config.loggerOptions = { level: "info", prefix: "Auth" };
-		}
-		config.logger = createLogger(config.loggerOptions);
+		config.logger = createLogger(
+			config.loggerOptions ?? { level: "info", prefix: "Auth" }
+		);
 	}
 
-	const safeCallbacks: AuthNCallbacks = {
-		onUserCreated: async () => {}, // No-op function
-		onUserUpdated: async () => {}, // No-op function
-		onUserDeleted: async () => {}, // No-op function
-		enrichUser: async (user) => user, // Return user unchanged
-		...config.callbacks, // Merge with user-defined callbacks (if any)
-	};
+	const safeCallbacks = createAuthCallbacks(config.callbacks);
 
 	return AuthManager(
 		config.adapter,
@@ -276,9 +345,59 @@ export const createAuthManager = (config: AuthConfig) => {
 	);
 };
 
-export interface AuthManager {
-	login: (signInParams: SignInParams) => Promise<AuthResult>;
+// export function createAuthCallbacks<ExtraData = {}>(
+// 	callbacks: AuthNCallbacks<ExtraData>
+// ): AuthNCallbacks<ExtraData> {
+// 	const safeCallbacks = {
+// 		onUserCreated: async () => {}, // No-op function
+// 		onUserUpdated: async () => {}, // No-op function
+// 		onUserDeleted: async () => {}, // No-op function
+// 		enrichUser: async (user: User) => user as User & ExtraData, // Return user unchanged
+// 		...callbacks, // Merge with user-defined callbacks (if any)
+// 	};
+// 	return safeCallbacks;
+// }
+
+export interface IAuthManager<ExtraData = {}> {
+	login: (signInParams: SignInParams) => Promise<AuthResult<ExtraData>>;
 	listProviders: () => DisplayProvider[];
-	validate: (keyCards: KeyCards) => Promise<AuthResult>;
-	signOut: (keyCards: KeyCards) => Promise<AuthState>;
+	validate: (keyCards: KeyCards) => Promise<AuthResult<ExtraData>>;
+	signOut: (keyCards: KeyCards) => Promise<AuthState<ExtraData>>;
+}
+
+// ✅ FUNCTION OVERLOADS
+
+// Overload 1: When passed an authz-style object (e.g. buildAuthZ() output)
+export function createAuthCallbacks<MergedData>(authz: {
+	enrichUser: (user: User) => Promise<User & MergedData>;
+	onUserCreated?: (user: User) => Promise<void>;
+	onUserDeleted?: (user: User) => Promise<void>;
+}): AuthNCallbacks<MergedData>;
+
+// Overload 2: When passed a regular AuthNCallbacks object
+export function createAuthCallbacks<ExtraData>(
+	callbacks: AuthNCallbacks<ExtraData>
+): AuthNCallbacks<ExtraData>;
+
+// ----------------------------------------
+// ✅ ACTUAL FUNCTION IMPLEMENTATION
+export function createAuthCallbacks(callbacks: any): any {
+	return {
+		// Defaults
+		onUserCreated: async () => {},
+		onUserUpdated: async () => {},
+		onUserDeleted: async () => {},
+		enrichUser: async (user: User) => user,
+
+		// Overwrite with provided callbacks
+		...callbacks,
+
+		// // Special case: map onUserDeleted(user) → onUserDeleted(userId)
+		// onUserDeleted: callbacks?.onUserDeleted
+		// 	? typeof callbacks.onUserDeleted === "function" &&
+		// 	  callbacks.onUserDeleted.length === 1
+		// 		? (userId: string) => callbacks.onUserDeleted({ id: userId })
+		// 		: callbacks.onUserDeleted
+		// 	: undefined,
+	};
 }

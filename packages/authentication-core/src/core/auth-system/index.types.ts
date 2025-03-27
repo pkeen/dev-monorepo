@@ -19,19 +19,18 @@ export interface User {
 	name?: string | null;
 	email?: string;
 	image?: string | null;
-	roles?: Role;
 }
 
-export interface IAuthSystem {
-	// authenticate: (credentials: Credentials) => Promise<ImprovedAuthState>;
-	authenticate: (credentials: Credentials) => Promise<AuthState>;
-	// can: (user: User, action: string, resource: Resource) => boolean;
-	// storageAdapter: WebStorageAdapter;
-	signin: (provider: string) => Promise<AuthState>;
+// export interface IAuthSystem {
+// 	// authenticate: (credentials: Credentials) => Promise<ImprovedAuthState>;
+// 	authenticate: (credentials: Credentials) => Promise<AuthState>;
+// 	// can: (user: User, action: string, resource: Resource) => boolean;
+// 	// storageAdapter: WebStorageAdapter;
+// 	signin: (provider: string) => Promise<AuthState>;
 
-	signup: (credentials: SignupCredentials) => Promise<AuthState>;
-	validate: (keyCards: KeyCards) => Promise<AuthState>;
-	// refreshToken: (refreshToken: string) => Promise<AuthResult>;
-	logout: (keyCards: KeyCards) => Promise<AuthState>;
-	// refresh: (keyCards: KeyCards) => Promise<ImprovedAuthState>;
-}
+// 	signup: (credentials: SignupCredentials) => Promise<AuthState>;
+// 	validate: (keyCards: KeyCards) => Promise<AuthState>;
+// 	// refreshToken: (refreshToken: string) => Promise<AuthResult>;
+// 	logout: (keyCards: KeyCards) => Promise<AuthState>;
+// 	// refresh: (keyCards: KeyCards) => Promise<ImprovedAuthState>;
+// }

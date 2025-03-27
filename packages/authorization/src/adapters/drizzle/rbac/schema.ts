@@ -79,13 +79,14 @@ export const createSchema = (name?: string) => {
 		"user_roles",
 		{
 			id: uuid("id").defaultRandom().primaryKey(),
-			userId: uuid("user_id").notNull().unique(), // the unique means only one role per user
+			userId: uuid("user_id").notNull(), // the unique means only one role per user
 			roleId: uuid("role_id").notNull(),
 			assignedAt: timestamp("assigned_at").defaultNow(),
 		},
 		(table) => [
 			// Ensure user_id and role_id combination is unique
-			uniqueIndex("user_role_idx").on(table.userId, table.roleId),
+			// uniqueIndex("user_role_idx").on(table.userId, table.roleId),
+			uniqueIndex("user_id_unique").on(table.userId),
 		]
 	);
 

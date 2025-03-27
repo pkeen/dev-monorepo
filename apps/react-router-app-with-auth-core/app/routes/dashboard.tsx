@@ -7,7 +7,7 @@
 import { Form, useFetcher, useLoaderData, redirect } from "react-router";
 import { requireAuth } from "~/lib/requireAuth";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
-import { rbac, enrichUser } from "~/authz";
+import { rbac } from "~/authz";
 
 // import { Route } from "+types/dashboard";
 
@@ -16,8 +16,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 		redirectTo: "/auth/login",
 	});
 	console.log("LOADER USER: ", user);
-	if (!user || !rbac.policies.min(user, { name: "Admin" })) {
-		return redirect("/auth/login");
+	if (user) {
+		if (!rbac.policies.min(user, { key: "user" })) {
+			return redirect("/auth/login");
+		}
 	}
 
 	// if (rbac.policies.min(user, { key: "admin" })) {
@@ -52,14 +54,15 @@ export default function Dashboard() {
 				</button>
 			</div>
 			<div>
-				<ul>
+				{/* <ul>
 					Your roles are:
 					{loaderData.roles.map(
 						(role: { level: number; name: string }) => (
 							<li key={role.level}>{role.name}</li>
 						)
 					)}
-				</ul>
+				</ul> */}
+				<p>Role: {loaderData.role.name} </p>
 			</div>
 			<Form action="/auth/logout" method="post">
 				<button type="submit">Logout</button>

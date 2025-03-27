@@ -12,12 +12,15 @@ import {
 	createAuthManager,
 	type AuthNCallbacks,
 	type AuthConfig,
+	createAuthCallbacks,
 } from "@pete_keen/authentication-core";
 import { DrizzleAdapter } from "@pete_keen/authentication-core/adapters";
 // import { JwtStrategy, JwtStrategyFn } from "@pete_keen/authentication-core";
 // import { RBAC } from "@pete_keen/authentication-core/authorization";
 import db from "~/db";
-import { rbac, enrichUser, onUserCreated } from "./authz";
+import { rbac, authz } from "./authz";
+
+// const authCallbacks = createAuthCallbacks<typeof authz.__type>(authz);
 
 const authConfig: AuthConfig = {
 	strategy: "jwt",
@@ -73,10 +76,7 @@ const authConfig: AuthConfig = {
 		level: "debug",
 		prefix: "Auth",
 	},
-	callbacks: {
-		enrichUser,
-		onUserCreated: onUserCreated,
-	},
+	callbacks: createAuthCallbacks(authz),
 };
 
 const authManager = createAuthManager(authConfig);

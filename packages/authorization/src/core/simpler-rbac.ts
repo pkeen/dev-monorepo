@@ -163,7 +163,7 @@ export const rbacModule = <T extends ReadonlyArray<Role>>(
 		hierarchical: true,
 		policies,
 		enrichUser: async (user: User) => {
-			console.log("GETTING INTO ENRICH USER");
+			// console.log("GETTING INTO ENRICH USER");
 			const role = await getUserRole(user);
 			return { ...user, ...role };
 		},

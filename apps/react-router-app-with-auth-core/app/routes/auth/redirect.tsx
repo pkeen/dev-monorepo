@@ -38,7 +38,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 		// Getting here
 		console.log("GETTING HERE");
 
-		const authResult = await authSystem.login(provider, code);
+		const authResult = await authSystem.login({ provider, code });
 		// console.log("authResult:", authResult);
 
 		if (authResult.type === "success") {

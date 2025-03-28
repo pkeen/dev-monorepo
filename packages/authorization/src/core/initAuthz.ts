@@ -83,7 +83,7 @@ export async function buildAuthZ<A extends AnyModule[]>(
 			}
 		}
 		// By the end, result includes all modules' fields
-		console.log("ENRICH USER AGGREGATOR RESULT:", result);
+		// console.log("ENRICH USER AGGREGATOR RESULT:", result);
 		return result as User & MergedData;
 	};
 

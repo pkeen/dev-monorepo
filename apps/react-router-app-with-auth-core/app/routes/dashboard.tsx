@@ -8,6 +8,8 @@ import { Form, useFetcher, useLoaderData, redirect } from "react-router";
 import { requireAuth } from "~/lib/requireAuth";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { rbac } from "~/authz";
+import authManager from "~/auth";
+import { cb } from "~/auth";
 
 // import { Route } from "+types/dashboard";
 
@@ -15,6 +17,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 	const { user, headers } = await requireAuth(request, {
 		redirectTo: "/auth/login",
 	});
+	const enrichedUser = await authManager.callbacks.enrichUser(user);
+	// const enrichedUser = await enrich(user);
+
 	console.log("LOADER USER: ", user);
 	if (user) {
 		if (!rbac.policies.min(user, { key: "user" })) {

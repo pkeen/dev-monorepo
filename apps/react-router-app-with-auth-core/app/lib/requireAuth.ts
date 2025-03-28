@@ -1,19 +1,19 @@
 import { redirect } from "react-router";
 import { getSession, commitSession } from "../session.server";
-import authSystem from "../auth";
+import authSystem, { type CurrentUser } from "../auth";
 // import { authz } from "../auth";
-import type { User } from "@pete_keen/authentication-core";
+import type { User, InferUserType } from "@pete_keen/authentication-core";
 
 /**
  * This function will check authentication and return the User and headers
  * The headers are there to be appended to the response to update the cookies
  * @param request
- * @returns { user: User | null; headers?: Headers }
+ * @returns { user: CurrentUser | null; headers?: Headers }
  */
 export const requireAuth = async (
 	request: Request,
-	{ redirectTo, minRole }: { redirectTo?: string; minRole?: string }
-): Promise<{ user: User | null; headers?: Headers }> => {
+	{ redirectTo }: { redirectTo?: string }
+): Promise<{ user: CurrentUser | null; headers?: Headers }> => {
 	const session = await getSession(request.headers.get("Cookie"));
 	console.log("Session Cookie", session);
 	const sessionState = session.get("authState");

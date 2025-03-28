@@ -48,10 +48,11 @@ export interface AuthZOptions<A extends AnyModule[]> {
 export type AuthZRuntime<MergedData> = {
 	enrichUser: (user: User) => Promise<User & MergedData>;
 	onUserCreated: (user: User) => Promise<void>;
+	onUserDeleted: (user: User) => Promise<void>;
 	// A fake property to hold the type reference.
 	// It's "null as any as MergedData" so it doesn't exist at runtime,
 	// but TS sees it at compile-time.
-	__type: MergedData;
+	__DataType: MergedData;
 };
 
 /**
@@ -60,7 +61,7 @@ export type AuthZRuntime<MergedData> = {
  */
 export async function buildAuthZ<A extends AnyModule[]>(
 	options: AuthZOptions<A>
-) {
+): Promise<AuthZRuntime<ModulesEnrichedData<A>>> {
 	const modules = options.modules;
 	// 1) Initialize all modules
 	if (options.seed) {
@@ -111,8 +112,18 @@ export async function buildAuthZ<A extends AnyModule[]>(
 
 	// Return a combined object, or just the lifecycle if you prefer
 	return {
-		...userLifecycle,
+		enrichUser,
+		onUserCreated: (user: User) =>
+			executeLifecycleCallbacks("onUserCreated", user),
+		onUserDeleted: (user: User) =>
+			executeLifecycleCallbacks("onUserDeleted", user),
 		// The brand that never gets used at runtime:
-		__type: null as any as MergedData,
+		__DataType: null as any as MergedData,
 	} satisfies AuthZRuntime<MergedData>;
 }
+
+export type InferExtraData<T> = T extends {
+	enrichUser: (user: User) => Promise<infer R>;
+}
+	? Omit<R, keyof User>
+	: never;

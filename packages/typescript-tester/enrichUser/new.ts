@@ -124,9 +124,50 @@ const AuthManager = <Extra>(callbacks: AuthNCallbacks<Extra>) => {
 	};
 };
 
+export const authManager = createAuthManager({
+	callbacks: {
+		enrichUser: async (user) => {
+			return {
+				...user,
+				role: "user",
+				team: "Engineering",
+			};
+		},
+		onUserCreated: async () => {
+			console.log("");
+		},
+		onUserUpdated: async () => {
+			console.log("");
+		},
+		onUserDeleted: async () => {
+			console.log("");
+		},
+	},
+	strategy: "jwt",
+	jwtConfig: {
+		jwt: "hello", 
+	},
+});
 const test3 = async () => {
 	const authManager = createAuthManager({
-		callbacks: cb,
+		callbacks: {
+			enrichUser: async (user) => {
+				return {
+					...user,
+					role: "user",
+					team: "Engineering",
+				};
+			},
+			onUserCreated: async () => {
+				console.log("");
+			},
+			onUserUpdated: async () => {
+				console.log("");
+			},
+			onUserDeleted: async () => {
+				console.log("");
+			},
+		},
 		strategy: "jwt",
 		jwtConfig: {
 			jwt: "hello",

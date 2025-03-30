@@ -829,179 +829,179 @@ import { AuthProvider } from "core/providers";
 import { Adapter as UserRegistry } from "../adapter";
 import { JwtStrategyFn } from "../session-strategy";
 import { DisplayProvider, User } from "core/auth-system";
-import { createLogger } from "@pete_keen/logger";
 import { KeyCardMissingError, UserNotFoundError } from "core/error";
 import { JwtConfig } from "core/session-strategy/jwt-strategy/index.types";
 import { SessionConfig } from "core/session-strategy/db-strategy/index.types";
+import { AuthNCallbacks, IAuthManager } from "./types";
 
-// --- Utility Types ---
-export type EnrichUser<Extra = {}> = (user: User) => Promise<User & Extra>;
+// // --- Utility Types ---
+// export type EnrichUser<Extra = {}> = (user: User) => Promise<User & Extra>;
 
-export type InferExtraFromEnrichFn<T> = T extends (
-	user: User
-) => Promise<infer R>
-	? Omit<R, keyof User>
-	: never;
+// export type InferExtraFromEnrichFn<T> = T extends (
+// 	user: User
+// ) => Promise<infer R>
+// 	? Omit<R, keyof User>
+// 	: never;
 
-export type InferExtraFromCallbacks<T extends AuthNCallbacks<any>> =
-	T extends AuthNCallbacks<infer U> ? U : never;
+// export type InferExtraFromCallbacks<T extends AuthNCallbacks<any>> =
+// 	T extends AuthNCallbacks<infer U> ? U : never;
 
-// --- AuthN Callback Interfaces ---
-export interface AuthNCallbacks<Extra = {}> {
-	enrichUser: EnrichUser<Extra>;
-	onUserCreated?: (user: User) => Promise<void> | void;
-	onUserUpdated?: (user: User) => Promise<void>;
-	onUserDeleted?: (user: User) => Promise<void>;
-}
+// // --- AuthN Callback Interfaces ---
+// export interface AuthNCallbacks<Extra = {}> {
+// 	enrichUser: EnrichUser<Extra>;
+// 	onUserCreated?: (user: User) => Promise<void> | void;
+// 	onUserUpdated?: (user: User) => Promise<void>;
+// 	onUserDeleted?: (user: User) => Promise<void>;
+// }
 
-// --- Auth Manager Interface ---
-export interface IAuthManager<Extra = {}> {
-	login: (params: SignInParams) => Promise<AuthResult<Extra>>;
-	validate: (keyCards: KeyCards) => Promise<AuthResult<Extra>>;
-	signOut: (
-		keyCards: KeyCards | null | undefined
-	) => Promise<AuthState<Extra>>;
-	listProviders: () => DisplayProvider[];
-	callbacks: AuthNCallbacks<Extra>; // ✅ expose it here
-}
+// // --- Auth Manager Interface ---
+// export interface IAuthManager<Extra = {}> {
+// 	login: (params: SignInParams) => Promise<AuthResult<Extra>>;
+// 	validate: (keyCards: KeyCards) => Promise<AuthResult<Extra>>;
+// 	signOut: (
+// 		keyCards: KeyCards | null | undefined
+// 	) => Promise<AuthState<Extra>>;
+// 	listProviders: () => DisplayProvider[];
+// 	callbacks: AuthNCallbacks<Extra>; // ✅ expose it here
+// }
 
 // --- AuthManager Factory ---
-export function AuthManager<Extra>(
-	userRegistry: UserRegistry,
-	authStrategy: AuthStrategy,
-	providers: AuthProvider[],
-	logger: Logger,
-	callbacks: AuthNCallbacks<Extra>
-): IAuthManager<Extra> {
-	const providersMap = Object.fromEntries(
-		providers.map((p) => [p.key, p])
-	) as Record<string, AuthProvider>;
-	const signInSystem = SignInSystem(providersMap);
+// export function AuthManager<Extra>(
+// 	userRegistry: UserRegistry,
+// 	authStrategy: AuthStrategy,
+// 	providers: AuthProvider[],
+// 	logger: Logger,
+// 	callbacks: AuthNCallbacks<Extra>
+// ): IAuthManager<Extra> {
+// 	const providersMap = Object.fromEntries(
+// 		providers.map((p) => [p.key, p])
+// 	) as Record<string, AuthProvider>;
+// 	const signInSystem = SignInSystem(providersMap);
 
-	const sanitizeUser = (dbUser: DatabaseUser): User => ({
-		id: dbUser.id,
-		name: dbUser.name,
-		email: dbUser.email,
-		image: dbUser.image,
-	});
+// 	const sanitizeUser = (dbUser: DatabaseUser): User => ({
+// 		id: dbUser.id,
+// 		name: dbUser.name,
+// 		email: dbUser.email,
+// 		image: dbUser.image,
+// 	});
 
-	const enrich = callbacks.enrichUser;
+// 	const enrich = callbacks.enrichUser;
 
-	return {
-		login: async ({ provider, code }) => {
-			try {
-				const signInResult = await signInSystem.signIn(provider, code);
+// 	return {
+// 		login: async ({ provider, code }) => {
+// 			try {
+// 				const signInResult = await signInSystem.signIn(provider, code);
 
-				if (signInResult.type !== "success") return signInResult;
+// 				if (signInResult.type !== "success") return signInResult;
 
-				const { userProfile, adapterAccount } = signInResult.response;
-				let user = await userRegistry.getUserByEmail(userProfile.email);
+// 				const { userProfile, adapterAccount } = signInResult.response;
+// 				let user = await userRegistry.getUserByEmail(userProfile.email);
 
-				if (!user) {
-					user = await userRegistry.createUser(userProfile);
-					await userRegistry.createAccountForUser(
-						user,
-						adapterAccount
-					);
-					await callbacks.onUserCreated?.(user);
-				} else {
-					const account = await userRegistry.getAccount(
-						adapterAccount.provider,
-						adapterAccount.providerAccountId
-					);
-					if (account)
-						await userRegistry.updateAccount(adapterAccount);
-					else
-						await userRegistry.createAccountForUser(
-							user,
-							adapterAccount
-						);
-				}
+// 				if (!user) {
+// 					user = await userRegistry.createUser(userProfile);
+// 					await userRegistry.createAccountForUser(
+// 						user,
+// 						adapterAccount
+// 					);
+// 					await callbacks.onUserCreated?.(user);
+// 				} else {
+// 					const account = await userRegistry.getAccount(
+// 						adapterAccount.provider,
+// 						adapterAccount.providerAccountId
+// 					);
+// 					if (account)
+// 						await userRegistry.updateAccount(adapterAccount);
+// 					else
+// 						await userRegistry.createAccountForUser(
+// 							user,
+// 							adapterAccount
+// 						);
+// 				}
 
-				const enrichedUser = await enrich(sanitizeUser(user));
-				const keyCards = await authStrategy.createKeyCards(user);
+// 				const enrichedUser = await enrich(sanitizeUser(user));
+// 				const keyCards = await authStrategy.createKeyCards(user);
 
-				return {
-					type: "success",
-					authState: {
-						authenticated: true,
-						keyCards,
-						user: enrichedUser,
-					},
-				} satisfies AuthResult<Extra>;
-			} catch (error) {
-				logger.error("Error during login", { error });
-				return { type: "error", error } satisfies AuthResult<Extra>;
-			}
-		},
+// 				return {
+// 					type: "success",
+// 					authState: {
+// 						authenticated: true,
+// 						keyCards,
+// 						user: enrichedUser,
+// 					},
+// 				} satisfies AuthResult<Extra>;
+// 			} catch (error) {
+// 				logger.error("Error during login", { error });
+// 				return { type: "error", error } satisfies AuthResult<Extra>;
+// 			}
+// 		},
 
-		validate: async (keyCards): Promise<AuthResult<Extra>> => {
-			if (!keyCards)
-				return {
-					type: "error",
-					error: new KeyCardMissingError("No keycards found"),
-				};
+// 		validate: async (keyCards): Promise<AuthResult<Extra>> => {
+// 			if (!keyCards)
+// 				return {
+// 					type: "error",
+// 					error: new KeyCardMissingError("No keycards found"),
+// 				};
 
-			const result = await authStrategy.validate(keyCards);
+// 			const result = await authStrategy.validate(keyCards);
 
-			if (result.type === "success") {
-				return {
-					type: "success",
-					authState: {
-						authenticated: true,
-						keyCards: result.authState.keyCards,
-						user: result.authState.user as User & Extra,
-					},
-				};
-			}
+// 			if (result.type === "success") {
+// 				return {
+// 					type: "success",
+// 					authState: {
+// 						authenticated: true,
+// 						keyCards: result.authState.keyCards,
+// 						user: result.authState.user as User & Extra,
+// 					},
+// 				};
+// 			}
 
-			if (result.type === "refresh") {
-				const dbUser = await userRegistry.getUser(
-					result.authState.user.id
-				);
-				if (!dbUser)
-					return {
-						type: "error",
-						error: new UserNotFoundError("User not found"),
-					};
+// 			if (result.type === "refresh") {
+// 				const dbUser = await userRegistry.getUser(
+// 					result.authState.user.id
+// 				);
+// 				if (!dbUser)
+// 					return {
+// 						type: "error",
+// 						error: new UserNotFoundError("User not found"),
+// 					};
 
-				const enriched = await enrich(sanitizeUser(dbUser));
-				const keyCards = await authStrategy.createKeyCards(dbUser);
+// 				const enriched = await enrich(sanitizeUser(dbUser));
+// 				const keyCards = await authStrategy.createKeyCards(dbUser);
 
-				return {
-					type: "refresh",
-					authState: {
-						user: enriched,
-						authenticated: true,
-						keyCards,
-					},
-				};
-			}
+// 				return {
+// 					type: "refresh",
+// 					authState: {
+// 						user: enriched,
+// 						authenticated: true,
+// 						keyCards,
+// 					},
+// 				};
+// 			}
 
-			return result as AuthResult<Extra>;
-		},
+// 			return result as AuthResult<Extra>;
+// 		},
 
-		signOut: async (keyCards): Promise<AuthState<Extra>> => {
-			if (!keyCards)
-				return {
-					authenticated: false,
-					user: null,
-					keyCards: null,
-					error: null,
-				};
-			return await authStrategy.logout(keyCards);
-		},
+// 		signOut: async (keyCards): Promise<AuthState<Extra>> => {
+// 			if (!keyCards)
+// 				return {
+// 					authenticated: false,
+// 					user: null,
+// 					keyCards: null,
+// 					error: null,
+// 				};
+// 			return await authStrategy.logout(keyCards);
+// 		},
 
-		listProviders: () =>
-			providers.map((p) => ({
-				name: p.name,
-				key: p.key,
-				style: p.style,
-			})),
+// 		listProviders: () =>
+// 			providers.map((p) => ({
+// 				name: p.name,
+// 				key: p.key,
+// 				style: p.style,
+// 			})),
 
-		callbacks,
-	};
-}
+// 		callbacks,
+// 	};
+// }
 
 // export function createAuthCallbacks<
 // 	Fn extends (user: User) => Promise<any>
@@ -1014,70 +1014,66 @@ export function AuthManager<Extra>(
 // 	return callbacks as AuthNCallbacks<InferExtraFromEnrichFn<Fn>>;
 // }
 
-export type StrategyConfig =
-	| { strategy: "jwt"; jwtConfig: JwtConfig }
-	| { strategy: "session"; sessionConfig: SessionConfig };
+// export type StrategyConfig =
+// 	| { strategy: "jwt"; jwtConfig: JwtConfig }
+// 	| { strategy: "session"; sessionConfig: SessionConfig };
 
-export type ConfigWithCallbacks<CB extends AuthNCallbacks<any>> = {
-	adapter: UserRegistry;
-	providers: AuthProvider[];
-	callbacks: CB;
-	logger?: Logger;
-	loggerOptions?: LoggerOptions;
-} & StrategyConfig;
+// export type ConfigWithCallbacks<CB extends AuthNCallbacks<any>> = {
+// 	adapter: UserRegistry;
+// 	providers: AuthProvider[];
+// 	callbacks: CB;
+// 	logger?: Logger;
+// 	loggerOptions?: LoggerOptions;
+// } & StrategyConfig;
 
-export function createAuthManager<CB extends AuthNCallbacks<any>>(
-	config: ConfigWithCallbacks<CB>
-): IAuthManager<InferExtraFromCallbacks<CB>> {
-	const strategy =
-		config.strategy === "jwt"
-			? JwtStrategyFn(config.jwtConfig)
-			: (() => {
-					throw new Error("Session strategy not implemented");
-			  })();
+// export function createAuthManager<CB extends AuthNCallbacks<any>>(
+// 	config: ConfigWithCallbacks<CB>
+// ): IAuthManager<InferExtraFromCallbacks<CB>> {
+// 	const strategy =
+// 		config.strategy === "jwt"
+// 			? JwtStrategyFn(config.jwtConfig)
+// 			: (() => {
+// 					throw new Error("Session strategy not implemented");
+// 			  })();
 
-	const logger =
-		config.logger ??
-		createLogger(config.loggerOptions ?? { level: "info", prefix: "Auth" });
+// 	const logger =
+// 		config.logger ??
+// 		createLogger(config.loggerOptions ?? { level: "info", prefix: "Auth" });
 
-	return AuthManager(
-		config.adapter,
-		strategy,
-		config.providers,
-		logger,
-		config.callbacks
-	);
-}
-
-export type InferUserType<T extends IAuthManager<any>> = T extends IAuthManager<
-	infer U
->
-	? User & U
-	: User;
-
-export function createEnrichUser<
-	Fn extends (user: User) => Promise<User & Record<string, any>>
->(fn: Fn): Fn {
-	return fn;
-}
-
-export function createAuthCallbacks<
-	Fn extends (user: User) => Promise<User & Record<string, any>>
->(callbacks: {
-	enrichUser: Fn;
-	onUserCreated?: (user: User) => Promise<void>;
-	onUserUpdated?: (user: User) => Promise<void>;
-	onUserDeleted?: (user: User) => Promise<void>;
-}): AuthNCallbacks<
-	Awaited<ReturnType<Fn>> extends User & infer Extra ? Extra : never
-> {
-	return callbacks as any;
-}
+// 	return AuthManager(
+// 		config.adapter,
+// 		strategy,
+// 		config.providers,
+// 		logger,
+// 		config.callbacks
+// 	);
+// }
 
 
+
+// export function createEnrichUser<
+// 	Fn extends (user: User) => Promise<User & Record<string, any>>
+// >(fn: Fn): Fn {
+// 	return fn;
+// }
+
+// export function createAuthCallbacks<
+// 	Fn extends (user: User) => Promise<User & Record<string, any>>
+// >(callbacks: {
+// 	enrichUser: Fn;
+// 	onUserCreated?: (user: User) => Promise<void>;
+// 	onUserUpdated?: (user: User) => Promise<void>;
+// 	onUserDeleted?: (user: User) => Promise<void>;
+// }): AuthNCallbacks<
+// 	Awaited<ReturnType<Fn>> extends User & infer Extra ? Extra : never
+// > {
+// 	return callbacks as any;
+// }
 
 // export const createEnrichUserData = <U, E>(fn: (user: U) => Promise<U & E>) => {
 // 	return fn;
 // };
 
-
+export * from "./create-auth-manager";
+export * from "./types";
+export * from "./auth-manager";

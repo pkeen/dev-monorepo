@@ -15,10 +15,8 @@ import {
 	createAuthCallbacks,
 	type InferUserType,
 	// createEnrichUser,
-	type EnrichUser,
 	type User,
 	createEnrichUser,
-	createEnrichUserData,
 } from "@pete_keen/authentication-core";
 import { DrizzleAdapter } from "@pete_keen/authentication-core/adapters";
 // import { JwtStrategy, JwtStrategyFn } from "@pete_keen/authentication-core";
@@ -29,8 +27,6 @@ import { authz } from "./authz";
 type Debug__Type = typeof authz.__DataType;
 
 // export const enrich = createEnrichUser(authz.enrichUser);
-const userObj = {name: 'John'};
-
 
 // const enrichedUserTest = await enrich({
 // 	id: "123",
@@ -166,12 +162,12 @@ const authManager = createAuthManager({
 
 export type CurrentUser = InferUserType<typeof authManager>;
 
-const user = {
-	id: "1sdfsd",
-	name: "joghn",
-	image: "sfsdf",
-	email: "sdfsdfsdkl",
-};
-const enrichedUser = await authManager.callbacks.enrichUser(user);
+// const user = {
+// 	id: "1sdfsdasdfdsfasdfsdf",
+// 	name: "joghn",
+// 	image: "sfsdf",
+// 	email: "sdfsdfsdkl",
+// };
+// const enrichedUser = await authManager.callbacks.enrichUser(user);
 
 export default authManager;

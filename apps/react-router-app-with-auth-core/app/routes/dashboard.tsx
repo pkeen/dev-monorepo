@@ -19,6 +19,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 	});
 	const enrichedUser = await authManager.callbacks.enrichUser(user);
 	// const enrichedUser = await enrich(user);
+    
 
 	console.log("LOADER USER: ", user);
 	if (user) {

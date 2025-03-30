@@ -153,11 +153,8 @@ export interface LoggerOptions {
 	// format?: LogFormat; // Log format
 }
 
-
 // Ensure T is always an object type
 type EnrichedUser<T extends Record<string, any> = {}> = User & T;
-
-
 
 // export interface AuthzData {
 // 	roles?: string[];

@@ -55,10 +55,23 @@ export function createEnrichUser<
 // 	return callbacks as AuthNCallbacks<Extra>;
 // }
 
+// export function createAuthCallbacks<
+// 	Fn extends (user: User) => Promise<User & Record<string, any>>,
+// 	Enriched = Awaited<ReturnType<Fn>>,
+// 	Extra = Omit<Enriched, keyof User>
+// >(callbacks: {
+// 	enrichUser: Fn;
+// 	onUserCreated?: (user: User) => Promise<void>;
+// 	onUserUpdated?: (user: User) => Promise<void>;
+// 	onUserDeleted?: (user: User) => Promise<void>;
+// }): AuthNCallbacks<Extra> {
+// 	return callbacks as AuthNCallbacks<Extra>;
+// }
 export function createAuthCallbacks<
 	Fn extends (user: User) => Promise<User & Record<string, any>>,
-	Enriched = Awaited<ReturnType<Fn>>,
-	Extra = Omit<Enriched, keyof User>
+	Extra = Fn extends (user: User) => Promise<infer R>
+		? Omit<R, keyof User>
+		: never
 >(callbacks: {
 	enrichUser: Fn;
 	onUserCreated?: (user: User) => Promise<void>;

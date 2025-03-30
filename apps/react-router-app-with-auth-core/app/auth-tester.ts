@@ -34,7 +34,12 @@ const enrichedUserTest = await enrichUser({
 console.log(enrichedUserTest.role);
 
 const cb = createAuthCallbacks({
-	enrichUser,
+	enrichUser: createEnrichUser((user) => {
+		return {
+			...user,
+			role: "admin",
+		};
+	}),
 	onUserCreated: authz.onUserCreated,
 	onUserUpdated: authz.onUserDeleted,
 	onUserDeleted: authz.onUserDeleted,

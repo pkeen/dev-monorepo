@@ -13,9 +13,18 @@ import { SignInParams } from "core/signin-system";
 import { DisplayProvider } from "core/auth-system";
 
 // --- Calbacks Type ---
+// export interface AuthNCallbacks<Extra = {}> {
+// 	enrichUser: (user: User) => Promise<User & Extra>;
+// 	onUserCreated?: (user: User) => Promise<void> | void;
+// 	onUserUpdated?: (user: User) => Promise<void>;
+// 	onUserDeleted?: (user: User) => Promise<void>;
+// }
+
+export type AugmentUserData<Extra> = (userId: string) => Promise<Extra>;
+
 export interface AuthNCallbacks<Extra = {}> {
-	enrichUser: (user: User) => Promise<User & Extra>;
-	onUserCreated?: (user: User) => Promise<void> | void;
+	augmentUserData: AugmentUserData<Extra>;
+	onUserCreated?: (user: User) => Promise<void>;
 	onUserUpdated?: (user: User) => Promise<void>;
 	onUserDeleted?: (user: User) => Promise<void>;
 }
@@ -29,9 +38,12 @@ export interface AuthConfigBase<Extra = {}> {
 	callbacks: AuthNCallbacks<Extra>;
 }
 
-export type AuthConfig =
-	| (AuthConfigBase & { strategy: "jwt"; jwtConfig: JwtConfig })
-	| (AuthConfigBase & { strategy: "session"; sessionConfig: SessionConfig });
+export type AuthConfig<Extra = {}> =
+	| (AuthConfigBase<Extra> & { strategy: "jwt"; jwtConfig: JwtConfig })
+	| (AuthConfigBase<Extra> & {
+			strategy: "session";
+			sessionConfig: SessionConfig;
+	  });
 
 // --- Auth Manager Interface ---
 export interface IAuthManager<Extra = {}> {

@@ -49,6 +49,7 @@ export type AuthZRuntime<MergedData> = {
 	enrichUser: (user: User) => Promise<User & MergedData>;
 	onUserCreated: (user: User) => Promise<void>;
 	onUserDeleted: (user: User) => Promise<void>;
+	getAuthzData: (userId: string) => Promise<MergedData>;
 	// A fake property to hold the type reference.
 	// It's "null as any as MergedData" so it doesn't exist at runtime,
 	// but TS sees it at compile-time.
@@ -88,6 +89,20 @@ export async function buildAuthZ<A extends AnyModule[]>(
 		return result as User & MergedData;
 	};
 
+	const getAuthzData = async (userId: string) => {
+		let result = {} as Partial<MergedData>;
+		for (const mod of modules) {
+			if (mod.getAuthzData) {
+				const modData = await mod.getAuthzData(userId);
+				// Spread the newly added fields
+				result = { ...result, ...modData };
+			}
+		}
+		// By the end, result includes all modules' fields
+		// console.log("GET AUTHZ DATA AGGREGATOR RESULT:", result);
+		return result as MergedData;
+	};
+
 	const executeLifecycleCallbacks = async (
 		callbackName: "onUserCreated" | "onUserDeleted",
 		user: User
@@ -119,6 +134,7 @@ export async function buildAuthZ<A extends AnyModule[]>(
 			executeLifecycleCallbacks("onUserDeleted", user),
 		// The brand that never gets used at runtime:
 		__DataType: null as any as MergedData,
+		getAuthzData,
 	} satisfies AuthZRuntime<MergedData>;
 }
 

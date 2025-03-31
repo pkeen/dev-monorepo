@@ -31,6 +31,7 @@ export interface Module<
 	enrichUser?: (user: User) => Promise<User & AttributeData>;
 	onUserCreated?: (user: User) => Promise<void>;
 	onUserDeleted?: (user: User) => Promise<void>;
+	getAuthzData?: (userId: string) => Promise<AttributeData>;
 	// getItemsForUser: (user: User) => Promise<AttributeData>;
 	// createUserItem?: (userId: string, item: ConfigEntryBase) => Promise<void>;
 }
@@ -59,6 +60,7 @@ export const createModule = <
 	hierarchical?: boolean;
 	init?: () => Promise<void>;
 	enrichUser?: (user: User) => Promise<User & A>;
+	getAuthzData?: (userId: string) => Promise<A>;
 	getItemsForUser: (user: User) => Promise<A>;
 }): Module<P, A> => {
 	return {
@@ -68,6 +70,7 @@ export const createModule = <
 		init: config.init,
 		hierarchical: config.hierarchical,
 		enrichUser: config.enrichUser,
+		getAuthzData: config.getAuthzData,
 		// getItemsForUser: config.getItemsForUser,
 	};
 };

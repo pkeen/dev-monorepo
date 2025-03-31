@@ -16,7 +16,7 @@ import {
 	type InferUserType,
 	// createEnrichUser,
 	type User,
-	createEnrichUser,
+	// createEnrichUser,
 } from "@pete_keen/authentication-core";
 import { DrizzleAdapter } from "@pete_keen/authentication-core/adapters";
 // import { JwtStrategy, JwtStrategyFn } from "@pete_keen/authentication-core";
@@ -39,7 +39,7 @@ type Debug__Type = typeof authz.__DataType;
 // Let's test it:
 // type DebugEnrich = Awaited<ReturnType<typeof enrich>>;
 
-export const cb = createAuthCallbacks(authz);
+// export const cb = createAuthCallbacks(authz);
 
 // Check the type with a temporary line:
 // type DebugCB = typeof cb.enrichUser;
@@ -98,7 +98,12 @@ const authConfig = {
 		level: "debug",
 		prefix: "Auth",
 	},
-	callbacks: createAuthCallbacks(authz),
+	callbacks: {
+		augmentUserData: authz.getAuthzData,
+		onUserCreated: authz.onUserCreated,
+		onUserUpdated: authz.onUserDeleted,
+		onUserDeleted: authz.onUserDeleted,
+	},
 	// enrichUser: enrich,
 };
 
@@ -156,7 +161,12 @@ const authManager = createAuthManager({
 		level: "debug",
 		prefix: "Auth",
 	},
-	callbacks: createAuthCallbacks(authz),
+	callbacks: {
+		augmentUserData: authz.getAuthzData,
+		onUserCreated: authz.onUserCreated,
+		onUserUpdated: authz.onUserDeleted,
+		onUserDeleted: authz.onUserDeleted,
+	},
 	// enrichUser: enrich,
 });
 

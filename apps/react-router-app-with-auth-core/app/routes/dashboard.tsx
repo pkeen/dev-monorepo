@@ -9,17 +9,18 @@ import { requireAuth } from "~/lib/requireAuth";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { rbac } from "~/authz";
 import authManager from "~/auth";
-import { cb } from "~/auth";
+// import { cb } from "~/auth";
 
 // import { Route } from "+types/dashboard";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-	const { user, headers } = await requireAuth(request, {
+	const { user, headers } = await requireAuth(request, authManager, {
 		redirectTo: "/auth/login",
 	});
-	const enrichedUser = await authManager.callbacks.enrichUser(user);
+	// const authzData = await authManager.callbacks.augmentUserData(user.id);
+	// const enrichedUser = { ...user, ...authzData };
+
 	// const enrichedUser = await enrich(user);
-    
 
 	console.log("LOADER USER: ", user);
 	if (user) {
@@ -36,7 +37,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-	const user = await requireAuth(request, {
+	const { user } = await requireAuth(request, authManager, {
 		redirectTo: "/auth/login",
 	});
 	console.log("ACTION USER: ", user);

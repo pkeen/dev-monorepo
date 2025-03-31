@@ -2,7 +2,7 @@ import {
 	AuthResult,
 	AuthStrategy,
 	Logger,
-	KeyCards,
+	// KeyCards,
 	AuthState,
 	DatabaseUser,
 	UserPublic as User,
@@ -11,6 +11,7 @@ import { AuthProvider } from "../providers";
 import { Adapter } from "../adapter";
 import { IAuthManager, AuthNCallbacks } from "./types";
 import { SignInSystem, type SignInParams } from "../signin-system";
+import { KeyCardMissingError, UserNotFoundError } from "core/error";
 
 export function AuthManager<Extra>(
 	userRegistry: Adapter,
@@ -86,9 +87,12 @@ export function AuthManager<Extra>(
 						);
 				}
 
-				const enrichedUser = await callbacks.enrichUser(
-					sanitizeUser(user)
+				const publicUser = sanitizeUser(user);
+
+				const authZData = await callbacks.augmentUserData(
+					publicUser.id
 				);
+				const enrichedUser = { ...publicUser, ...authZData };
 				const keyCards = await authStrategy.createKeyCards(user);
 
 				return {
@@ -135,13 +139,17 @@ export function AuthManager<Extra>(
 						error: new UserNotFoundError("User not found"),
 					};
 
-				const enriched = await enrich(sanitizeUser(dbUser));
+				const publicUser = sanitizeUser(dbUser);
+				const authZData = await callbacks.augmentUserData(
+					publicUser.id
+				);
+				const enrichedUser = { ...publicUser, ...authZData };
 				const keyCards = await authStrategy.createKeyCards(dbUser);
 
 				return {
 					type: "refresh",
 					authState: {
-						user: enriched,
+						user: enrichedUser,
 						authenticated: true,
 						keyCards,
 					},

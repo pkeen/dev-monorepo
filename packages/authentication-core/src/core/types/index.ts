@@ -5,7 +5,7 @@ import { AuthProvider } from "core/providers";
 // import { Authz } from "authorization/index.types";
 import { JwtConfig } from "core/session-strategy/jwt-strategy/index.types";
 import { SessionConfig } from "core/session-strategy/db-strategy/index.types";
-import { EnrichUser } from "core/auth-manager";
+// import { EnrichUser } from "core/auth-manager";
 
 /*
  The Core Types for the library

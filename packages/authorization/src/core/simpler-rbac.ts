@@ -167,6 +167,10 @@ export const rbacModule = <T extends ReadonlyArray<Role>>(
 			const role = await getUserRole(user);
 			return { ...user, ...role };
 		},
+        getAuthzData: async (userId: string) => {
+            const role = await getUserRole({ id: userId });
+            return { ...role };
+        },
 		init: async () => {
 			await db.seed([...config.items]);
 		},

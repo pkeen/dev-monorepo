@@ -8,7 +8,7 @@ import {
 	type InferUserType,
 	// createEnrichUser,
 	type User,
-	createEnrichUser,
+	// createEnrichUser,
 } from "@pete_keen/authentication-core";
 import { DrizzleAdapter } from "@pete_keen/authentication-core/adapters";
 // import { JwtStrategy, JwtStrategyFn } from "@pete_keen/authentication-core";
@@ -20,11 +20,7 @@ import { authz } from "./authz";
 type DebugAuthz = typeof authz.enrichUser;
 type __Type = typeof authz.__DataType;
 
-const enrichUser = createEnrichUser(
-	authz.enrichUser as typeof authz.enrichUser
-);
-
-const enrichedUserTest = await enrichUser({
+const enrichedUserTest = await authz.enrichUser({
 	id: "123",
 	name: "John",
 	email: "",
@@ -34,27 +30,22 @@ const enrichedUserTest = await enrichUser({
 console.log(enrichedUserTest.role);
 
 const cb = createAuthCallbacks({
-	enrichUser: createEnrichUser((user) => {
-		return {
-			...user,
-			role: "admin",
-		};
-	}),
+	augmentUserData: authz.getAuthzData,
 	onUserCreated: authz.onUserCreated,
 	onUserUpdated: authz.onUserDeleted,
 	onUserDeleted: authz.onUserDeleted,
 });
 
-const enrichedUserTest2 = await cb.enrichUser({
-	id: "123",
-	name: "John",
-	email: "",
-	image: null,
-});
+// const enrichedUserTest2 = await cb.enrichUser({
+// 	id: "123",
+// 	name: "John",
+// 	email: "",
+// 	image: null,
+// });
 
-type Debug = Awaited<ReturnType<(typeof cb)["enrichUser"]>>;
+// type Debug = Awaited<ReturnType<(typeof cb)["enrichUser"]>>;
 
-console.log(enrichedUserTest2);
+// console.log(enrichedUserTest2);
 
 const authManager = createAuthManager({
 	strategy: "jwt",
@@ -76,16 +67,17 @@ const authManager = createAuthManager({
 	},
 	adapter: DrizzleAdapter(db),
 	callbacks: {
-		enrichUser: authz.enrichUser,
+		augmentUserData: authz.getAuthzData,
+		// enrichUser: authz.enrichUser,
 		onUserCreated: authz.onUserCreated,
 		onUserUpdated: authz.onUserDeleted,
 		onUserDeleted: authz.onUserDeleted,
 	},
 });
 
-const erTest3 = await authManager.callbacks.enrichUser({
-	id: "123",
-	name: "John",
-	email: "",
-	image: null,
-});
+const user = { id: "123", name: "John", email: "", image: null };
+const authzData = await authManager.callbacks.augmentUserData(user.id);
+const enrichedUser = { ...user, ...authzData };
+console.log(enrichedUser);
+
+

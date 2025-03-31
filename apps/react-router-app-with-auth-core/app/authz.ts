@@ -6,10 +6,10 @@ import {
 	type InferExtraData,
 } from "@pete_keen/authz";
 import db from "~/db";
-import {
-	createEnrichUser,
-	type EnrichUser,
-} from "@pete_keen/authentication-core";
+// import {
+// 	createEnrichUser,
+// 	type EnrichUser,
+// } from "@pete_keen/authentication-core";
 
 export const roles = [
 	{
@@ -51,9 +51,9 @@ export const authz = await buildAuthZ({
 	// seed: true,
 });
 
-type TAuthz = typeof authz;
-type DebugAuthz = typeof authz.enrichUser;
-type Debug__Type = typeof authz.__DataType;
+// type TAuthz = typeof authz;
+// type DebugAuthz = typeof authz.enrichUser;
+// type Debug__Type = typeof authz.__DataType;
 
 // const enrich = createEnrichUser<Debug__Type>(authz.enrichUser);
 

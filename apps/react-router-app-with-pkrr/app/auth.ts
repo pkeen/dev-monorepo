@@ -13,6 +13,7 @@ import {
 	RBAC,
 	RolesDrizzlePGAdapter,
 } from "@pete_keen/authentication-core/authorization";
+import { authz } from "./authz";
 
 if (!process.env.JWT_ACCESS_SECRET) {
 	// throw new Error("JWT_ACCESS_SECRET not found in process.env");
@@ -49,38 +50,37 @@ const jwtOptions = {
 	},
 };
 
-export const authz = RBAC(RolesDrizzlePGAdapter(db), {
-	roles: [
-		{
-			name: "Guest",
-			level: 0,
-		},
-		{
-			name: "User",
-			level: 1,
-		},
-		{
-			name: "Editor",
-			level: 2,
-		},
-		{
-			name: "Admin",
-			level: 3,
-		},
-		{
-			name: "Super Admin",
-			level: 4,
-		},
-	] as const,
-	defaultRole: {
-		name: "User",
-	},
-});
+// export const authz = RBAC(RolesDrizzlePGAdapter(db), {
+// 	roles: [
+// 		{
+// 			name: "Guest",
+// 			level: 0,
+// 		},
+// 		{
+// 			name: "User",
+// 			level: 1,
+// 		},
+// 		{
+// 			name: "Editor",
+// 			level: 2,
+// 		},
+// 		{
+// 			name: "Admin",
+// 			level: 3,
+// 		},
+// 		{
+// 			name: "Super Admin",
+// 			level: 4,
+// 		},
+// 	] as const,
+// 	defaultRole: {
+// 		name: "User",
+// 	},
+// });
 
 const databaseAdapter = DrizzleAdapter(db);
 
 const config: RRAuthConfig = {
-	authz,
 	strategy: "jwt",
 	jwtConfig: jwtOptions,
 	adapter: databaseAdapter,
@@ -122,6 +122,12 @@ const config: RRAuthConfig = {
 	redirectAfterLogin: "/",
 	redirectAfterLogout: "/",
 	sessionSecret: "asfjsdkfj",
+	callbacks: {
+		augmentUserData: authz.getAuthzData,
+		onUserCreated: authz.onUserCreated,
+		onUserUpdated: authz.onUserDeleted,
+		onUserDeleted: authz.onUserDeleted,
+	},
 };
 
 export const { login, logout, authLoader, authAction, requireAuth, withAuth } =

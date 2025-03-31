@@ -10,6 +10,7 @@
 	},
 	"dependencies": {
 		"@emotion/react": "^11.14.0",
+		"@pete_keen/authz": "workspace:*",
 		"@pete_keen/authentication-core": "workspace:*",
 		"@pete_keen/react-router-auth": "workspace:*",
 		"@react-router/node": "^7.1.5",

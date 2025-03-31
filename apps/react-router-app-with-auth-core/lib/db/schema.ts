@@ -5,33 +5,6 @@ import { createSchema } from "@pete_keen/authz/adapters";
 
 export const { usersTable, authSchema, accountsTable } = defineTables();
 
-const roles = [
-	{
-		key: "guest",
-		name: "Guest",
-		level: 0,
-	},
-	{
-		key: "user",
-		name: "User",
-		level: 1,
-	},
-	{
-		key: "editor",
-		name: "Editor",
-		level: 2,
-	},
-	{
-		key: "admin",
-		name: "Admin",
-		level: 3,
-	},
-	{
-		key: "super-admin",
-		name: "Super Admin",
-		level: 4,
-	},
-];
 
 export const { rbacSchema, rolesTable, userRolesTable } = createSchema();
 

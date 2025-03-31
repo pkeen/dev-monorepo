@@ -13,7 +13,7 @@ import {
 } from "react-router";
 import { useEffect } from "react";
 import { requireAuth, withAuth, logout } from "../auth";
-import { authz } from "../auth";
+import { authz } from "~/authz";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import type { User } from "@pete_keen/authentication-core";
 import type { WithAuthHandlerArgs } from "@pete_keen/react-router-auth";
@@ -32,11 +32,11 @@ import type { WithAuthHandlerArgs } from "@pete_keen/react-router-auth";
 // };
 
 const handler = async ({ request, user }: WithAuthHandlerArgs) => {
-	if (user) {
-		if (!authz.policies.minRole(user, { name: "User" })) {
-			throw new Response("Unauthorized", { status: 401 });
-		}
-	}
+	// if (user) {
+	// 	if (!authz.policies.minRole(user, { name: "User" })) {
+	// 		throw new Response("Unauthorized", { status: 401 });
+	// 	}
+	// }
 	return { user };
 };
 
@@ -56,12 +56,7 @@ export default function Dashboard() {
 			<p> Hi 🖐🏻, {user.email} </p>
 			<br />
 			<div>
-				<ul>
-					Your roles are:
-					{user.roles.map((role: { level: number; name: string }) => (
-						<li key={role.level}>{role.name}</li>
-					))}
-				</ul>
+				<p>Role: {user.role.name}</p>
 			</div>
 			<Form action="/auth/logout" method="post">
 				<button type="submit">Logout</button>

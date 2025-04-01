@@ -5,7 +5,7 @@
  */
 
 import { Form, useFetcher, useLoaderData, redirect } from "react-router";
-import { requireAuth } from "~/lib/requireAuth";
+import { requireAuth, withAuth } from "~/lib/requireAuth";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { rbac } from "~/authz";
 import authManager from "~/auth";
@@ -13,28 +13,32 @@ import authManager from "~/auth";
 
 // import { Route } from "+types/dashboard";
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-	const { user, headers } = await requireAuth(request, authManager, {
-		redirectTo: "/auth/login",
-	});
-	// const authzData = await authManager.callbacks.augmentUserData(user.id);
-	// const enrichedUser = { ...user, ...authzData };
+// export const loader = async ({ request }: LoaderFunctionArgs) => {
+// 	const { user, headers } = await requireAuth(request, authManager, {
+// 		redirectTo: "/auth/login",
+// 	});
+// 	// const authzData = await authManager.callbacks.augmentUserData(user.id);
+// 	// const enrichedUser = { ...user, ...authzData };
 
-	// const enrichedUser = await enrich(user);
+// 	// const enrichedUser = await enrich(user);
 
-	console.log("LOADER USER: ", user);
-	if (user) {
-		if (!rbac.policies.min(user, { key: "user" })) {
-			return redirect("/auth/login");
-		}
-	}
+// 	console.log("LOADER USER: ", user);
+// 	if (user) {
+// 		if (!rbac.policies.min(user, { key: "user" })) {
+// 			return redirect("/auth/login");
+// 		}
+// 	}
 
-	// if (rbac.policies.min(user, { key: "admin" })) {
-	// }
+// 	// if (rbac.policies.min(user, { key: "admin" })) {
+// 	// }
 
-	// console.log("USER ROLES", user.roles);
-	return Response.json({ ...user }, { headers });
-};
+// 	// console.log("USER ROLES", user.roles);
+// 	return Response.json({ ...user }, { headers });
+// };
+
+export const loader = withAuth(authManager, ({ request, user }) => {
+	console.log("LOADER USER ROLE:", user.role);
+});
 
 export const action = async ({ request }: ActionFunctionArgs) => {
 	const { user } = await requireAuth(request, authManager, {

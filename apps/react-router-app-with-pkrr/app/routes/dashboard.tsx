@@ -16,7 +16,7 @@ import { requireAuth, withAuth, logout } from "../auth";
 import { authz } from "~/authz";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import type { User } from "@pete_keen/authentication-core";
-import type { WithAuthHandlerArgs } from "@pete_keen/react-router-auth";
+// import type { WithAuthHandlerArgs } from "@pete_keen/react-router-auth";
 
 // import { Route } from "+types/dashboard";
 
@@ -31,18 +31,25 @@ import type { WithAuthHandlerArgs } from "@pete_keen/react-router-auth";
 // 	return Response.json({ user }, { headers });
 // };
 
-const handler = async ({ request, user }: WithAuthHandlerArgs) => {
-	// if (user) {
-	// 	if (!authz.policies.minRole(user, { name: "User" })) {
-	// 		throw new Response("Unauthorized", { status: 401 });
-	// 	}
-	// }
-	return { user };
-};
+// const handler = async ({ request, user }: WithAuthHandlerArgs) => {
+// 	// if (user) {
+// 	// 	if (!authz.policies.minRole(user, { name: "User" })) {
+// 	// 		throw new Response("Unauthorized", { status: 401 });
+// 	// 	}
+// 	// }
+// 	return { user };
+// };
 
-export const loader = withAuth(handler);
+export const loader = withAuth(async ({ user }) => {
+	console.log(user?.role);
+	return { user };
+});
 
 export const action = async ({ request }: ActionFunctionArgs) => {
+	const { user } = await requireAuth(request, {
+		redirectTo: "/auth/login",
+	});
+	console.log(user?.role);
 	return null;
 };
 

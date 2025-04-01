@@ -32,6 +32,12 @@ export function AuthManager<Extra>(
 		image: dbUser.image,
 	});
 
+	const enrichUser = async (user: User): Promise<User & Extra> => {
+		if (!callbacks.augmentUserData) return user as User & Extra;
+
+		const authZData = await callbacks.augmentUserData(user.id);
+		return { ...user, ...authZData };
+	};
 	// const enrich = callbacks.enrichUser;
 
 	return {
@@ -88,12 +94,10 @@ export function AuthManager<Extra>(
 				}
 
 				const publicUser = sanitizeUser(user);
-
-				const authZData = await callbacks.augmentUserData(
-					publicUser.id
+				const enrichedUser = await enrichUser(publicUser);
+				const keyCards = await authStrategy.createKeyCards(
+					enrichedUser
 				);
-				const enrichedUser = { ...publicUser, ...authZData };
-				const keyCards = await authStrategy.createKeyCards(user);
 
 				return {
 					type: "success",
@@ -140,11 +144,10 @@ export function AuthManager<Extra>(
 					};
 
 				const publicUser = sanitizeUser(dbUser);
-				const authZData = await callbacks.augmentUserData(
-					publicUser.id
+				const enrichedUser = await enrichUser(publicUser);
+				const keyCards = await authStrategy.createKeyCards(
+					enrichedUser
 				);
-				const enrichedUser = { ...publicUser, ...authZData };
-				const keyCards = await authStrategy.createKeyCards(dbUser);
 
 				return {
 					type: "refresh",
@@ -167,7 +170,7 @@ export function AuthManager<Extra>(
 					keyCards: null,
 					error: null,
 				};
-			return await authStrategy.logout(keyCards);
+			return (await authStrategy.logout(keyCards)) as AuthState<Extra>;
 		},
 
 		listProviders: () =>

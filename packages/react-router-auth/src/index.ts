@@ -29,29 +29,42 @@ export interface ExtendedAuthConfig {
 	sessionMaxAge?: number;
 }
 
-export type RRAuthConfig = AuthConfig & ExtendedAuthConfig;
+export type RRAuthConfig<Extra = {}> = AuthConfig<Extra> & ExtendedAuthConfig;
 
 export interface SessionData {
 	authState: AuthState;
 }
 
-export interface WithAuthHandlerArgs {
-	request: Request;
-	user: User | null;
-	// authState: AuthState;
-	// csrf?: string | null;
-	// formData?: FormData;
+// export interface WithAuthHandlerArgs {
+// 	request: Request;
+// 	user: User | null;
+// 	// authState: AuthState;
+// 	// csrf?: string | null;
+// 	// formData?: FormData;
+// }
+
+// export type WithAuth<T> = (
+// 	handler: HandlerFunction<T>
+// ) => Promise<Response | T>;
+
+type HandlerFunction<T, U> = (
+	args: (LoaderFunctionArgs | ActionFunctionArgs) & { user: U }
+) => Promise<T>;
+
+type InferExtraFromConfig<C> = C extends {
+	callbacks: { augmentUserData: (...args: any) => infer R };
 }
+	? Awaited<R>
+	: {};
 
-export type WithAuth<T> = (
-	handler: HandlerFunction<T>
-) => Promise<Response | T>;
+// export type HandlerFunction<T> = (args: WithAuthHandlerArgs) => Promise<T>;
 
-export type HandlerFunction<T> = (args: WithAuthHandlerArgs) => Promise<T>;
-
-export const Auth = (config: RRAuthConfig) => {
+export const Auth = <C extends RRAuthConfig<InferExtraFromConfig<C>>>(
+	config: C
+) => {
+	type Extra = InferExtraFromConfig<C>;
 	// const authSystem = AuthSystem.create(config);
-	const authSystem = createAuthManager(config);
+	const authSystem = createAuthManager<Extra>(config);
 
 	// const { getSession, commitSession, destroySession } =
 	// 	createCookieSessionStorage<SessionData>({
@@ -398,7 +411,10 @@ export const Auth = (config: RRAuthConfig) => {
 		}
 	};
 
-	const { requireAuth, withAuth } = createAuthHelpers(authSystem, s);
+	const { requireAuth, withAuth, withUser } = createAuthHelpers<Extra>(
+		authSystem,
+		s
+	);
 
 	return {
 		login,
@@ -409,7 +425,10 @@ export const Auth = (config: RRAuthConfig) => {
 		// redirect,
 		authAction,
 		authLoader,
+		withUser,
+		authSystem,
 	};
 };
 
 export default Auth;
+export * from "./createAuthHelpers";

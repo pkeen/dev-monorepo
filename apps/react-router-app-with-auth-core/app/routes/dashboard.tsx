@@ -9,35 +9,10 @@ import { requireAuth, withAuth } from "~/lib/requireAuth";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { rbac } from "~/authz";
 import authManager from "~/auth";
-// import { cb } from "~/auth";
 
-// import { Route } from "+types/dashboard";
-
-// export const loader = async ({ request }: LoaderFunctionArgs) => {
-// 	const { user, headers } = await requireAuth(request, authManager, {
-// 		redirectTo: "/auth/login",
-// 	});
-// 	// const authzData = await authManager.callbacks.augmentUserData(user.id);
-// 	// const enrichedUser = { ...user, ...authzData };
-
-// 	// const enrichedUser = await enrich(user);
-
-// 	console.log("LOADER USER: ", user);
-// 	if (user) {
-// 		if (!rbac.policies.min(user, { key: "user" })) {
-// 			return redirect("/auth/login");
-// 		}
-// 	}
-
-// 	// if (rbac.policies.min(user, { key: "admin" })) {
-// 	// }
-
-// 	// console.log("USER ROLES", user.roles);
-// 	return Response.json({ ...user }, { headers });
-// };
-
-export const loader = withAuth(authManager, ({ request, user }) => {
+export const loader = withAuth(authManager, async ({ user }) => {
 	console.log("LOADER USER ROLE:", user.role);
+	return user;
 });
 
 export const action = async ({ request }: ActionFunctionArgs) => {

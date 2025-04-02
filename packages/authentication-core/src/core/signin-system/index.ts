@@ -92,6 +92,7 @@ export const SignInSystem = (providers: Providers) => {
 			} else {
 				return {
 					type: "error",
+					error: new ProviderNotGivenError("Provider not specified"),
 				};
 			}
 		},

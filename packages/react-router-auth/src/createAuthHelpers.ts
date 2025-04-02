@@ -25,7 +25,7 @@ export function createAuthHelpers<Extra>(
 	): Promise<{ user: EnrichedUser | null; headers?: Headers }> => {
 		const session = await s.getSession(request.headers.get("Cookie"));
 		const sessionState = session.get("authState");
-        console.log("SESSION STATE:", sessionState);
+		console.log("SESSION STATE:", sessionState);
 
 		if (!sessionState) {
 			if (options.redirectTo) throw redirect(options.redirectTo);
@@ -33,7 +33,7 @@ export function createAuthHelpers<Extra>(
 		}
 
 		const authResult = await authManager.validate(sessionState.keyCards!);
-        console.log("AUTH RESULT:", authResult);
+		console.log("AUTH RESULT:", authResult);
 
 		if (authResult.type === "error" || authResult.type === "redirect") {
 			if (options.redirectTo) throw redirect(options.redirectTo);
@@ -55,7 +55,7 @@ export function createAuthHelpers<Extra>(
 	 * @param handler
 	 * @returns Response.json({ ...result, user })
 	 */
-	const withAuth = <T, >(
+	const withAuth = <T>(
 		handler: (
 			args: (LoaderFunctionArgs | ActionFunctionArgs) & {
 				user: EnrichedUser;
@@ -90,5 +90,9 @@ export function createAuthHelpers<Extra>(
 		};
 	};
 
-	return { requireAuth, withAuth, withUser: null as unknown as User & Extra, // 👈 helper type for inference};
+	return {
+		requireAuth,
+		withAuth,
+		withUser: null as unknown as User & Extra, // 👈 helper type for inference};
+	};
 }

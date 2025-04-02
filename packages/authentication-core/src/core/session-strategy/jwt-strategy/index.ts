@@ -5,6 +5,7 @@ import {
 	KeyCards,
 	KeyCard,
 	AuthResult,
+    Logger,
 } from "../../types";
 import { JwtConfig } from "./index.types";
 // import { User } from "../../../auth-system/index.types";
@@ -19,10 +20,10 @@ import {
 	AuthError,
 	UnknownAuthError,
 } from "../../error";
-import { createLogger } from "@pete_keen/logger";
+// import { createLogger } from "@pete_keen/logger";
 import type { RBAC } from "../../../authorization";
 
-const logger = createLogger({});
+// const logger = createLogger({});
 
 // export class JwtStrategy implements AuthStrategy {
 // 	private tokenService: TokenService;
@@ -175,7 +176,7 @@ const logger = createLogger({});
 // 	}
 // }
 
-export const JwtStrategyFn = (config: JwtConfig): AuthStrategy => {
+export const JwtStrategyFn = (config: JwtConfig, logger: Logger): AuthStrategy => {
 	const tokenService = JwtTokenService(); // for now lets get away from classes and into functions
 
 	const validateCard = async (

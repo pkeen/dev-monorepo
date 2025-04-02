@@ -1,12 +1,12 @@
 {
 	"name": "@pete_keen/logger",
 	"version": "0.0.1",
-	"main": "src/index.ts",
+	"main": "dist/index.mjs",
 	"types": "dist/index.d.ts",
 	"type": "module",
 	"exports": {
 		".": {
-			"import": "./src/index.ts",
+			"import": "./dist/index.mjs",
 			"default": "./dist/index.mjs",
 			"types": "./dist/index.d.ts"
 		}

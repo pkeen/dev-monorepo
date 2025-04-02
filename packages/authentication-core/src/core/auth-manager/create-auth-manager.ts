@@ -90,16 +90,16 @@ export function createAuthCallbacks<Extra>(callbacks: AuthNCallbacks<Extra>) {
 export function createAuthManager<Extra = {}>(
 	config: AuthConfig<Extra>
 ): IAuthManager<Extra> {
-	const strategy =
-		config.strategy === "jwt"
-			? JwtStrategyFn(config.jwtConfig)
-			: (() => {
-					throw new Error("Session strategy not implemented, yet");
-			  })();
-
 	const logger =
 		config.logger ??
 		createLogger(config.loggerOptions ?? { level: "info", prefix: "Auth" });
+
+	const strategy =
+		config.strategy === "jwt"
+			? JwtStrategyFn(config.jwtConfig, logger)
+			: (() => {
+					throw new Error("Session strategy not implemented, yet");
+			  })();
 
 	return AuthManager(
 		config.adapter,

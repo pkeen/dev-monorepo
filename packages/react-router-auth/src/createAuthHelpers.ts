@@ -1,4 +1,5 @@
 import { IAuthManager, User } from "@pete_keen/authentication-core";
+import { Logger } from "@pete_keen/logger";
 import {
 	ActionFunctionArgs,
 	LoaderFunctionArgs,
@@ -8,7 +9,8 @@ import {
 
 export function createAuthHelpers<Extra>(
 	authManager: IAuthManager<Extra>,
-	s: SessionStorage
+	s: SessionStorage,
+	logger: Logger
 ) {
 	type EnrichedUser = User & Extra;
 
@@ -25,7 +27,8 @@ export function createAuthHelpers<Extra>(
 	): Promise<{ user: EnrichedUser | null; headers?: Headers }> => {
 		const session = await s.getSession(request.headers.get("Cookie"));
 		const sessionState = session.get("authState");
-		console.log("SESSION STATE:", sessionState);
+		// console.log("SESSION STATE:", sessionState);
+		logger.debug("SESSION STATE:", { sessionState });
 
 		if (!sessionState) {
 			if (options.redirectTo) throw redirect(options.redirectTo);
@@ -61,7 +64,7 @@ export function createAuthHelpers<Extra>(
 				user: EnrichedUser;
 			}
 		) => Promise<T>,
-		options: { redirectTo?: string } = { redirectTo: "/" }
+		options: { redirectTo?: string } = {}
 	) => {
 		return async (args: LoaderFunctionArgs | ActionFunctionArgs) => {
 			const { request } = args;

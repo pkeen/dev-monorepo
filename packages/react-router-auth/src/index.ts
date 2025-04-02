@@ -19,6 +19,7 @@ import {
 	type DisplayProvider,
 } from "@pete_keen/authentication-core";
 import { createAuthHelpers } from "./createAuthHelpers";
+import { createLogger } from "@pete_keen/logger";
 
 // App-specific config extension
 export interface ExtendedAuthConfig {
@@ -78,6 +79,11 @@ export const Auth = <C extends RRAuthConfig<InferExtraFromConfig<C>>>(
 	// 			secure: process.env.NODE_ENV === "production",
 	// 		},
 	// 	});
+	const logger =
+		config.logger ??
+		createLogger(
+			config.loggerOptions ?? { level: "debug", prefix: "RRAuth" }
+		);
 
 	const s = createCookieSessionStorage<SessionData>({
 		cookie: {
@@ -413,7 +419,8 @@ export const Auth = <C extends RRAuthConfig<InferExtraFromConfig<C>>>(
 
 	const { requireAuth, withAuth, withUser } = createAuthHelpers<Extra>(
 		authSystem,
-		s
+		s,
+		logger
 	);
 
 	return {

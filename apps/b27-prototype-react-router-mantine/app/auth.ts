@@ -17,7 +17,7 @@ const jwtOptions = {
 		secretKey:
 			process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || "",
 		algorithm: "HS256",
-		expiresIn: "30 seconds",
+		expiresIn: "30 minutes",
 		fields: ["id", "email"],
 	},
 	refresh: {
@@ -30,7 +30,7 @@ const jwtOptions = {
 	},
 };
 
-const config: RRAuthConfig = {
+export const { authLoader, authAction, requireAuth, withAuth } = Auth({
 	strategy: "jwt",
 	jwtConfig: jwtOptions,
 	adapter: databaseAdapter,
@@ -61,12 +61,11 @@ const config: RRAuthConfig = {
 			redirectUri: "http://localhost:5173/auth/redirect/linkedin",
 		}),
 	],
-	logger: {
+	loggerOptions: {
 		level: "debug",
+		prefix: "RRAuth",
 	},
 	redirectAfterLogin: "/",
 	redirectAfterLogout: "/",
 	sessionSecret: process.env.SESSION_SECRET!,
-};
-
-export const { authLoader, authAction, requireAuth, withAuth } = Auth(config);
+});

@@ -35,7 +35,7 @@ export interface AuthConfigBase<Extra = {}> {
 	logger?: Logger;
 	loggerOptions?: LoggerOptions;
 	providers?: AuthProvider[];
-	callbacks: AuthNCallbacks<Extra>;
+	callbacks?: AuthNCallbacks<Extra>;
 }
 
 export type AuthConfig<Extra = {}> =

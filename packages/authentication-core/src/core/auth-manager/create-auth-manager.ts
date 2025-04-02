@@ -82,7 +82,15 @@ import { AuthManager } from ".";
 // }
 
 export function createAuthCallbacks<Extra>(callbacks: AuthNCallbacks<Extra>) {
-	return callbacks;
+	return {
+		augmentUserData: async (user: User) => {
+			return {} as Extra;
+		},
+		onUserCreated: async () => {},
+		onUserUpdated: async () => {},
+		onUserDeleted: async () => {},
+		...callbacks,
+	};
 }
 
 // --- Level 3 the AuthManager Level
@@ -101,11 +109,13 @@ export function createAuthManager<Extra = {}>(
 					throw new Error("Session strategy not implemented, yet");
 			  })();
 
+	const callbacks = createAuthCallbacks(config.callbacks);
+
 	return AuthManager(
 		config.adapter,
 		strategy,
-		config.providers,
+		config.providers ?? [],
 		logger,
-		config.callbacks
+		callbacks
 	);
 }

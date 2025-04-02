@@ -2,6 +2,7 @@ import { Login } from "./login";
 
 export function AuthComponent({ loaderData }: { loaderData: any }) {
 	const providers = loaderData.providers;
+	console.log("PROVIDERS:", providers);
 
 	switch (loaderData.page) {
 		case "login":

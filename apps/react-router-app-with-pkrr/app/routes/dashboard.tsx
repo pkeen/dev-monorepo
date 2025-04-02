@@ -40,10 +40,13 @@ import type { User } from "@pete_keen/authentication-core";
 // 	return { user };
 // };
 
-export const loader = withAuth(async ({ user }) => {
-	console.log(user?.role);
-	return { user };
-});
+export const loader = withAuth(
+	async ({ user }) => {
+		console.log(user.role);
+		return { user };
+	},
+	{ redirectTo: "/auth/login" }
+);
 
 export const action = async ({ request }: ActionFunctionArgs) => {
 	const { user } = await requireAuth(request, {

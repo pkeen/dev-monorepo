@@ -1,4 +1,4 @@
-import type { db } from "~/lib/db";
+import type { db } from "~/lib/db/index.server";
 import * as schema from "../schema";
 import { faker } from "@faker-js/faker";
 

@@ -1,7 +1,7 @@
 import { AppShell, Container, Paper } from "@mantine/core";
 import { Outlet, useLoaderData } from "react-router";
 import { MinimalHeader } from "~/lib/components/minimal-header";
-import { withAuth, requireAuth } from "~/auth";
+import { requireAuth } from "~/auth.server";
 import type { Route } from "./+types";
 import { Nav } from "./_nav";
 
@@ -12,7 +12,6 @@ import { Nav } from "./_nav";
 export const loader = async ({ request }: Route.LoaderArgs) => {
 	const { user, headers } = await requireAuth(request, {
 		redirectTo: "/",
-		role: "admin",
 	});
 	return Response.json({ user }, { headers });
 };

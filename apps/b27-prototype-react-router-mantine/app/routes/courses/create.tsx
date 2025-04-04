@@ -9,7 +9,7 @@ import {
 } from "@mantine/core";
 import { Form } from "react-router";
 import { CourseManager } from "~/lib/courses/core";
-import { requireAuth } from "~/auth";
+import { requireAuth } from "~/auth.server";
 import { useLoaderData } from "react-router";
 
 const courseManager = CourseManager();

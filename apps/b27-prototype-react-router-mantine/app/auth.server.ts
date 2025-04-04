@@ -7,7 +7,8 @@ import {
 	Facebook,
 	LinkedIn,
 } from "@pete_keen/authentication-core/providers";
-import db from "./lib/db";
+import db from "./lib/db/index.server";
+import { authz } from "./authz";
 
 const databaseAdapter = DrizzleAdapter(db);
 
@@ -61,6 +62,12 @@ export const { authLoader, authAction, requireAuth, withAuth } = Auth({
 			redirectUri: "http://localhost:5173/auth/redirect/linkedin",
 		}),
 	],
+	callbacks: {
+		augmentUserData: authz.getAuthzData,
+		onUserCreated: authz.onUserCreated,
+		onUserUpdated: async () => {},
+		onUserDeleted: authz.onUserDeleted,
+	},
 	loggerOptions: {
 		level: "debug",
 		prefix: "RRAuth",

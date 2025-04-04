@@ -2,7 +2,8 @@ import { AppShell, Burger, Container, Paper } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { Outlet } from "react-router";
 import type { Route } from "./+types/layout";
-import { withAuth, requireAuth } from "../auth";
+import { loader as layoutLoader } from "./layout.loader.server";
+export { layoutLoader as loader };
 // import type { WithAuthHandlerArgs } from "@pete_keen/react-router-auth";
 import Header from "~/lib/components/header";
 
@@ -10,10 +11,6 @@ import Header from "~/lib/components/header";
 // 	return { user };
 // });
 
-export const loader = withAuth(async ({ user }) => {
-	// const { user } = await requireAuth(request);
-	return { user };
-});
 export default function Layout({ loaderData }: Route.ComponentProps) {
 	const { user } = loaderData;
 	console.log(user);

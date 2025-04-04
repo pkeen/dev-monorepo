@@ -28,10 +28,16 @@ export default [
 			// Dashboard-specific courses routes
 			...prefix("/courses", [
 				index("routes/admin/courses/index.tsx"),
+
 				// route("/create", "routes/dashboard/courses/create.tsx"),
 				// route("/create", "routes/dashboard/courses/create.tsx"),
 				// route("/:id", "routes/dashboard/courses/show.tsx"),
 				// route("/:id/edit", "routes/dashboard/courses/edit.tsx"),
+			]),
+			...prefix("/users", [
+				index("routes/admin/users/index.tsx"),
+				route("/:id", "routes/admin/users/show.tsx"),
+				route("/:id/edit", "routes/admin/users/edit.tsx"),
 			]),
 		]),
 		// ]),

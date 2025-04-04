@@ -1,5 +1,5 @@
 import { Table, getTableName, sql } from "drizzle-orm";
-import type { db } from "./index";
+import type { db } from "./index.server";
 
 // // Reset tables
 // export async function resetTable(db: db, table: Table) {

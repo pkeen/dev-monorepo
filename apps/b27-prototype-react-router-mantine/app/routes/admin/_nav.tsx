@@ -6,6 +6,7 @@ export const Nav = () => {
 		<Stack>
 			<Link to="/admin">Dashboard</Link>
 			<Link to="/admin/courses">Courses</Link>
+			<Link to="/admin/users">Users</Link>
 		</Stack>
 	);
 };

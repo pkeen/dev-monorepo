@@ -1,5 +1,5 @@
 import { drizzle } from "drizzle-orm/neon-http";
-import { env } from "~/env";
+import { env } from "~/env.server";
 
 if (!env.DATABASE_URL) {
 	throw new Error("DATABASE_URL not found in env");

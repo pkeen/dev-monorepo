@@ -10,7 +10,6 @@ import {
 import { JwtConfig } from "core/session-strategy/jwt-strategy/index.types";
 import { SessionConfig } from "core/session-strategy/db-strategy/index.types";
 import { SignInParams } from "core/signin-system";
-import { DisplayProvider } from "core/auth-system";
 
 // --- Calbacks Type ---
 // export interface AuthNCallbacks<Extra = {}> {
@@ -62,3 +61,12 @@ export type InferUserType<T extends IAuthManager<any>> = T extends IAuthManager<
 >
 	? User & U
 	: User;
+
+export type DisplayProvider = {
+	name: string;
+	key: string;
+	style: {
+		text: string;
+		bg: string;
+	};
+};

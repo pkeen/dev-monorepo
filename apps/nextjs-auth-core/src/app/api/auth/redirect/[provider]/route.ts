@@ -50,7 +50,7 @@ export const GET = async (
 			}
 			session.set("authState", authResult.authState);
 			const response = NextResponse.redirect(absoluteUrl("/", request));
-			response.headers.set("Set-Cookie", commitSession(session));
+			response.headers.set("Set-Cookie", commitSession(session.data));
 			return response;
 		} else if (authResult.type === "redirect") {
 			console.log("REDIRECT");

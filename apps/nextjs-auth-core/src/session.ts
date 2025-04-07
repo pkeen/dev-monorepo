@@ -13,10 +13,10 @@ const SESSION_COOKIE_OPTIONS = {
 
 export async function getSession(): Promise<Record<string, any> | null> {
 	const raw = (await cookies()).get(SESSION_COOKIE_NAME)?.value ?? "";
-	const data = raw ? parseCookieValue(raw) : {};
+	const authState = raw ? parseCookieValue(raw) : {};
 
 	// In production, you'd decode/decrypt or parse JWT here
-	return createSession(data);
+	return createSession(authState);
 }
 
 export function commitSession(session: Record<string, any>) {

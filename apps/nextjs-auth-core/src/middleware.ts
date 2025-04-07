@@ -5,11 +5,10 @@ import { authManager } from "@/auth";
 
 export async function middleware(req: NextRequest) {
 	console.log("MIDDLEWARE RUNNING");
-	const sessionCookie = req.cookies.get("session")?.value;
-	console.log("SESSION COOKIE:", sessionCookie);
 	const session = await getSession();
 	console.log("SESSION:", session);
-	const sessionState = session?.authState;
+	const sessionState = session?.data.authState;
+	console.log("SESSION STATE:", sessionState);
 
 	if (!sessionState) {
 		// Redirect unauthenticated users
@@ -25,7 +24,7 @@ export async function middleware(req: NextRequest) {
 
 	// If the token was refreshed, update the cookie
 	if (result.type === "refresh") {
-		const updatedCookie = await commitSession({
+		const updatedCookie = commitSession({
 			authState: result.authState,
 		});
 

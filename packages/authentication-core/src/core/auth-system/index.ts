@@ -28,7 +28,6 @@ import {
 	AuthProvider,
 } from "../providers/oauth/oauth-provider";
 import { JwtStrategyFn } from "../session-strategy";
-import crypto from "crypto";
 import type { RBAC } from "../../authorization";
 
 export type Providers = {

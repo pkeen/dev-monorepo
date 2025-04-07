@@ -1,4 +1,4 @@
-import crypto from "crypto";
+// import crypto from "crypto";
 import { UserAccountProfile } from "core/types";
 import { AdapterAccount } from "core/adapter";
 import { decodeJwt } from "jose";
@@ -34,7 +34,9 @@ export abstract class AbstractBaseOAuthProvider<
 	protected abstract tokenEndpoint: string;
 	// protected abstract scopes: ScopeType[];
 	protected abstract scopeMap: Record<ScopeType, string>;
-	protected state = crypto.randomBytes(32).toString("hex");
+	protected state = [...crypto.getRandomValues(new Uint8Array(32))]
+		.map((b) => b.toString(16).padStart(2, "0"))
+		.join("");
 
 	// Minimum scopes required by the application
 	protected abstract defaultScopes: ScopeType[];

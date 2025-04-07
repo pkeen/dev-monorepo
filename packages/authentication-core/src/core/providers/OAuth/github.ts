@@ -1,8 +1,6 @@
-// import crypto from "node:crypto";
-// import { AbstractOAuthProvider, OAuthProviderConfig } from "../index.types";
+
 import {
 	AbstractOAuthProvider,
-	OAuthProviderResponse,
 	OAuthProviderConfig,
 	BaseTokenSchema,
 } from "./oauth-provider";

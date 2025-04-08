@@ -7,8 +7,7 @@ import { getSession, commitSession } from "../session.server";
 import authSystem, { type CurrentUser } from "../auth";
 // import { authz } from "../auth";
 import type {
-	User,
-	InferUserType,
+	UserPublic as User,
 	IAuthManager,
 } from "@pete_keen/authentication-core";
 

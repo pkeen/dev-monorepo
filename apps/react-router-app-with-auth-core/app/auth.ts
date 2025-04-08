@@ -7,7 +7,7 @@ import {
 } from "@pete_keen/authentication-core/providers";
 import { createLogger } from "@pete_keen/logger";
 import {
-	AuthSystem,
+	// AuthSystem,
 	AuthManager,
 	createAuthManager,
 	type AuthNCallbacks,
@@ -15,7 +15,7 @@ import {
 	createAuthCallbacks,
 	type InferUserType,
 	// createEnrichUser,
-	type User,
+	// type User,
 	// createEnrichUser,
 } from "@pete_keen/authentication-core";
 import { DrizzleAdapter } from "@pete_keen/authentication-core/adapters";

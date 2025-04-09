@@ -1,4 +1,4 @@
-import { IAuthManager, User } from "@pete_keen/authentication-core";
+import { IAuthManager, UserPublic as User } from "@pete_keen/authentication-core";
 import { Logger } from "@pete_keen/logger";
 import {
 	ActionFunctionArgs,

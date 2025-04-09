@@ -10,7 +10,8 @@ import {
 	IAuthManager,
 } from "@pete_keen/authentication-core";
 import { DrizzleAdapter } from "@pete_keen/authentication-core/adapters";
-import db from "./db";
+import db from "@/db";
+import { authz } from "./authz";
 
 export const authManager = createAuthManager({
 	strategy: "jwt",
@@ -66,12 +67,12 @@ export const authManager = createAuthManager({
 		level: "debug",
 		prefix: "Auth",
 	},
-	// callbacks: {
-	// 	augmentUserData: authz.getAuthzData,
-	// 	onUserCreated: authz.onUserCreated,
-	// 	onUserUpdated: authz.onUserDeleted,
-	// 	onUserDeleted: authz.onUserDeleted,
-	// },
+	callbacks: {
+		augmentUserData: authz.getAuthzData,
+		onUserCreated: authz.onUserCreated,
+		onUserUpdated: authz.onUserDeleted,
+		onUserDeleted: authz.onUserDeleted,
+	},
 	// enrichUser: enrich,
 });
 
@@ -90,7 +91,7 @@ import {
 type User = { id: string; email: string };
 
 // Return type for most auth calls
-type AuthReturn = Promise<User | null>;
+type AuthReturn<Extra> = Promise<(User & Extra) | null>;
 
 // Minimal compatible context for middleware
 type MiddlewareContext = {
@@ -104,10 +105,10 @@ type MiddlewareHandler = (
 ) => NextResponse | Promise<NextResponse>;
 
 // Core unified type
-type AuthFunction = {
-	(...args: []): AuthReturn; // RSC
-	(...args: [NextApiRequest, NextApiResponse]): AuthReturn; // API Route (Pages Router)
-	(...args: [GetServerSidePropsContext]): AuthReturn; // GSSP (Pages Router)
+type AuthFunction<Extra> = {
+	(...args: []): AuthReturn<Extra>; // RSC
+	(...args: [NextApiRequest, NextApiResponse]): AuthReturn<Extra>; // API Route (Pages Router)
+	(...args: [GetServerSidePropsContext]): AuthReturn<Extra>; // GSSP (Pages Router)
 	(...args: [MiddlewareHandler]): MiddlewareHandler; // Middleware wrapper
 	(...args: [NextRequest, NextFetchEvent]): Promise<NextResponse>;
 };
@@ -218,7 +219,7 @@ export function createAuth<Extra>(authSystem: IAuthManager<Extra>) {
 		return result.authState.user;
 	}
 
-	const auth: AuthFunction = ((...args: any[]): any => {
+	const auth: AuthFunction<Extra> = ((...args: any[]): any => {
 		// Server Component usage: auth()
 		if (args.length === 0) {
 			return getUserFromRSC();
@@ -256,7 +257,7 @@ export function createAuth<Extra>(authSystem: IAuthManager<Extra>) {
 		}
 
 		throw new Error("Invalid usage of auth()");
-	}) as AuthFunction;
+	}) as AuthFunction<Extra>;
 
 	return auth;
 }

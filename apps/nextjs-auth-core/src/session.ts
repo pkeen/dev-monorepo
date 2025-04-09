@@ -45,7 +45,7 @@ export function destroySession() {
 	});
 }
 
-function parseCookieValue(value: string): Record<string, any> {
+export function parseCookieValue(value: string): Record<string, any> {
 	try {
 		return JSON.parse(value);
 	} catch {

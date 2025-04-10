@@ -48,19 +48,19 @@ export const authManager = createAuthManager({
 		new Google({
 			clientId: process.env.GOOGLE_CLIENT_ID!,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-			redirectUri: "http://localhost:5173/auth/redirect/google",
+			redirectUri: process.env.GOOGLE_REDIRECT_URI!,
 		}),
 
 		new Microsoft({
 			clientId: process.env.MICROSOFT_CLIENT_ID!,
 			clientSecret: process.env.MICROSOFT_CLIENT_SECRET!,
-			redirectUri: "http://localhost:5173/auth/redirect/microsoft",
+			redirectUri: process.env.MICROSOFT_REDIRECT_URI!,
 		}),
 
 		new Facebook({
 			clientId: process.env.FACEBOOK_CLIENT_ID!,
 			clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
-			redirectUri: "http://localhost:5173/auth/redirect/facebook",
+			redirectUri: process.env.FACEBOOK_REDIRECT_URI!,
 		}),
 	],
 	loggerOptions: {

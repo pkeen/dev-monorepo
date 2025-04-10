@@ -15,7 +15,7 @@ import { useEffect } from "react";
 import { requireAuth, withAuth, logout } from "../auth";
 import { authz } from "~/authz";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
-import type { User } from "@pete_keen/authentication-core";
+// import type { User } from "@pete_keen/authentication-core";
 // import type { WithAuthHandlerArgs } from "@pete_keen/react-router-auth";
 
 // import { Route } from "+types/dashboard";

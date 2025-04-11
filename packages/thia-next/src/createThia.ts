@@ -1,95 +1,16 @@
-import {
-	GitHub,
-	Google,
-	Zoom,
-	Microsoft,
-	Facebook,
-} from "@pete_keen/authentication-core/providers";
-import {
-	createAuthManager,
-	IAuthManager,
-} from "@pete_keen/authentication-core";
-import { DrizzleAdapter } from "@pete_keen/authentication-core/adapters";
-import db from "@/db";
-import { authz } from "./authz";
-
-export const authManager = createAuthManager({
-	strategy: "jwt",
-	jwtConfig: {
-		access: {
-			name: "access", // for now the names NEED to be access and refresh
-			secretKey: "asfjsdkfj",
-			algorithm: "HS256",
-			expiresIn: "30 minutes",
-			fields: ["id", "email"], // TODO: this currently does nothing
-		},
-		refresh: {
-			name: "refresh",
-			secretKey: "jldmff",
-			algorithm: "HS256",
-			expiresIn: "30 days",
-			fields: ["id"],
-		},
-	},
-	adapter: DrizzleAdapter(db),
-	providers: [
-		new GitHub({
-			clientId: process.env.GITHUB_CLIENT_ID!,
-			clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-			redirectUri: process.env.GITHUB_REDIRECT_URI!,
-		}),
-
-		new Zoom({
-			clientId: process.env.ZOOM_CLIENT_ID!,
-			clientSecret: process.env.ZOOM_CLIENT_SECRET!,
-			redirectUri: process.env.ZOOM_REDIRECT_URI!,
-		}),
-
-		new Google({
-			clientId: process.env.GOOGLE_CLIENT_ID!,
-			clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-			redirectUri: process.env.GOOGLE_REDIRECT_URI!,
-		}),
-
-		new Microsoft({
-			clientId: process.env.MICROSOFT_CLIENT_ID!,
-			clientSecret: process.env.MICROSOFT_CLIENT_SECRET!,
-			redirectUri: process.env.MICROSOFT_REDIRECT_URI!,
-		}),
-
-		new Facebook({
-			clientId: process.env.FACEBOOK_CLIENT_ID!,
-			clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
-			redirectUri: process.env.FACEBOOK_REDIRECT_URI!,
-		}),
-	],
-	loggerOptions: {
-		level: "debug",
-		prefix: "Auth",
-	},
-	callbacks: {
-		augmentUserData: authz.getAuthzData,
-		onUserCreated: authz.onUserCreated,
-		onUserUpdated: authz.onUserDeleted,
-		onUserDeleted: authz.onUserDeleted,
-	},
-	// enrichUser: enrich,
-});
-
 import type { NextApiRequest, NextApiResponse } from "next";
 import type { GetServerSidePropsContext } from "next";
 import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
-// import {
-// 	commitSession,
-// 	getSession,
-// 	SESSION_COOKIE_NAME,
-// 	parseCookieValue,
-// } from "./session";
-import { thiaSessionCookie } from "@/lib/thia/cookies";
-// import type { AppRouteHandlerFn } from "next/dist/server/future/route-modules/app-route/types";
+import {
+	commitSession,
+	getSession,
+	SESSION_COOKIE_NAME,
+	parseCookieValue,
+} from "./session";
+import { IAuthManager, UserPublic as User} from "@pete_keen/authentication-core";
 
 // Replace with your enriched user type
-type User = { id: string; email: string };
+// type User = { id: string; email: string };
 
 // Return type for most auth calls
 type AuthReturn<Extra> = Promise<(User & Extra) | null>;
@@ -121,9 +42,9 @@ function isNextRequest(arg: any): arg is NextRequest {
 	);
 }
 
-function isMiddlewareContext(arg: any): arg is MiddlewareContext {
-	return arg && typeof arg === "object" && "params" in arg;
-}
+// function isMiddlewareContext(arg: any): arg is MiddlewareContext {
+// 	return arg && typeof arg === "object" && "params" in arg;
+// }
 
 function isNextFetchEvent(arg: any): arg is NextFetchEvent {
 	return typeof arg?.waitUntil === "function";
@@ -137,17 +58,18 @@ function isGSSPContext(arg: any): arg is GetServerSidePropsContext {
 	return arg?.req && arg?.res;
 }
 
-export function createAuth<Extra>(authSystem: IAuthManager<Extra>) {
+export function createThia<Extra>(authSystem: IAuthManager<Extra>) {
 	// Now authSystem is strongly typed, and Extra is inferred
 
 	type EnrichedUser = User & Extra;
 
 	async function getUserFromRSC(): Promise<(User & Extra) | null> {
-		const session = await thiaSessionCookie.get();
+		const session = await getSession(); // <-- your helper
+		const authState = session?.get("authState");
 
-		if (!session) return null;
+		if (!authState) return null;
 
-		const result = await authSystem.validate(session.keyCards);
+		const result = await authSystem.validate(authState.keyCards);
 		if (result.type === "error" || result.type === "redirect") return null;
 
 		return result.authState.user;
@@ -156,23 +78,21 @@ export function createAuth<Extra>(authSystem: IAuthManager<Extra>) {
 	async function handleMiddlewareRequest(
 		req: NextRequest
 	): Promise<NextResponse> {
-		const session = await thiaSessionCookie.get();
-		console.log("SESSION:", session);
+		const session = await getSession();
+		const sessionState = session?.data.authState;
 
-		if (!session) {
-			console.log("NO SESSION");
-			return NextResponse.redirect(new URL("/api/thia/signin", req.url));
+		if (!sessionState) {
+			return NextResponse.redirect(new URL("/auth/login", req.url));
 		}
 
-		const result = await authSystem.validate(session.keyCards);
+		const result = await authSystem.validate(sessionState.keyCards);
 
 		if (result.type === "error" || result.type === "redirect") {
-			console.log("ERROR OR REDIRECT");
-			return NextResponse.redirect(new URL("/api/thia/signin", req.url));
+			return NextResponse.redirect(new URL("/auth/login", req.url));
 		}
 
 		if (result.type === "refresh") {
-			const cookieHeader = thiaSessionCookie.set(result.authState);
+			const cookieHeader = commitSession({ authState: result.authState });
 			const res = NextResponse.next();
 			res.headers.set("Set-Cookie", cookieHeader);
 			return res;
@@ -185,16 +105,17 @@ export function createAuth<Extra>(authSystem: IAuthManager<Extra>) {
 		req: NextApiRequest,
 		res: NextApiResponse
 	): Promise<(User & Extra) | null> {
-		const session = await thiaSessionCookie.get();
+		const raw = req.cookies[SESSION_COOKIE_NAME];
+		const authState = raw ? parseCookieValue(raw)?.authState : null;
 
-		if (!session) return null;
+		if (!authState) return null;
 
-		const result = await authSystem.validate(session.keyCards);
+		const result = await authSystem.validate(authState.keyCards);
 		if (result.type === "error" || result.type === "redirect") return null;
 
 		// (Optional) Refresh cookie here too
 		if (result.type === "refresh") {
-			const cookie = thiaSessionCookie.set(result.authState);
+			const cookie = commitSession({ authState: result.authState });
 			res.setHeader("Set-Cookie", cookie);
 		}
 
@@ -204,16 +125,16 @@ export function createAuth<Extra>(authSystem: IAuthManager<Extra>) {
 	async function getUserFromGSSP(
 		ctx: GetServerSidePropsContext
 	): Promise<(User & Extra) | null> {
-		const raw = ctx.req.cookies?.[thiaSessionCookie.name];
-		const session = raw ? JSON.parse(raw) : null;
+		const raw = ctx.req.cookies?.[SESSION_COOKIE_NAME];
+		const authState = raw ? parseCookieValue(raw)?.authState : null;
 
-		if (!session) return null;
+		if (!authState) return null;
 
-		const result = await authSystem.validate(session.keyCards);
+		const result = await authSystem.validate(authState.keyCards);
 		if (result.type === "error" || result.type === "redirect") return null;
 
 		if (result.type === "refresh") {
-			const cookie = thiaSessionCookie.set(result.authState);
+			const cookie = commitSession({ authState: result.authState });
 			ctx.res.setHeader("Set-Cookie", cookie);
 		}
 
@@ -261,11 +182,4 @@ export function createAuth<Extra>(authSystem: IAuthManager<Extra>) {
 	}) as AuthFunction<Extra>;
 
 	return auth;
-}
-
-export const auth = createAuth(authManager);
-
-export interface handlers {
-	GET: (req: NextRequest) => Promise<NextResponse>;
-	POST: (req: NextRequest) => Promise<NextResponse>;
 }

@@ -244,7 +244,7 @@ importers:
         specifier: ^5
         version: 5.7.3
 
-  apps/nextjs-thea-next:
+  apps/nextjs-thia-next:
     dependencies:
       '@pete_keen/authentication-core':
         specifier: workspace:*
@@ -255,6 +255,9 @@ importers:
       '@pete_keen/logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      '@pete_keen/thia-next':
+        specifier: workspace:*
+        version: link:../../packages/thia-next
       cookie:
         specifier: ^1.0.2
         version: 1.0.2
@@ -1044,7 +1047,7 @@ importers:
         specifier: ^5.0.0
         version: 5.7.3
 
-  packages/thea-next:
+  packages/thia-next:
     dependencies:
       '@pete_keen/authentication-core':
         specifier: workspace:*
@@ -1052,6 +1055,9 @@ importers:
       '@pete_keen/logger':
         specifier: workspace:*
         version: link:../logger
+      cookie:
+        specifier: ^1.0.2
+        version: 1.0.2
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^28.0.1

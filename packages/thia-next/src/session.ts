@@ -2,9 +2,10 @@
 import { cookies } from "next/headers";
 import { serialize, parse } from "cookie";
 
+// make these configurable
 export const SESSION_COOKIE_NAME = "auth_session_next";
-export const THEA_COOKIE_NAME = "thia_session";
-const SESSION_COOKIE_OPTIONS = {
+
+export const SESSION_COOKIE_OPTIONS = {
 	httpOnly: true,
 	secure: process.env.NODE_ENV === "production",
 	sameSite: "lax" as const,
@@ -68,21 +69,3 @@ function createSession(data: Record<string, any>) {
 		// },
 	};
 }
-
-export const thiaSessionCookie = {
-	get: async () => {
-		const raw = (await cookies()).get(THEA_COOKIE_NAME)?.value ?? "";
-		return raw ? JSON.parse(raw) : null;
-	},
-	set: (value: Record<string, any>) =>
-		serialize(
-			THEA_COOKIE_NAME,
-			JSON.stringify(value),
-			SESSION_COOKIE_OPTIONS
-		),
-	destroy: () =>
-		serialize(THEA_COOKIE_NAME, "", {
-			...SESSION_COOKIE_OPTIONS,
-			maxAge: 0,
-		}),
-};

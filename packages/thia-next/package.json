@@ -25,7 +25,8 @@
 	},
 	"dependencies": {
 		"@pete_keen/authentication-core": "workspace:*",
-		"@pete_keen/logger": "workspace:*"
+		"@pete_keen/logger": "workspace:*",
+		"cookie": "^1.0.2"
 	},
 	"peerDependencies": {
 		"react": "^19.0.0",

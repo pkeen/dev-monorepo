@@ -79,18 +79,19 @@ export async function handleAuthRoute(
 						authResult.authState
 					);
 
-					// spoof config - for now
-					const config = { redirectAfterLogin: "/" };
+					// TODO: spoof config - for now
+					const config = { redirectAfterLogin: "" };
 
 					const returnTo = await returnToCookie.get();
-
+					const headers = new Headers({
+						Location: config.redirectAfterLogin || returnTo || "/",
+					});
+					headers.append("Set-Cookie", sessionCookie);
+					headers.append("Set-Cookie", returnToCookie.destroy());
+					headers.append("Set-Cookie", oauthStateCookie.destroy());
 					return new Response(null, {
 						status: 302,
-						headers: {
-							Location:
-								config.redirectAfterLogin ?? returnTo ?? "/", // for now but add returnTo logic
-							"Set-Cookie": sessionCookie,
-						},
+						headers,
 					});
 				} else if (authResult.type === "redirect") {
 					// Add the Content-Type header here too.

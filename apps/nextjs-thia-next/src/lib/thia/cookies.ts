@@ -43,10 +43,15 @@ export const oauthStateCookie = {
 		const raw = (await cookies()).get("oauth_state")?.value ?? "";
 		return raw ? JSON.parse(raw) : null;
 	},
+	destroy: () =>
+		serialize("oauth_state", "", {
+			...SESSION_COOKIE_OPTIONS,
+			maxAge: 0,
+		}),
 };
 
 export const codeVerifierCookie = {
-	serialize: (codeVerifier: string) =>
+	set: (codeVerifier: string) =>
 		serialize("code_verifier", codeVerifier, {
 			path: "/",
 			httpOnly: true,
@@ -55,11 +60,11 @@ export const codeVerifierCookie = {
 };
 
 export const returnToCookie = {
-	serialize: (returnTo: string) =>
-		serialize("return_to", returnTo, {
+	set: (returnTo: string) =>
+		serialize("return_to", JSON.stringify(returnTo), {
 			path: "/",
 			httpOnly: true,
-			maxAge: 60 * 3, // 3 minutes
+			maxAge: 60 * 5, // 5 minutes
 		}),
 	parse: (cookieHeader: string | null) =>
 		cookieHeader ? JSON.parse(cookieHeader) : null,
@@ -67,4 +72,9 @@ export const returnToCookie = {
 		const raw = (await cookies()).get("return_to")?.value ?? "";
 		return raw ? JSON.parse(raw) : null;
 	},
+	destroy: () =>
+		serialize("return_to", "", {
+			...SESSION_COOKIE_OPTIONS,
+			maxAge: 0,
+		}),
 };

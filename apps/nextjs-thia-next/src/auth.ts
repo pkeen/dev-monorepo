@@ -85,7 +85,7 @@ import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 // 	SESSION_COOKIE_NAME,
 // 	parseCookieValue,
 // } from "./session";
-import { thiaSessionCookie } from "@/lib/thia/cookies";
+import { returnToCookie, thiaSessionCookie } from "@/lib/thia/cookies";
 // import type { AppRouteHandlerFn } from "next/dist/server/future/route-modules/app-route/types";
 
 // Replace with your enriched user type
@@ -137,6 +137,42 @@ function isGSSPContext(arg: any): arg is GetServerSidePropsContext {
 	return arg?.req && arg?.res;
 }
 
+/// TODO: need to make this configurable
+// const PUBLIC_ROUTES = ["/", "/about", "/api/thia/signin", "/api/thia/signup"];
+
+export const PUBLIC_ROUTES = [
+	{ pattern: "/", match: "exact" },
+	{ pattern: "/about", match: "exact" },
+	{ pattern: "/api/thia/signin", match: "exact" },
+	{ pattern: "/api/thia/signup", match: "exact" },
+	{ pattern: "/api/public/*", match: "prefix" },
+	{ pattern: "/static/**", match: "wildcard" },
+];
+
+export function isPublicRoute(
+	path: string,
+	routes: typeof PUBLIC_ROUTES
+): boolean {
+	return routes.some(({ pattern, match }) => {
+		if (match === "exact") return path === pattern;
+
+		if (match === "prefix")
+			return path.startsWith(pattern.replace(/\*$/, ""));
+
+		if (match === "wildcard") {
+			// turn /api/** into regex ^/api/.*$
+			const regex = new RegExp(
+				"^" +
+					pattern.replace(/\*\*/g, ".*").replace(/\*/g, "[^/]+") +
+					"$"
+			);
+			return regex.test(path);
+		}
+
+		return false;
+	});
+}
+
 export function createAuth<Extra>(authSystem: IAuthManager<Extra>) {
 	// Now authSystem is strongly typed, and Extra is inferred
 
@@ -156,19 +192,35 @@ export function createAuth<Extra>(authSystem: IAuthManager<Extra>) {
 	async function handleMiddlewareRequest(
 		req: NextRequest
 	): Promise<NextResponse> {
-		const session = await thiaSessionCookie.get();
-		console.log("SESSION:", session);
+		const url = req.nextUrl.clone();
+		const path = url.pathname;
+		console.log("PATH:", path);
 
+		// Allow public routes
+		if (isPublicRoute(path, PUBLIC_ROUTES)) {
+			console.log("PUBLIC ROUTE");
+			return NextResponse.next();
+		}
+
+		const session = await thiaSessionCookie.get();
+		console.log("THIA SESSION COOKIE:", session);
 		if (!session) {
 			console.log("NO SESSION");
-			return NextResponse.redirect(new URL("/api/thia/signin", req.url));
+			// Save the attempted path in a cookie before redirecting
+			const res = NextResponse.redirect(
+				new URL("/api/thia/signin", req.url)
+			);
+			res.headers.append("Set-Cookie", returnToCookie.set(path));
+			return res;
 		}
 
 		const result = await authSystem.validate(session.keyCards);
-
 		if (result.type === "error" || result.type === "redirect") {
-			console.log("ERROR OR REDIRECT");
-			return NextResponse.redirect(new URL("/api/thia/signin", req.url));
+			const res = NextResponse.redirect(
+				new URL("/api/thia/signin", req.url)
+			);
+			res.headers.append("Set-Cookie", returnToCookie.set(path));
+			return res;
 		}
 
 		if (result.type === "refresh") {
@@ -178,6 +230,7 @@ export function createAuth<Extra>(authSystem: IAuthManager<Extra>) {
 			return res;
 		}
 
+		// Valid session
 		return NextResponse.next();
 	}
 

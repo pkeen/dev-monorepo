@@ -1,19 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import type { GetServerSidePropsContext } from "next";
 import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
+import { thiaSessionCookie, returnToCookie } from "./cookies";
 import {
-	commitSession,
-	getSession,
-	SESSION_COOKIE_NAME,
-	parseCookieValue,
-} from "./session";
-import { IAuthManager, UserPublic as User} from "@pete_keen/authentication-core";
+	IAuthManager,
+	UserPublic as User,
+} from "@pete_keen/authentication-core";
 
 // Replace with your enriched user type
 // type User = { id: string; email: string };
 
 // Return type for most auth calls
-type AuthReturn<Extra> = Promise<(User & Extra) | null>;
+type ThiaReturn<Extra> = Promise<(User & Extra) | null>;
 
 // Minimal compatible context for middleware
 type MiddlewareContext = {
@@ -27,10 +25,10 @@ type MiddlewareHandler = (
 ) => NextResponse | Promise<NextResponse>;
 
 // Core unified type
-type AuthFunction<Extra> = {
-	(...args: []): AuthReturn<Extra>; // RSC
-	(...args: [NextApiRequest, NextApiResponse]): AuthReturn<Extra>; // API Route (Pages Router)
-	(...args: [GetServerSidePropsContext]): AuthReturn<Extra>; // GSSP (Pages Router)
+type ThiaFunction<Extra> = {
+	(...args: []): ThiaReturn<Extra>; // RSC
+	(...args: [NextApiRequest, NextApiResponse]): ThiaReturn<Extra>; // API Route (Pages Router)
+	(...args: [GetServerSidePropsContext]): ThiaReturn<Extra>; // GSSP (Pages Router)
 	(...args: [MiddlewareHandler]): MiddlewareHandler; // Middleware wrapper
 	(...args: [NextRequest, NextFetchEvent]): Promise<NextResponse>;
 };
@@ -58,18 +56,60 @@ function isGSSPContext(arg: any): arg is GetServerSidePropsContext {
 	return arg?.req && arg?.res;
 }
 
-export function createThia<Extra>(authSystem: IAuthManager<Extra>) {
+export type PublicRoutes = {
+	pattern: string;
+	match: "exact" | "prefix" | "wildcard";
+};
+
+export interface MiddlewareConfig {
+	publicRoutes: PublicRoutes[];
+}
+
+// export const PUBLIC_ROUTES: PublicRoutes[] = [
+// 	{ pattern: "/", match: "exact" },
+// 	{ pattern: "/about", match: "exact" },
+// 	{ pattern: "/api/thia/signin", match: "exact" },
+// 	{ pattern: "/api/thia/signup", match: "exact" },
+// 	{ pattern: "/api/public/*", match: "prefix" },
+// 	{ pattern: "/static/**", match: "wildcard" },
+// ];
+
+export function isPublicRoute(path: string, routes: PublicRoutes[]): boolean {
+	return routes.some(({ pattern, match }) => {
+		if (match === "exact") return path === pattern;
+
+		if (match === "prefix")
+			return path.startsWith(pattern.replace(/\*$/, ""));
+
+		if (match === "wildcard") {
+			// turn /api/** into regex ^/api/.*$
+			const regex = new RegExp(
+				"^" +
+					pattern.replace(/\*\*/g, ".*").replace(/\*/g, "[^/]+") +
+					"$"
+			);
+			return regex.test(path);
+		}
+
+		return false;
+	});
+}
+
+export function createThiaFunction<Extra>(
+	authSystem: IAuthManager<Extra>,
+	publicRoutes: PublicRoutes[]
+) {
 	// Now authSystem is strongly typed, and Extra is inferred
 
 	type EnrichedUser = User & Extra;
 
 	async function getUserFromRSC(): Promise<(User & Extra) | null> {
-		const session = await getSession(); // <-- your helper
-		const authState = session?.get("authState");
+		const session = await thiaSessionCookie.get();
+		const keyCards = session?.keyCards;
 
-		if (!authState) return null;
+		if (!keyCards) return null;
 
-		const result = await authSystem.validate(authState.keyCards);
+		const result = await authSystem.validate(keyCards);
 		if (result.type === "error" || result.type === "redirect") return null;
 
 		return result.authState.user;
@@ -78,26 +118,45 @@ export function createThia<Extra>(authSystem: IAuthManager<Extra>) {
 	async function handleMiddlewareRequest(
 		req: NextRequest
 	): Promise<NextResponse> {
-		const session = await getSession();
-		const sessionState = session?.data.authState;
+		const url = req.nextUrl.clone();
+		const path = url.pathname;
+		console.log("PATH:", path);
 
-		if (!sessionState) {
-			return NextResponse.redirect(new URL("/auth/login", req.url));
+		// Allow public routes
+		if (isPublicRoute(path, publicRoutes)) {
+			console.log("PUBLIC ROUTE");
+			return NextResponse.next();
 		}
 
-		const result = await authSystem.validate(sessionState.keyCards);
+		const session = await thiaSessionCookie.get();
+		console.log("THIA SESSION COOKIE:", session);
+		if (!session) {
+			console.log("NO SESSION");
+			// Save the attempted path in a cookie before redirecting
+			const res = NextResponse.redirect(
+				new URL("/api/thia/signin", req.url)
+			);
+			res.headers.append("Set-Cookie", returnToCookie.set(path));
+			return res;
+		}
 
+		const result = await authSystem.validate(session.keyCards);
 		if (result.type === "error" || result.type === "redirect") {
-			return NextResponse.redirect(new URL("/auth/login", req.url));
+			const res = NextResponse.redirect(
+				new URL("/api/thia/signin", req.url)
+			);
+			res.headers.append("Set-Cookie", returnToCookie.set(path));
+			return res;
 		}
 
 		if (result.type === "refresh") {
-			const cookieHeader = commitSession({ authState: result.authState });
+			const cookieHeader = thiaSessionCookie.set(result.authState);
 			const res = NextResponse.next();
 			res.headers.set("Set-Cookie", cookieHeader);
 			return res;
 		}
 
+		// Valid session
 		return NextResponse.next();
 	}
 
@@ -105,17 +164,16 @@ export function createThia<Extra>(authSystem: IAuthManager<Extra>) {
 		req: NextApiRequest,
 		res: NextApiResponse
 	): Promise<(User & Extra) | null> {
-		const raw = req.cookies[SESSION_COOKIE_NAME];
-		const authState = raw ? parseCookieValue(raw)?.authState : null;
+		const session = await thiaSessionCookie.get();
 
-		if (!authState) return null;
+		if (!session) return null;
 
-		const result = await authSystem.validate(authState.keyCards);
+		const result = await authSystem.validate(session.keyCards);
 		if (result.type === "error" || result.type === "redirect") return null;
 
 		// (Optional) Refresh cookie here too
 		if (result.type === "refresh") {
-			const cookie = commitSession({ authState: result.authState });
+			const cookie = thiaSessionCookie.set(result.authState);
 			res.setHeader("Set-Cookie", cookie);
 		}
 
@@ -125,23 +183,23 @@ export function createThia<Extra>(authSystem: IAuthManager<Extra>) {
 	async function getUserFromGSSP(
 		ctx: GetServerSidePropsContext
 	): Promise<(User & Extra) | null> {
-		const raw = ctx.req.cookies?.[SESSION_COOKIE_NAME];
-		const authState = raw ? parseCookieValue(raw)?.authState : null;
+		const raw = ctx.req.cookies?.[thiaSessionCookie.name];
+		const session = raw ? JSON.parse(raw) : null;
 
-		if (!authState) return null;
+		if (!session) return null;
 
-		const result = await authSystem.validate(authState.keyCards);
+		const result = await authSystem.validate(session.keyCards);
 		if (result.type === "error" || result.type === "redirect") return null;
 
 		if (result.type === "refresh") {
-			const cookie = commitSession({ authState: result.authState });
+			const cookie = thiaSessionCookie.set(result.authState);
 			ctx.res.setHeader("Set-Cookie", cookie);
 		}
 
 		return result.authState.user;
 	}
 
-	const auth: AuthFunction<Extra> = ((...args: any[]): any => {
+	const thia: ThiaFunction<Extra> = ((...args: any[]): any => {
 		// Server Component usage: auth()
 		if (args.length === 0) {
 			return getUserFromRSC();
@@ -179,7 +237,7 @@ export function createThia<Extra>(authSystem: IAuthManager<Extra>) {
 		}
 
 		throw new Error("Invalid usage of auth()");
-	}) as AuthFunction<Extra>;
+	}) as ThiaFunction<Extra>;
 
-	return auth;
+	return thia;
 }

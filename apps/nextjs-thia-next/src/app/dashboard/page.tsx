@@ -1,7 +1,7 @@
-import { auth } from "@/auth";
+import { thia } from "@/auth";
 
 export default async function Dashboard() {
-	const user = await auth();
+	const user = await thia();
 	console.log("USER:", user);
 	if (!user) {
 		return <div>Unauthorized</div>;

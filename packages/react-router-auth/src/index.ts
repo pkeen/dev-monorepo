@@ -15,7 +15,6 @@ import {
 	type AuthState,
 	type AuthConfig,
 	type UserPublic as User,
-	type Providers,
 	type DisplayProvider,
 } from "@pete_keen/authentication-core";
 import { createAuthHelpers } from "./createAuthHelpers";

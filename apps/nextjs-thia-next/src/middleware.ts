@@ -1,9 +1,9 @@
 // middleware.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getSession, commitSession } from "@/session";
-import { authManager, auth } from "@/auth";
+import { thia } from "@/auth";
 
-export const middleware = auth;
+export const middleware = thia;
 
 // export async function middleware(req: NextRequest) {
 // 	console.log("MIDDLEWARE RUNNING");

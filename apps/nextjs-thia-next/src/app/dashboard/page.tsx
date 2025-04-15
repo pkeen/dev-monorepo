@@ -9,7 +9,7 @@ export default async function Dashboard() {
 	return (
 		<>
 			<div>Dashboard</div>
-			<p>{user.email}</p>
+			<p>{user.role.name}</p>
 		</>
 	);
 }

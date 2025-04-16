@@ -50,11 +50,12 @@ export const { thia, handlers } = Thia({
 			clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
 			redirectUri: process.env.FACEBOOK_REDIRECT_URI!,
 		}),
-		new LinkedIn({
-			clientId: process.env.LINKEDIN_CLIENT_ID!,
-			clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
-			redirectUri: process.env.LINKEDIN_REDIRECT_URI!,
-		}),
+		// new LinkedIn({
+		// 	clientId: process.env.LINKEDIN_CLIENT_ID!,
+		// 	clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
+		// 	redirectUri: process.env.LINKEDIN_REDIRECT_URI!,
+		// }),
+		// Will leave this for now until creating a B27 linkedIn Page
 	],
 	loggerOptions: {
 		level: "debug",

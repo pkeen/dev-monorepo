@@ -65,17 +65,17 @@ export interface MiddlewareConfig {
 	publicRoutes: PublicRoutes[];
 }
 
-// export const PUBLIC_ROUTES: PublicRoutes[] = [
-// 	{ pattern: "/", match: "exact" },
-// 	{ pattern: "/about", match: "exact" },
-// 	{ pattern: "/api/thia/signin", match: "exact" },
-// 	{ pattern: "/api/thia/signup", match: "exact" },
-// 	{ pattern: "/api/public/*", match: "prefix" },
-// 	{ pattern: "/static/**", match: "wildcard" },
-// ];
+export const THIA_ROUTES: PublicRoutes[] = [
+	{ pattern: "/api/thia/signin", match: "exact" },
+	{ pattern: "/api/thia/signup", match: "exact" },
+	{ pattern: "/api/thia/redirect/*", match: "prefix" },
+];
 
 export function isPublicRoute(path: string, routes: PublicRoutes[]): boolean {
-	return routes.some(({ pattern, match }) => {
+	// merge added routes with thia routes
+	const mergedRoutes = [...routes, ...THIA_ROUTES];
+
+	return mergedRoutes.some(({ pattern, match }) => {
 		if (match === "exact") return path === pattern;
 
 		if (match === "prefix")
@@ -129,7 +129,7 @@ export function createThiaFunction<Extra>(
 		}
 
 		const session = await thiaSessionCookie.get();
-		console.log("THIA SESSION COOKIE:", session);
+		// console.log("THIA SESSION COOKIE:", session);
 		if (!session) {
 			console.log("NO SESSION");
 			// Save the attempted path in a cookie before redirecting
@@ -141,6 +141,7 @@ export function createThiaFunction<Extra>(
 		}
 
 		const result = await authSystem.validate(session.keyCards);
+		// console.log("AUTH SYSTEM VALIDATION:", result);
 		if (result.type === "error" || result.type === "redirect") {
 			const res = NextResponse.redirect(
 				new URL("/api/thia/signin", req.url)

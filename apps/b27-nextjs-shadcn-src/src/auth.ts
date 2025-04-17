@@ -28,6 +28,7 @@ export const { thia, handlers } = Thia({
 			fields: ["id"],
 		},
 	},
+	secret: "adafdsfsd",
 	adapter: DrizzleAdapter(db),
 	providers: [
 		new Zoom({

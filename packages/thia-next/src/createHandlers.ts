@@ -2,6 +2,7 @@
 import { IAuthManager } from "@pete_keen/authentication-core";
 import { renderSignInPage } from "./views/signin";
 import { oauthStateCookie, returnToCookie, thiaSessionCookie } from "./cookies";
+import { verifyCsrfAndParseForm } from "./csrf";
 
 export async function handleAuthRoute(
 	request: Request,
@@ -97,9 +98,11 @@ export async function handleAuthRoute(
 
 	if (method === "POST") {
 		if (action === "signin") {
-			const formData = await request.formData();
+			const { valid, formData } = await verifyCsrfAndParseForm(request);
+			if (!valid) {
+				return Response.redirect("/api/thia/signin", 302);
+			}
 			const provider = formData.get("provider");
-			console.log("Provider:", provider);
 			if (!provider || typeof provider !== "string") {
 				return Response.redirect("/api/thia/signin", 302); // or manually build a 302 if cookie is needed
 			}
@@ -123,6 +126,10 @@ export async function handleAuthRoute(
 		}
 
 		if (action === "signout") {
+			const { valid, formData } = await verifyCsrfAndParseForm(request);
+			if (!valid) {
+				return Response.redirect("/api/thia/error", 302);
+			}
 			return new Response("<p>Signed out</p>", {
 				headers: { "Content-Type": "text/html" },
 				status: 200,

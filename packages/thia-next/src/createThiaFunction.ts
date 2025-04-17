@@ -6,6 +6,7 @@ import {
 	IAuthManager,
 	UserPublic as User,
 } from "@pete_keen/authentication-core";
+import { setCsrfCookieIfNotExists } from "./csrf";
 
 // Replace with your enriched user type
 // type User = { id: string; email: string };
@@ -121,11 +122,15 @@ export function createThiaFunction<Extra>(
 		const url = req.nextUrl.clone();
 		const path = url.pathname;
 		console.log("PATH:", path);
+		// Create shared response object
+		const res = NextResponse.next();
+		// Attach CSRF cookie if missing
+		setCsrfCookieIfNotExists(req, res);
 
 		// Allow public routes
 		if (isPublicRoute(path, publicRoutes)) {
 			console.log("PUBLIC ROUTE");
-			return NextResponse.next();
+			return res;
 		}
 
 		const session = await thiaSessionCookie.get();
@@ -146,19 +151,20 @@ export function createThiaFunction<Extra>(
 			const res = NextResponse.redirect(
 				new URL("/api/thia/signin", req.url)
 			);
+			// Attach CSRF cookie if missing
+			setCsrfCookieIfNotExists(req, res);
 			res.headers.append("Set-Cookie", returnToCookie.set(path));
 			return res;
 		}
 
 		if (result.type === "refresh") {
 			const cookieHeader = thiaSessionCookie.set(result.authState);
-			const res = NextResponse.next();
 			res.headers.set("Set-Cookie", cookieHeader);
 			return res;
 		}
 
 		// Valid session
-		return NextResponse.next();
+		return res;
 	}
 
 	async function getUserFromApiRoute(

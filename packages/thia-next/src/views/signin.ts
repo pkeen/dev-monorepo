@@ -1,7 +1,11 @@
 // lib/auth/views/signin.ts
 import type { DisplayProvider } from "@pete_keen/authentication-core";
+// import { getCsrfToken } from "csrf.client";
+import { csrfCookie } from "../csrf";
 
-export function renderSignInPage(providers: DisplayProvider[]): Response {
+export async function renderSignInPage(
+	providers: DisplayProvider[]
+): Promise<Response> {
 	const buttons = providers
 		.map(
 			(provider) => `
@@ -15,6 +19,8 @@ export function renderSignInPage(providers: DisplayProvider[]): Response {
 		)
 		.join("");
 
+	const csrfToken = await csrfCookie.get();
+
 	const html = `
     <html>
       <body>
@@ -27,6 +33,8 @@ export function renderSignInPage(providers: DisplayProvider[]): Response {
                 ">
             <form method="POST" action="/api/thia/signin">
                 <div style="display:block">
+                <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                    <p>csrf: ${csrfToken}</p>
                     <h1 style="textAlign: center; fontSize: 22px; marginBottom: 10px;">
                         Continue with
                     </h1>

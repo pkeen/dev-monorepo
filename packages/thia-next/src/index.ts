@@ -5,10 +5,11 @@ import {
 import { createHandlers } from "./createHandlers";
 import type { IAuthManager, AuthConfig } from "@pete_keen/authentication-core";
 import { createAuthManager } from "@pete_keen/authentication-core";
-import { createLogger } from "@pete_keen/logger";
+import { initCsrf } from "./csrf";
 
 interface extendedAuthConfig {
 	middleware: MiddlewareConfig;
+	secret: string;
 }
 
 export type ThiaNextConfig<Extra> = AuthConfig<Extra> & extendedAuthConfig;
@@ -31,3 +32,6 @@ const Thia = <C extends ThiaNextConfig<InferExtraFromConfig<C>>>(config: C) => {
 };
 
 export default Thia;
+
+export { CsrfField } from "./csrf.client";
+export { verifyCsrfAndParseForm } from "./csrf";

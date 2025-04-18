@@ -130,9 +130,18 @@ export async function handleAuthRoute(
 			if (!valid) {
 				return Response.redirect("/api/thia/error", 302);
 			}
-			return new Response("<p>Signed out</p>", {
-				headers: { "Content-Type": "text/html" },
-				status: 200,
+			const session = await thiaSessionCookie.get();
+
+			const authState = await authManager.signOut(session?.keyCards);
+
+			const sessionCookie = thiaSessionCookie.set(authState);
+			const headers = new Headers({
+				Location: "/",
+			});
+			headers.append("Set-Cookie", sessionCookie);
+			return new Response(null, {
+				status: 302,
+				headers,
 			});
 		}
 	}

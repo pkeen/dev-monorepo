@@ -402,5 +402,6 @@ export const { thia, handlers } = Thia({
 			{ pattern: "/static/**", match: "wildcard" },
 		],
 	},
+	secret: "asfjsdkfj",
 	// enrichUser: enrich,
 });

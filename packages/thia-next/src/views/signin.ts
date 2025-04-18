@@ -34,7 +34,6 @@ export async function renderSignInPage(
             <form method="POST" action="/api/thia/signin">
                 <div style="display:block">
                 <input type="hidden" name="csrfToken" value="${csrfToken}" />
-                    <p>csrf: ${csrfToken}</p>
                     <h1 style="textAlign: center; fontSize: 22px; marginBottom: 10px;">
                         Continue with
                     </h1>

@@ -9,18 +9,17 @@ export function getCsrfToken() {
 		?.split("=")[1];
 }
 
-export function useCsrfToken() {
-	const [token, setToken] = useState<string | null>(null);
-
-	useEffect(() => {
-		const token = getCsrfToken();
-		if (token) setToken(token);
-	}, []);
-
-	return token;
+export function CsrfField({ csrfToken }: { csrfToken: string | null }) {
+	return <input type="hidden" name="csrfToken" value={csrfToken || ""} />;
 }
 
-export function CsrfField() {
-	const csrfToken = getCsrfToken() || "";
-	return <input type="hidden" name="csrfToken" value={csrfToken} />;
-}
+// export function useCsrfToken() {
+// 	const [token, setToken] = useState<string | null>(null);
+
+// 	useEffect(() => {
+// 		const token = getCsrfToken();
+// 		if (token) setToken(token);
+// 	}, []);
+
+// 	return token;
+// }

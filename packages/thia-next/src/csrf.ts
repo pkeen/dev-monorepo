@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { ICookie } from "./cookies";
 import { NextRequest, NextResponse } from "next/server";
 
-export const CSRF_COOKIE_NAME = "thia_csrf_token";
+export const CSRF_COOKIE_NAME = "thia_csrf";
 const SESSION_COOKIE_OPTIONS = {
 	// httpOnly: true,
 	secure: process.env.NODE_ENV === "production",
@@ -32,10 +32,10 @@ export const csrfCookie: ICookie<string> = {
 		}),
 };
 
-export function initCsrf() {
-	const { raw } = createCsrfToken();
-	return csrfCookie.set(raw); // todo: add hashing
-}
+// export function initCsrf() {
+// 	const { raw } = createCsrfToken();
+// 	return csrfCookie.set(raw); // todo: add hashing
+// }
 
 export function setCsrfCookieIfNotExists(req: NextRequest, res: NextResponse) {
 	// const raw = (await cookies()).get(CSRF_COOKIE_NAME)?.value ?? "";
@@ -69,6 +69,48 @@ export function createCsrfToken() {
 // export function csrfMiddleware(req: NextRequest, ctx: MiddlewareContext) {
 // 	const isGET = req.method === "GET";
 // }
+
+// export function getCsrfToken(req?: Request): string | null {
+// 	// ✅ Client/browser context
+// 	if (typeof window !== "undefined") {
+// 		return (
+// 			document.cookie
+// 				.split("; ")
+// 				.find((row) => row.startsWith(`${CSRF_COOKIE_NAME}=`))
+// 				?.split("=")[1] ?? null
+// 		);
+// 	}
+
+// 	// // ✅ Server context WITH a request object
+// 	// if (req) {
+// 	// 	const cookie = req.headers.get("cookie") || "";
+// 	// 	const parsed = parse(cookie);
+// 	// 	return parsed[CSRF_COOKIE_NAME] ?? null;
+// 	// }
+
+// 	// ✅ Server context (React Server Component)
+// 	try {
+// 		const cookieStore = cookies(); // from `next/headers`
+// 		const cookie = cookieStore.get(CSRF_COOKIE_NAME)?.value;
+// 	} catch {
+// 		return null; // gracefully handle if `cookies()` throws (e.g. outside RSC)
+// 	}
+// }
+
+export function getCsrfTokenClient() {
+	return document.cookie
+		.split("; ")
+		.find((row) => row.startsWith(`${CSRF_COOKIE_NAME}="`))
+		?.split("=")[1];
+}
+
+export async function getCsrfTokenServer() {
+	try {
+		return await csrfCookie.get();
+	} catch {
+		return null; // gracefully handle if `cookies()` throws (e.g. outside RSC)
+	}
+}
 
 export function validateCsrfToken(raw: string, token: string, secret: string) {
 	// const expected = createHash("sha256")
@@ -113,15 +155,15 @@ export async function verifyCsrfAndParseForm(
 // export function CsrfField({ token }: { token: string }) {
 // 	return <input type="hidden" name="csrfToken" value={token} />;
 // }
-export function getCsrfToken() {
-	return document.cookie
-		.split("; ")
-		.find((row) => row.startsWith(`${CSRF_COOKIE_NAME}="`))
-		?.split("=")[1];
-}
+// export function getCsrfToken() {
+// 	return document.cookie
+// 		.split("; ")
+// 		.find((row) => row.startsWith(`${CSRF_COOKIE_NAME}="`))
+// 		?.split("=")[1];
+// }
 
-export function renderCsrfInput() {
-	const csrfToken = getCsrfToken();
-	if (!csrfToken) return "";
-	return `<input type="hidden" name="csrfToken" value="${csrfToken}" />`;
-}
+// export function renderCsrfInput() {
+// 	const csrfToken = getCsrfToken();
+// 	if (!csrfToken) return "";
+// 	return `<input type="hidden" name="csrfToken" value="${csrfToken}" />`;
+// }

@@ -5,7 +5,6 @@ import {
 import { createHandlers } from "./createHandlers";
 import type { IAuthManager, AuthConfig } from "@pete_keen/authentication-core";
 import { createAuthManager } from "@pete_keen/authentication-core";
-import { initCsrf } from "./csrf";
 
 interface extendedAuthConfig {
 	middleware: MiddlewareConfig;
@@ -34,4 +33,8 @@ const Thia = <C extends ThiaNextConfig<InferExtraFromConfig<C>>>(config: C) => {
 export default Thia;
 
 export { CsrfField } from "./csrf.client";
-export { verifyCsrfAndParseForm } from "./csrf";
+export {
+	verifyCsrfAndParseForm,
+	getCsrfTokenClient,
+	getCsrfTokenServer,
+} from "./csrf";

@@ -1,6 +1,6 @@
 import { Avatar, Button, Menu } from "@mantine/core";
 import { useFetcher } from "react-router";
-import type { User } from "@pete_keen/authentication-core";
+import type { UserPublic as User } from "@pete_keen/authentication-core";
 
 export const AvatarOrSignin = ({ user }: { user: User | null }) => {
 	const fetcher = useFetcher();

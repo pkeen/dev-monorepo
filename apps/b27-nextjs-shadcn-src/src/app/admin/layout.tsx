@@ -1,6 +1,6 @@
 // components/layout.tsx
 import { AdminLayout } from "@/lib/components";
-import { MinimalHeader } from "@/lib/components";
+import { MinimalHeader, AdminSidebar } from "@/lib/components";
 import { thia } from "@/auth";
 
 export default async function Layout({
@@ -12,7 +12,7 @@ export default async function Layout({
 	return (
 		<AdminLayout
 			header={<MinimalHeader user={user} />}
-			sidebar={null}
+			sidebar={<AdminSidebar />}
 			footer={null}
 			children={children}
 		/>

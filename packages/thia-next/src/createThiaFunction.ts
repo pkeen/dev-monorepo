@@ -27,11 +27,11 @@ type MiddlewareHandler = (
 
 // Core unified type
 type ThiaFunction<Extra> = {
-	(...args: []): ThiaReturn<Extra>; // RSC
-	(...args: [NextApiRequest, NextApiResponse]): ThiaReturn<Extra>; // API Route (Pages Router)
+    (...args: [NextApiRequest, NextApiResponse]): ThiaReturn<Extra>; // API Route (Pages Router)
 	(...args: [GetServerSidePropsContext]): ThiaReturn<Extra>; // GSSP (Pages Router)
 	(...args: [MiddlewareHandler]): MiddlewareHandler; // Middleware wrapper
 	(...args: [NextRequest, NextFetchEvent]): Promise<NextResponse>;
+	(...args: []): ThiaReturn<Extra>; // RSC
 };
 
 function isNextRequest(arg: any): arg is NextRequest {

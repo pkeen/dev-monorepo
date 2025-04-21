@@ -10,13 +10,13 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import type { UserPublic as User } from "@pete_keen/authentication-core";
+import type { ThiaUser } from "@/auth";
 
 export function Avatar({
 	user,
 	className,
 }: {
-	user: User | null;
+	user: ThiaUser;
 	className?: string;
 }) {
 	return (
@@ -27,7 +27,7 @@ export function Avatar({
 	);
 }
 
-export function AvatarOrSignin({ user }: { user: User | null }) {
+export function AvatarOrSignin({ user }: { user: ThiaUser }) {
 	if (!user) {
 		return (
 			<Button asChild variant="default">
@@ -41,6 +41,9 @@ export function AvatarOrSignin({ user }: { user: User | null }) {
 				<Avatar className="cursor-pointer" user={user} />
 			</DropdownMenuTrigger>
 			<DropdownMenuContent>
+				{user.role.key === "admin" && (
+					<DropdownMenuItem>Admin</DropdownMenuItem>
+				)}
 				<DropdownMenuItem>Profile</DropdownMenuItem>
 				<DropdownMenuItem>Logout</DropdownMenuItem>
 			</DropdownMenuContent>

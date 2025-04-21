@@ -79,3 +79,15 @@ export const { thia, handlers } = Thia({
 		],
 	},
 });
+
+export type ThiaUser = Awaited<ReturnType<typeof thia>>;
+
+// // Now extract the user from thia
+// export type AuthUser = NoArgsReturnType<typeof thia>;
+
+// // Helper type: Extract return type of no-args overload
+// type NoArgsReturnType<T> = T extends {
+// 	(): Promise<infer R>;
+// }
+// 	? R
+// 	: never;

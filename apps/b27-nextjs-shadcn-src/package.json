@@ -2,11 +2,17 @@
 	"name": "b27-nextjs-shadcn-src",
 	"version": "0.1.0",
 	"private": true,
+	"type": "module",
 	"scripts": {
 		"dev": "next dev --turbopack",
 		"build": "next build",
 		"start": "next start",
-		"lint": "next lint"
+		"lint": "next lint",
+		"db:push": "pnpm drizzle-kit push --verbose",
+		"db:generate": "pnpm drizzle-kit generate",
+		"db:migrate": "pnpm drizzle-kit migrate",
+		"db:studio": "pnpm drizzle-kit studio",
+		"db:seed": "NODE_ENV=development tsx ./src/lib/db/seed/script.ts"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^5.0.1",
@@ -42,6 +48,8 @@
 		"eslint": "^9",
 		"eslint-config-next": "15.3.0",
 		"tailwindcss": "^4",
-		"typescript": "^5"
+		"typescript": "^5",
+		"drizzle-kit": "^0.28.1",
+		"dotenv": "^16.4.5"
 	}
 }

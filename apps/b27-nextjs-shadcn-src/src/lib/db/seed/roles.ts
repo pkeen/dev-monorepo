@@ -1,7 +1,6 @@
 // seed.ts
-await(async () => {
+export default async () => {
 	import("dotenv").then((dotenv) => dotenv.config());
-
-	const { rbac } = await import("~/authz");
+	const { rbac } = await import("@/authz");
 	await rbac.init();
-})();
+};

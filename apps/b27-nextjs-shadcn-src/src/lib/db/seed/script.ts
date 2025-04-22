@@ -1,4 +1,4 @@
-import courseSeed from "./courses";
+// import courseSeed from "./courses";
 import rolesSeed from "./roles";
 
 const seed = async () => {

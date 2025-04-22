@@ -36,7 +36,7 @@ export function lower(email: AnyPgColumn): SQL {
 export function defineTables(
 	schema: Partial<DefaultPostgresSchema> = {}
 ): Required<DefaultPostgresSchema> {
-	const authSchema = pgSchema("auth");
+	const authSchema = pgSchema("thia");
 
 	const usersTable =
 		schema.usersTable ??
@@ -44,8 +44,8 @@ export function defineTables(
 			"users",
 			{
 				id: uuid("id").defaultRandom().primaryKey(),
-				name: text("name"),
-				email: text("email").unique(),
+				name: text("name").notNull(),
+				email: text("email").unique().notNull(),
 				emailVerified: timestamp("emailVerified", { mode: "date" }),
 				image: text("image"),
 				password: text("password"),
@@ -222,13 +222,13 @@ export type DefaultPostgresUsersTable = PgTableWithColumns<{
 		name: DefaultPostgresColumn<{
 			columnType: "PgVarchar" | "PgText";
 			data: string;
-			notNull: boolean;
+			notNull: true;
 			dataType: "string";
 		}>;
 		email: DefaultPostgresColumn<{
 			columnType: "PgVarchar" | "PgText";
 			data: string;
-			notNull: boolean;
+			notNull: true;
 			dataType: "string";
 		}>;
 		emailVerified: DefaultPostgresColumn<{

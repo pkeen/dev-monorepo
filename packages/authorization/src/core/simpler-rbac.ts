@@ -1,4 +1,4 @@
-import { RBACAdapter } from "adapters";
+import { DBRole, RBACAdapter } from "adapters";
 import { Policy } from "./policy";
 import {
 	ModuleConfig,
@@ -46,12 +46,14 @@ export interface RBACModule<T extends ReadonlyArray<Role>>
 		userId: string,
 		select: ExtendedSelectRole<T>
 	) => Promise<void>;
+	updateUserRoleById: (userId: string, roleId: string) => Promise<void>;
 	assignRole: (
 		userId: string,
 		select: ExtendedSelectRole<T>
 	) => Promise<void>;
 	enrichUser: (user: User) => Promise<User & RBACEnrichedData>;
 	getUserRole: (user: User) => Promise<RBACEnrichedData>;
+	getRoles: () => Promise<DBRole[]>;
 }
 
 /**
@@ -167,14 +169,15 @@ export const rbacModule = <T extends ReadonlyArray<Role>>(
 			const role = await getUserRole(user);
 			return { ...user, ...role };
 		},
-        getAuthzData: async (userId: string) => {
-            const role = await getUserRole({ id: userId });
-            return { ...role };
-        },
+		getAuthzData: async (userId: string) => {
+			const role = await getUserRole({ id: userId });
+			return { ...role };
+		},
 		init: async () => {
 			await db.seed([...config.items]);
 		},
 		getUserRole,
+		getRoles: db.getRoles,
 		updateUserRole: async (
 			userId: string,
 			select?: ExtendedSelectRole<T>
@@ -194,6 +197,14 @@ export const rbacModule = <T extends ReadonlyArray<Role>>(
 			}
 
 			return db.updateUserRole(userId, role);
+		},
+		updateUserRoleById: async (userId: string, roleId: string) => {
+			const role = await db.getRoleById(roleId);
+			if (!role) {
+				throw new Error(`Role ${roleId} does not exist`);
+			}
+
+			return db.updateUserRoleById(userId, roleId);
 		},
 		assignRole,
 		onUserCreated: async (user: User) => {

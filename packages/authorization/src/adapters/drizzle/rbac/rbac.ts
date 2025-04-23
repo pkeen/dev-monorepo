@@ -10,7 +10,7 @@ import { Role } from "../../../core/simpler-rbac";
  * Ive got to single role per user for now
  */
 
-interface DBRole extends Role {
+export interface DBRole extends Role {
 	id: string;
 }
 
@@ -31,8 +31,14 @@ export const RBACAdapter = (
 		return role ?? null;
 	};
 
+	const getRoles = async () => {
+		const roles = await db.select().from(schema.rolesTable);
+		return roles;
+	};
+
 	return {
 		getRole,
+		getRoles,
 		seed: async (roles: Role[]) => {
 			await db
 				.insert(schema.rolesTable)
@@ -64,6 +70,13 @@ export const RBACAdapter = (
 			}));
 
 			return roles[0] ?? null;
+		},
+		getRoleById: async (id: string) => {
+			const [role] = await db
+				.select()
+				.from(schema.rolesTable)
+				.where(eq(schema.rolesTable.id, id));
+			return role ?? null;
 		},
 		// updateUserRoles: async (userId: string, roles: Role[]) => {
 		// 	//update user's role
@@ -99,6 +112,12 @@ export const RBACAdapter = (
 				.set({ roleId: dbRole.id })
 				.where(eq(schema.userRolesTable.userId, userId));
 		},
+		updateUserRoleById: async (userId: string, roleId: string) => {
+			await db
+				.update(schema.userRolesTable)
+				.set({ roleId })
+				.where(eq(schema.userRolesTable.userId, userId));
+		},
 		deleteUserRoles: async (userId: string) => {
 			await db
 				.delete(schema.userRolesTable)
@@ -112,7 +131,10 @@ export interface RBACAdapter {
 	getUserRole: (userId: string) => Promise<Role>;
 	// createUserRoles: (userId: string, roles: Role[]) => Promise<void>;
 	updateUserRole: (userId: string, role: Role) => Promise<void>;
+	updateUserRoleById: (userId: string, roleId: string) => Promise<void>;
 	deleteUserRoles: (userId: string) => Promise<void>;
-	getRole: (name: string) => Promise<Role | null>;
+	getRole: (key: string) => Promise<Role | null>;
 	assignRole: (userId: string, role: Role) => Promise<void>;
+	getRoles: () => Promise<DBRole[]>;
+	getRoleById: (id: string) => Promise<Role | null>;
 }

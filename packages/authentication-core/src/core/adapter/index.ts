@@ -1,4 +1,4 @@
-import { UserProfile } from "../types";
+import { UserPublic } from "../types";
 import { SignupCredentials } from "../providers/credentials/index.types";
 /**
  * WARNING: This module takes heavy influence from next auth.
@@ -11,7 +11,7 @@ import { SignupCredentials } from "../providers/credentials/index.types";
  * using the information (profile data) returned by the identity provider.
  * A corresponding account is also created and linked to the user.
  */
-export interface AdapterUser extends UserProfile {
+export interface AdapterUser extends UserPublic {
 	/** A unique identifier for the user. */
 	id: string;
 	/** The user's email address. */
@@ -25,7 +25,7 @@ export interface AdapterUser extends UserProfile {
 	/*
 	 * TBD if image is required
 	 */
-	image?: string | null;
+	// image?: string | null;
 	// /**
 	//  * Password - this may be used for credential based sign in only - for now thats the only way
 	//  * Should be optional
@@ -159,14 +159,14 @@ export interface Adapter {
 	//  *
 	//  * See also [User management](https://authjs.dev/guides/creating-a-database-adapter#user-management)
 	//  */
-	// updateUser?(
-	// 	user: Partial<AdapterUser> & Pick<AdapterUser, "id">
-	// ): Awaitable<AdapterUser>;
-	// /**
-	//  * @todo This method is currently not invoked yet.
-	//  *
-	//  * See also [User management](https://authjs.dev/guides/creating-a-database-adapter#user-management)
-	//  */
+	updateUser(
+		user: Partial<AdapterUser> & Pick<AdapterUser, "id">
+	): Promise<AdapterUser>;
+	/**
+	 * @todo This method is currently not invoked yet.
+	 *
+	 * See also [User management](https://authjs.dev/guides/creating-a-database-adapter#user-management)
+	 */
 	// deleteUser?(
 	// 	userId: string
 	// ): Promise<void> | Awaitable<AdapterUser | null | undefined>;

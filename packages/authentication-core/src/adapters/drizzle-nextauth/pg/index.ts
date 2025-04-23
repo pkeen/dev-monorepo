@@ -105,23 +105,23 @@ export function PostgresDrizzleAdapter(
 		// 		user: AdapterUser;
 		// 	} | null>;
 		// },
-		// async updateUser(data: Partial<AdapterUser> & Pick<AdapterUser, "id">) {
-		// 	if (!data.id) {
-		// 		throw new Error("No user id.");
-		// 	}
+		async updateUser(data: Partial<AdapterUser> & Pick<AdapterUser, "id">) {
+			if (!data.id) {
+				throw new Error("No user id.");
+			}
 
-		// 	const [result] = await client
-		// 		.update(usersTable)
-		// 		.set(data)
-		// 		.where(eq(usersTable.id, data.id))
-		// 		.returning();
+			const [result] = await client
+				.update(usersTable)
+				.set(data)
+				.where(eq(usersTable.id, data.id))
+				.returning();
 
-		// 	if (!result) {
-		// 		throw new Error("No user found.");
-		// 	}
+			if (!result) {
+				throw new Error("No user found.");
+			}
 
-		// 	return result as Awaitable<AdapterUser>;
-		// },
+			return result;
+		},
 		// async updateSession(
 		// 	data: Partial<AdapterSession> & Pick<AdapterSession, "sessionToken">
 		// ) {

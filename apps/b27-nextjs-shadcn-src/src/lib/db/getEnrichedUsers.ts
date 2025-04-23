@@ -2,7 +2,7 @@ import db from "@/db";
 import { usersTable, rolesTable, userRolesTable } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
-type EnrichedUser = {
+export type EnrichedUser = {
 	id: string;
 	email: string;
 	name: string;

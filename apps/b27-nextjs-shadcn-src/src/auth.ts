@@ -10,6 +10,8 @@ import db from "@/db";
 import { authz } from "./authz";
 import Thia from "@pete_keen/thia-next";
 
+export const userRegistry = DrizzleAdapter(db);
+
 export const { thia, handlers } = Thia({
 	strategy: "jwt",
 	jwtConfig: {
@@ -29,7 +31,7 @@ export const { thia, handlers } = Thia({
 		},
 	},
 	secret: "adafdsfsd",
-	adapter: DrizzleAdapter(db),
+	adapter: userRegistry,
 	providers: [
 		new Zoom({
 			clientId: process.env.ZOOM_CLIENT_ID!,

@@ -38,3 +38,5 @@ export {
 	getCsrfTokenClient,
 	getCsrfTokenServer,
 } from "./csrf";
+
+export { thiaSessionCookie } from "./cookies";

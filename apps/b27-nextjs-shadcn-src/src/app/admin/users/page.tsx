@@ -1,5 +1,7 @@
 import { UserTable } from "@/lib/components";
+import { getEnrichedUsers } from "@/lib/db/getEnrichedUsers";
 
-export default function UsersPage() {
-	return <UserTable />;
+export default async function UsersPage() {
+	const users = await getEnrichedUsers();
+	return <UserTable users={users} />;
 }

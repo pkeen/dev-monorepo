@@ -1,8 +1,10 @@
-// import courseSeed from "./courses";
+import courseSeed from "./coursesSeed";
 import rolesSeed from "./roles";
+import { config } from "dotenv";
 
 const seed = async () => {
-	// await courseSeed();
+	// console.log("db url", process.env.DATABASE_URL);
+	await courseSeed();
 	await rolesSeed();
 };
 

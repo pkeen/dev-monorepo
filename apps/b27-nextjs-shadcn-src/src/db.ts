@@ -1,7 +1,9 @@
 import { drizzle } from "drizzle-orm/neon-http";
 // import { env } from "@/utils/env";
 
-// Have option for application to import its own db instance
+// for scripting
+// import { config } from "dotenv";
+// config();
 console.log("process.env.DATABASE_URL:", process.env.DATABASE_URL);
 
 if (!process.env.DATABASE_URL) {

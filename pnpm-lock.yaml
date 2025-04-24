@@ -105,6 +105,9 @@ importers:
       '@eslint/eslintrc':
         specifier: ^3
         version: 3.3.1
+      '@faker-js/faker':
+        specifier: ^9.5.0
+        version: 9.5.0
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.2

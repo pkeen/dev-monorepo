@@ -16,6 +16,7 @@
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^5.0.1",
+		"@pete_keen/courses": "workspace:*",
 		"@pete_keen/authentication-core": "workspace:*",
 		"@pete_keen/authz": "workspace:*",
 		"@pete_keen/logger": "workspace:*",

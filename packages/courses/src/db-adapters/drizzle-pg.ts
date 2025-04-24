@@ -2,7 +2,7 @@
 import { PgDatabase, type PgQueryResultHKT } from "drizzle-orm/pg-core";
 import { NeonHttpDatabase } from "drizzle-orm/neon-http";
 import * as defaultSchema from "./schema";
-import type { CourseInput, Course } from "../index.types";
+import type { CourseInput, Course } from "../types";
 import { eq } from "drizzle-orm";
 
 type DefaultSchema = typeof defaultSchema;
@@ -26,11 +26,12 @@ export const DrizzlePGAdapter = (
 				.returning();
 			return course;
 		},
-		getCourse: (id: string) => {
-			return db
+		getCourse: async (id: string) => {
+			const [course] = await db
 				.select()
 				.from(schema.course)
 				.where(eq(schema.course.id, toDBId(id)));
+			return course;
 		},
 		updateCourse: async (
 			id: string,
@@ -51,7 +52,7 @@ export const DrizzlePGAdapter = (
 		logSchema: () => {
 			console.log(schema);
 		},
-		listCourses: () => {
+		listCourses: async () => {
 			return db.select().from(schema.course);
 		},
 	};

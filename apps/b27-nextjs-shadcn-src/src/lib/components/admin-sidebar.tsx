@@ -1,10 +1,17 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Settings, LogOut } from "lucide-react";
+import {
+	LayoutDashboard,
+	Users,
+	Settings,
+	LogOut,
+	BookOpen,
+} from "lucide-react";
 
 const navItems = [
 	{ href: "/admin", label: "Dashboard", icon: LayoutDashboard },
 	{ href: "/admin/users", label: "Users", icon: Users },
+	{ href: "/admin/courses", label: "Courses", icon: BookOpen },   
 	{ href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 

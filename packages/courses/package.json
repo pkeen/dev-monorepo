@@ -15,6 +15,11 @@
 			"import": "./dist/db-adapters/index.mjs",
 			"default": "./dist/db-adapters/index.mjs",
 			"types": "./dist/db-adapters/index.d.ts"
+		},
+		"./types": {
+			"import": "./dist/types/index.mjs",
+			"default": "./dist/types/index.mjs",
+			"types": "./dist/types/index.d.ts"
 		}
 	},
 	"scripts": {

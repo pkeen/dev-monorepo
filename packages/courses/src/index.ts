@@ -1,4 +1,4 @@
-import type { Course, CourseInput, UpdateCourseInput } from "./index.types";
+import type { Course, CourseInput } from "./types";
 import { DrizzlePGAdapter, DBAdapter } from "./db-adapters/drizzle-pg";
 // import db from "~/lib/db/index.server";
 // import * as schema from "~/lib/courses/db/schema";

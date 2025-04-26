@@ -1,4 +1,4 @@
-import type { Course, CourseInput } from "./types";
+import type { Course, CourseInput, ModuleCRUD } from "./types";
 import { DrizzlePGAdapter, DBAdapter } from "./db-adapters/drizzle-pg";
 // import db from "~/lib/db/index.server";
 // import * as schema from "~/lib/courses/db/schema";
@@ -9,6 +9,7 @@ export interface CourseManager {
 	delete: (id: string) => Promise<void>;
 	list: () => Promise<Course[]>;
 	getCourse: (id: string) => Promise<Course | null>;
+	module: ModuleCRUD;
 }
 
 // const dbAdapter = DrizzlePGAdapter(db);
@@ -30,5 +31,6 @@ export const CourseManager = (dbAdapter: DBAdapter) => {
 		list: async () => {
 			return dbAdapter.listCourses();
 		},
+		module: dbAdapter.module,
 	};
 };

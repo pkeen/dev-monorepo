@@ -106,3 +106,17 @@ export const isCourseSlotLesson = (
 ): slot is CourseSlot & { moduleId: null; lessonId: number } => {
 	return slot.moduleId === null && slot.lessonId !== null;
 };
+
+interface CRUDOperations<T> {
+	list: () => Promise<T[]>;
+	get: (id: string) => Promise<T | null>;
+	create: (input: Partial<Omit<T, "id">>) => Promise<T>;
+	update: (id: string, data: Partial<T>) => Promise<T>;
+	delete: (id: string) => Promise<void>;
+}
+
+export type CourseCRUD = CRUDOperations<Course>;
+
+export type ModuleCRUD = CRUDOperations<Module>;
+
+export type LessonCRUD = CRUDOperations<Lesson>;

@@ -1,4 +1,4 @@
-import { ModulesTable } from "@/lib/components/course-builder/module-table";
+import { ModulesTable } from "@/lib/components/course-builder/modules/module-table";
 import { courses } from "@/courses";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -21,3 +21,4 @@ export default async function ModulesPage() {
 		</div>
 	);
 }
+

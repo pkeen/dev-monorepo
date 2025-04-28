@@ -31,7 +31,7 @@ export const updateUserAndRole = async (userId: string, data: FormValues) => {
 	}
 
 	// if editing self refresh session
-	if (user.email === data.email) {
+	if (user?.email === data.email) {
 		const session = await thiaSessionCookie.get();
 		if (!session) {
 			throw new Error("Session not found");

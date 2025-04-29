@@ -20,6 +20,22 @@ import { moduleSchema } from "../simple-schema";
 import { z } from "zod";
 import { AddSlotDialog } from "./add-lesson-dialog";
 import { Module } from "@pete_keen/courses/types";
+import { useState } from "react";
+import { SelectExistingLessonDialog } from "./select-existing-lesson";
+import { LessonSlotBlock } from "./lesson-slot-block";
+
+const existingLessons = [
+	{
+		id: "1",
+		name: "Lesson 1",
+		description: "Description 1",
+	},
+	{
+		id: "2",
+		name: "Lesson 2",
+		description: "Description 2",
+	},
+];
 
 export const ModuleEditForm = ({ module }: { module: Module }) => {
 	const form = useForm<z.infer<typeof moduleSchema>>({
@@ -39,6 +55,10 @@ export const ModuleEditForm = ({ module }: { module: Module }) => {
 	const onSubmit = (values: z.infer<typeof moduleSchema>) => {
 		console.log(values);
 	};
+
+	const [selectLessonOpen, setSelectLessonOpen] = useState(false);
+
+	console.log("selectLessonOpen", selectLessonOpen);
 
 	return (
 		<Form {...form}>
@@ -111,24 +131,56 @@ export const ModuleEditForm = ({ module }: { module: Module }) => {
 							onSelect={(choice) => {
 								if (choice === "new") {
 									append({
-										moduleId: form.getValues("id"),
+										id: crypto.randomUUID(),
+										moduleId: String(module.id),
+										lessonId: "",
+										order: fields.length,
 									});
 								} else {
+									setSelectLessonOpen(true);
 									// Handle selecting existing lesson (show another modal or combobox)
 								}
 							}}
 						/>
+						<SelectExistingLessonDialog
+							title="Select Existing Lesson"
+							open={selectLessonOpen}
+							onOpenChange={setSelectLessonOpen}
+							items={existingLessons}
+							onSelect={(item) => {
+								append({
+									id: crypto.randomUUID(),
+									moduleId: String(module.id),
+									lessonId: String(item.id),
+									order: fields.length, // <-- Important: add at end
+								});
+								setSelectLessonOpen(false); // Close the dialog after selection
+							}}
+						/>
 					</div>
+					{/* Slots */}
+					{
+						<div className="space-y-4">
+							{[...fields]
+								.sort((a, b) => a.order - b.order) // <-- Sort by order before rendering
+								.map((field, index) => (
+									<LessonSlotBlock
+										key={field.id}
+										title={
+											field.lessonId
+												? `Lesson ${index + 1}`
+												: `Module ${index + 1}`
+										}
+										onClick={() => {
+											/* open edit modal */
+										}}
+									/>
+								))}
+						</div>
+					}
 				</Card>
 
-				{/* Slots */}
-				{
-					<div className="space-y-4">
-						{fields.map((field, index) => (
-							<p key={index}>{field.id}</p>
-						))}
-					</div>
-				}
+				<Button type="submit">Save Module</Button>
 			</form>
 		</Form>
 	);

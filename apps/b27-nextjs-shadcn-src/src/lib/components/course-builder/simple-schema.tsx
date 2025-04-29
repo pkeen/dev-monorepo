@@ -4,6 +4,7 @@ export const moduleSlotSchema = z.object({
 	id: z.string(),
 	moduleId: z.string(),
 	lessonId: z.string(),
+	order: z.number(),
 });
 
 export const moduleSchema = z.object({

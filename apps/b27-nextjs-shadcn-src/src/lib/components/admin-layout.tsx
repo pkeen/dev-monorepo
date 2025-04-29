@@ -1,4 +1,5 @@
-import { ReactNode } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import type { ReactNode } from "react";
 
 type LayoutProps = {
 	header: ReactNode;
@@ -14,21 +15,25 @@ export function AdminLayout({
 	children,
 }: LayoutProps) {
 	return (
-		<div className="flex flex-col min-h-screen">
+		<div className="flex flex-col h-screen overflow-hidden">
 			{/* Header */}
-			<header className="border-b">{header}</header>
+			<header className="border-b shrink-0">{header}</header>
 
-			{/* Main Content */}
-			<div className="flex flex-1">
+			{/* Main Area */}
+			<div className="flex flex-1 overflow-hidden">
 				{/* Sidebar */}
-				<aside className="w-64 border-r">{sidebar}</aside>
+				<aside className="w-64 border-r shrink-0 overflow-y-auto">
+					{sidebar}
+				</aside>
 
-				{/* Page Content */}
-				<main className="flex-1 p-4 overflow-auto">{children}</main>
+				{/* Scrollable Page Content */}
+				<ScrollArea className="flex-1">
+					<div className="p-6">{children}</div>
+				</ScrollArea>
 			</div>
 
 			{/* Footer */}
-			<footer className="border-t">{footer}</footer>
+			<footer className="border-t shrink-0">{footer}</footer>
 		</div>
 	);
 }

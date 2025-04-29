@@ -6,7 +6,8 @@ export default async function ModuleEditPage({
 }: {
 	params: { id: string };
 }) {
-	const module = await courses.module.get(params.id);
+	const { id } = await params;
+	const module = await courses.module.get(id);
 	return module ? (
 		<ModuleEditForm module={module} />
 	) : (

@@ -2,7 +2,14 @@
 import { PgDatabase, type PgQueryResultHKT } from "drizzle-orm/pg-core";
 import { NeonHttpDatabase } from "drizzle-orm/neon-http";
 import * as defaultSchema from "./schema";
-import type { CourseInput, Course, ModuleCRUD, Module } from "../types";
+import type {
+	CourseInput,
+	Course,
+	ModuleCRUD,
+	Module,
+	LessonCRUD,
+	Lesson,
+} from "../types";
 import { eq } from "drizzle-orm";
 
 type DefaultSchema = typeof defaultSchema;
@@ -87,6 +94,38 @@ export const DrizzlePGAdapter = (
 					.where(eq(schema.module.id, toDBId(id)));
 			},
 		},
+		lesson: {
+			list: async () => {
+				return db.select().from(schema.lesson);
+			},
+			get: async (id: string) => {
+				const [lesson] = await db
+					.select()
+					.from(schema.lesson)
+					.where(eq(schema.lesson.id, toDBId(id)));
+				return lesson;
+			},
+			create: async (input: Omit<Lesson, "id">) => {
+				const [lesson] = await db
+					.insert(schema.lesson)
+					.values(input)
+					.returning();
+				return lesson;
+			},
+			update: async (id: string, data: Partial<Lesson>) => {
+				const [lesson] = await db
+					.update(schema.lesson)
+					.set(data)
+					.where(eq(schema.lesson.id, toDBId(id)))
+					.returning();
+				return lesson;
+			},
+			delete: async (id: string) => {
+				await db
+					.delete(schema.lesson)
+					.where(eq(schema.lesson.id, toDBId(id)));
+			},
+		},
 	};
 };
 
@@ -105,4 +144,5 @@ export interface DBAdapter {
 	logSchema: () => void;
 	listCourses: () => Promise<Course[]>;
 	module: ModuleCRUD;
+	lesson: LessonCRUD;
 }

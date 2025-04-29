@@ -57,6 +57,7 @@ export const courseSlot = courses.table(
 			.references(() => course.id),
 		moduleId: integer("module_id").references(() => module.id),
 		lessonId: integer("lesson_id").references(() => lesson.id),
+		order: integer("order").notNull(), // NEW
 	},
 	(table) => ({
 		moduleOrLesson: sql`check (
@@ -117,10 +118,11 @@ export const createSchema = () => {
 					.references(() => course.id),
 				moduleId: integer("module_id").references(() => module.id),
 				lessonId: integer("lesson_id").references(() => lesson.id),
+				order: integer("order").notNull(), // NEW
 			},
 			(table) => ({
 				moduleOrLesson: sql`check (
-        (module_id IS NULL AND lesson_id IS NOT NULL) OR 
+                (module_id IS NULL AND lesson_id IS NOT NULL) OR 
         (module_id IS NOT NULL AND lesson_id IS NULL)
         )`,
 				// Add indexes for foreign keys
@@ -143,6 +145,7 @@ export const createSchema = () => {
 			lessonId: integer("lesson_id")
 				.notNull()
 				.references(() => lesson.id),
+			order: integer("order").notNull(), // NEW
 		}),
 	};
 };

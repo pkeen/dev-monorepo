@@ -14,6 +14,10 @@ export interface Module {
 	isPublished: boolean;
 }
 
+export interface ModuleWithSlots extends Module {
+	slots: ModuleSlot[];
+}
+
 export interface Lesson {
 	id: number;
 	name: string;

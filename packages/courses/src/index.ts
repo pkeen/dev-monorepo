@@ -32,5 +32,6 @@ export const CourseManager = (dbAdapter: DBAdapter) => {
 			return dbAdapter.listCourses();
 		},
 		module: dbAdapter.module,
+		lesson: dbAdapter.lesson,
 	};
 };

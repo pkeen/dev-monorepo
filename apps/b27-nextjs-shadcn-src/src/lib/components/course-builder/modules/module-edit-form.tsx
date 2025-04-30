@@ -16,40 +16,43 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 // import { CourseSlot } from "./course-slot";
-import { moduleSchema } from "../simple-schema";
+import { moduleSchema, moduleOutlineSchema } from "../simple-schema";
 import { z } from "zod";
 import { AddSlotDialog } from "./add-lesson-dialog";
-import { Module } from "@pete_keen/courses/types";
+import { ModuleOutline } from "@pete_keen/courses/types";
 import { useState } from "react";
 import { SelectExistingLessonDialog } from "./select-existing-lesson";
 import { LessonSlotBlock } from "./lesson-slot-block";
 
 const existingLessons = [
 	{
-		id: "1",
+		id: 1,
 		name: "Lesson 1",
 		description: "Description 1",
+		isPublished: false,
 	},
 	{
-		id: "2",
+		id: 2,
 		name: "Lesson 2",
 		description: "Description 2",
+		isPublished: false,
 	},
 ];
 
-export const ModuleEditForm = ({ module }: { module: Module }) => {
-	const form = useForm<z.infer<typeof moduleSchema>>({
-		resolver: zodResolver(moduleSchema),
+export const ModuleEditForm = ({ module }: { module: ModuleOutline }) => {
+	const form = useForm<z.infer<typeof moduleOutlineSchema>>({
+		resolver: zodResolver(moduleOutlineSchema),
 		defaultValues: {
 			isPublished: module.isPublished,
 			name: module.name,
 			description: module.description ?? "",
+			lessonSlots: module.lessonSlots ?? [],
 		},
 	});
 
 	const { fields, append, remove } = useFieldArray({
 		control: form.control,
-		name: "slots",
+		name: "lessonSlots",
 	});
 
 	const onSubmit = (values: z.infer<typeof moduleSchema>) => {
@@ -64,7 +67,7 @@ export const ModuleEditForm = ({ module }: { module: Module }) => {
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-					<CardTitle className="font-medium">New Module</CardTitle>
+					<CardTitle className="font-medium">Edit Module</CardTitle>
 				</CardHeader>
 
 				<FormField
@@ -72,7 +75,7 @@ export const ModuleEditForm = ({ module }: { module: Module }) => {
 					name="name"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Module Name</FormLabel>
+							<FormLabel>Name</FormLabel>
 							<FormControl>
 								<Input
 									placeholder="Enter module name"
@@ -89,10 +92,10 @@ export const ModuleEditForm = ({ module }: { module: Module }) => {
 					name="description"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Module Description</FormLabel>
+							<FormLabel>Description</FormLabel>
 							<FormControl>
 								<Input
-									placeholder="Enter course title"
+									placeholder="Enter description"
 									{...field}
 								/>
 							</FormControl>
@@ -129,12 +132,14 @@ export const ModuleEditForm = ({ module }: { module: Module }) => {
 								<Button variant="outline">+ Add Lesson</Button>
 							}
 							onSelect={(choice) => {
+								// This doesnt work for now we'll need to have a dialog and create a lesson in db
 								if (choice === "new") {
 									append({
-										id: crypto.randomUUID(),
-										moduleId: String(module.id),
-										lessonId: "",
+										id: module.id,
+										moduleId: module.id,
+										lessonId: 0,
 										order: fields.length,
+										name: "",
 									});
 								} else {
 									setSelectLessonOpen(true);
@@ -149,10 +154,11 @@ export const ModuleEditForm = ({ module }: { module: Module }) => {
 							items={existingLessons}
 							onSelect={(item) => {
 								append({
-									id: crypto.randomUUID(),
-									moduleId: String(module.id),
-									lessonId: String(item.id),
+									id: module.id,
+									moduleId: module.id,
+									lessonId: item.id,
 									order: fields.length, // <-- Important: add at end
+									name: item.name,
 								});
 								setSelectLessonOpen(false); // Close the dialog after selection
 							}}
@@ -165,11 +171,13 @@ export const ModuleEditForm = ({ module }: { module: Module }) => {
 								.sort((a, b) => a.order - b.order) // <-- Sort by order before rendering
 								.map((field, index) => (
 									<LessonSlotBlock
-										key={field.id}
+										key={field.lesson.id}
 										title={
-											field.lessonId
-												? `Lesson ${index + 1}`
-												: `Module ${index + 1}`
+											field.lesson.name
+												? `${index + 1}. ${
+														field.lesson.name
+												  }`
+												: `Lesson ${index + 1}`
 										}
 										onClick={() => {
 											/* open edit modal */

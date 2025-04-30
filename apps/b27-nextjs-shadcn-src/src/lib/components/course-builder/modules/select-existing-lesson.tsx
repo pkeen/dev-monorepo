@@ -11,19 +11,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
+import { Lesson } from "@pete_keen/courses/types";
 
-interface ExistingItem {
-	id: string;
-	name: string;
-	description: string;
-}
 
 interface SelectExistingLessonDialogProps {
 	title: string;
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	items: ExistingItem[];
-	onSelect: (item: ExistingItem) => void;
+	items: Lesson[];
+	onSelect: (item: Lesson) => void;
 }
 
 export function SelectExistingLessonDialog({
@@ -39,7 +35,7 @@ export function SelectExistingLessonDialog({
 		item.name.toLowerCase().includes(search.toLowerCase())
 	);
 
-	const handleSelect = (item: ExistingItem) => {
+	const handleSelect = (item: Lesson) => {
 		onSelect(item);
 		onOpenChange(false); // Close after selecting
 	};

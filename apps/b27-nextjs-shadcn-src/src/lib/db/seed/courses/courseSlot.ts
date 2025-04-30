@@ -4,7 +4,7 @@ import { faker } from "@faker-js/faker";
 
 type SpoofData = {
 	courseId: number;
-	ordering: number;
+	order: number;
 	moduleId?: number;
 	lessonId?: number;
 };
@@ -15,7 +15,7 @@ const seed = async (db: db) => {
 	for (let i = 0; i < 50; i++) {
 		let spoofData: SpoofData = {
 			courseId: Math.floor(Math.random() * 20) + 1,
-			ordering: Math.floor(Math.random() * 10) + 1,
+			order: Math.floor(Math.random() * 10) + 1,
 		};
 
 		if (Math.floor(Math.random() * 10) % 2 === 0) {

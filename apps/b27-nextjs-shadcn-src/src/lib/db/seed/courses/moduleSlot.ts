@@ -10,6 +10,7 @@ const seed = async (db: db) => {
 			moduleId: Math.floor(Math.random() * 30) + 1,
 			// ordering: Math.floor(Math.random() * 10) + 1,
 			lessonId: Math.floor(Math.random() * 50) + 1,
+			order: Math.floor(Math.random() * 10) + 1,
 		};
 
 		spoofArray.push(spoofData);

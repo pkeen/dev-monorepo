@@ -79,6 +79,7 @@ export const moduleSlot = courses.table("module_slot", {
 	lessonId: integer("lesson_id")
 		.notNull()
 		.references(() => lesson.id),
+	order: integer("order").notNull(), // NEW
 });
 
 export const createSchema = () => {

@@ -39,12 +39,12 @@ export function AddSlotDialog({
 				</DialogHeader>
 
 				<div className="flex flex-col gap-4 py-4">
-					<Button
+					{/* <Button
 						variant="default"
 						onClick={() => handleSelect("new")}
 					>
 						+ Create New
-					</Button>
+					</Button> */}
 					<Button
 						variant="secondary"
 						onClick={() => handleSelect("existing")}

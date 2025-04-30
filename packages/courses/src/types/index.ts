@@ -14,10 +14,6 @@ export interface Module {
 	isPublished: boolean;
 }
 
-export interface ModuleWithSlots extends Module {
-	slots: ModuleSlot[];
-}
-
 export interface Lesson {
 	id: number;
 	name: string;
@@ -88,9 +84,12 @@ export interface CourseWithSlots extends Course {
 	slots: CourseSlotWithContent[];
 }
 
-export interface ModuleWithSlots extends Module {
-	slots: ModuleSlot[];
-	lessons: Lesson[];
+export interface ModuleSlotOutline extends ModuleSlot {
+	lesson: Omit<Lesson, "description" | "isPublished">;
+}
+
+export interface ModuleOutline extends Module {
+	lessonSlots: ModuleSlotOutline[];
 }
 
 export interface CourseSlotWithContent extends CourseSlot {
@@ -119,8 +118,12 @@ interface CRUDOperations<T> {
 	delete: (id: string) => Promise<void>;
 }
 
+interface CRUDOerationsWithOutline<T, O> extends CRUDOperations<T> {
+	outline: (id: string) => Promise<O | null>;
+}
+
 export type CourseCRUD = CRUDOperations<Course>;
 
-export type ModuleCRUD = CRUDOperations<Module>;
+export type ModuleCRUD = CRUDOerationsWithOutline<Module, ModuleOutline>;
 
 export type LessonCRUD = CRUDOperations<Lesson>;

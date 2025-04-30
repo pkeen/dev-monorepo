@@ -15,6 +15,13 @@
       "when": 1745497871194,
       "tag": "0001_equal_yellowjacket",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1746014988567,
+      "tag": "0002_free_raza",
+      "breakpoints": true
     }
   ]
 }

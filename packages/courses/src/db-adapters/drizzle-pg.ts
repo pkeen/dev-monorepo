@@ -9,6 +9,8 @@ import type {
 	Module,
 	LessonCRUD,
 	Lesson,
+	ModuleOutline,
+	ModuleSlotOutline,
 } from "../types";
 import { eq } from "drizzle-orm";
 
@@ -80,6 +82,67 @@ export const DrizzlePGAdapter = (
 					.returning();
 				return module;
 			},
+			outline: async (id: string) => {
+				const moduleId = toDBId(id);
+
+				const rows = await db
+					.select({
+						id: schema.module.id,
+						name: schema.module.name,
+						description: schema.module.description,
+						isPublished: schema.module.isPublished,
+						moduleSlotId: schema.moduleSlot.id,
+						order: schema.moduleSlot.order,
+						lessonName: schema.lesson.name,
+						lessonId: schema.lesson.id,
+						lessonIsPublished: schema.lesson.isPublished,
+					})
+					.from(schema.module)
+					// use LEFT JOIN so modules without slots still return one “module” row
+					.leftJoin(
+						schema.moduleSlot,
+						eq(schema.moduleSlot.moduleId, schema.module.id)
+					)
+					.leftJoin(
+						schema.lesson,
+						eq(schema.lesson.id, schema.moduleSlot.lessonId)
+					)
+					.where(eq(schema.module.id, moduleId))
+					.orderBy(schema.moduleSlot.order);
+
+				if (rows.length === 0) {
+					return null; // or throw new Error("Module not found")
+				}
+
+				const lessonSlots: ModuleSlotOutline[] = rows
+					.filter((r) => r.moduleSlotId !== null) // filter out “no-slot” row
+					.map((row) => ({
+						id: row.moduleSlotId!,
+						moduleId: row.id,
+						lessonId: row.lessonId!,
+						order: row.order!,
+						lesson: {
+							id: row.lessonId!,
+							name: row.lessonName!,
+							isPublished: row.lessonIsPublished!,
+						},
+					}));
+
+				const { name, description, isPublished } = rows[0];
+
+				const outline: ModuleOutline = {
+					id: moduleId,
+					name,
+					description,
+					isPublished,
+					lessonSlots: lessonSlots,
+				};
+
+				console.log("OUTLINE", outline);
+
+				return outline;
+			},
+
 			update: async (id: string, data: Partial<Module>) => {
 				const [module] = await db
 					.update(schema.module)

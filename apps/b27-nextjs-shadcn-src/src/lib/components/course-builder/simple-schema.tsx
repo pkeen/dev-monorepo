@@ -19,7 +19,7 @@ export const moduleSlotWithLessonOutline = moduleSlotSchema.extend({
 	lesson: z.object({
 		id: z.number(),
 		name: z.string(),
-		description: z.string(),
+		description: z.string().optional(),
 		isPublished: z.boolean().optional(),
 	}),
 });

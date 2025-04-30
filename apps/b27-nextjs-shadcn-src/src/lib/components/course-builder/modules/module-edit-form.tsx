@@ -158,7 +158,12 @@ export const ModuleEditForm = ({ module }: { module: ModuleOutline }) => {
 									moduleId: module.id,
 									lessonId: item.id,
 									order: fields.length, // <-- Important: add at end
-									name: item.name,
+									lesson: {
+										id: item.id,
+										name: item.name,
+										description: item.description ?? "",
+										isPublished: item.isPublished ?? false,
+									},
 								});
 								setSelectLessonOpen(false); // Close the dialog after selection
 							}}

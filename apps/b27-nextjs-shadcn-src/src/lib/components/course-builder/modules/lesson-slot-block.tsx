@@ -9,24 +9,30 @@ interface LessonSlotBlockProps {
 	title: string;
 	onClick: () => void;
 	isDragging?: boolean; // Optional for DnD later
+	order: number;
 }
 
 export function LessonSlotBlock({
 	title,
+	order,
 	onClick,
 	isDragging,
 }: LessonSlotBlockProps) {
 	return (
 		<Card
 			className={cn(
-				"flex-row items-center justify-between p-4 border rounded-md cursor-pointer transition",
-				isDragging && "opacity-50"
+				"flex-row items-center justify-between p-4 border rounded-md transition",
+				"cursor-pointer",
+				isDragging &&
+					"opacity-50 ring-2 ring-primary/30 cursor-grabbing"
 			)}
 			onClick={onClick}
 		>
 			<div className="flex items-center gap-3">
 				<span className="text-2xl">🎓</span>
-				<div className="font-medium">{title}</div>
+				<div className="font-medium">
+					{title} {order}
+				</div>
 			</div>
 
 			<Button size="sm" variant="outline">

@@ -19,27 +19,34 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { moduleSchema, moduleOutlineSchema } from "../simple-schema";
 import { z } from "zod";
 import { AddSlotDialog } from "./add-lesson-dialog";
-import { ModuleOutline } from "@pete_keen/courses/types";
+import { Lesson, ModuleOutline } from "@pete_keen/courses/types";
 import { useState } from "react";
 import { SelectExistingLessonDialog } from "./select-existing-lesson";
 import { LessonSlotBlock } from "./lesson-slot-block";
+import { SortableSlotList } from "./slot-list";
 
-const existingLessons = [
-	{
-		id: 1,
-		name: "Lesson 1",
-		description: "Description 1",
-		isPublished: false,
-	},
-	{
-		id: 2,
-		name: "Lesson 2",
-		description: "Description 2",
-		isPublished: false,
-	},
-];
+// const existingLessons = [
+// 	{
+// 		id: 1,
+// 		name: "Lesson 1",
+// 		description: "Description 1",
+// 		isPublished: false,
+// 	},
+// 	{
+// 		id: 2,
+// 		name: "Lesson 2",
+// 		description: "Description 2",
+// 		isPublished: false,
+// 	},
+// ];
 
-export const ModuleEditForm = ({ module }: { module: ModuleOutline }) => {
+export const ModuleEditForm = ({
+	module,
+	existingLessons,
+}: {
+	module: ModuleOutline;
+	existingLessons: Lesson[];
+}) => {
 	const form = useForm<z.infer<typeof moduleOutlineSchema>>({
 		resolver: zodResolver(moduleOutlineSchema),
 		defaultValues: {
@@ -50,7 +57,7 @@ export const ModuleEditForm = ({ module }: { module: ModuleOutline }) => {
 		},
 	});
 
-	const { fields, append, remove } = useFieldArray({
+	const { fields, append, remove, move, update } = useFieldArray({
 		control: form.control,
 		name: "lessonSlots",
 	});
@@ -134,13 +141,14 @@ export const ModuleEditForm = ({ module }: { module: ModuleOutline }) => {
 							onSelect={(choice) => {
 								// This doesnt work for now we'll need to have a dialog and create a lesson in db
 								if (choice === "new") {
-									append({
-										id: module.id,
-										moduleId: module.id,
-										lessonId: 0,
-										order: fields.length,
-										name: "",
-									});
+									// append({
+									// 	id: module.id,
+									// 	moduleId: module.id,
+									// 	lessonId: 0,
+									// 	order: fields.length,
+									// 	name: "",
+									// });
+									console.log("new");
 								} else {
 									setSelectLessonOpen(true);
 									// Handle selecting existing lesson (show another modal or combobox)
@@ -170,27 +178,7 @@ export const ModuleEditForm = ({ module }: { module: ModuleOutline }) => {
 						/>
 					</div>
 					{/* Slots */}
-					{
-						<div className="space-y-4">
-							{[...fields]
-								.sort((a, b) => a.order - b.order) // <-- Sort by order before rendering
-								.map((field, index) => (
-									<LessonSlotBlock
-										key={field.lesson.id}
-										title={
-											field.lesson.name
-												? `${index + 1}. ${
-														field.lesson.name
-												  }`
-												: `Lesson ${index + 1}`
-										}
-										onClick={() => {
-											/* open edit modal */
-										}}
-									/>
-								))}
-						</div>
-					}
+					<SortableSlotList fields={fields} move={move} />
 				</Card>
 
 				<Button type="submit">Save Module</Button>

@@ -26,12 +26,14 @@ export interface CourseSlot {
 	courseId: number;
 	moduleId: number | null;
 	lessonId: number | null;
+	order: number;
 }
 
 export interface ModuleSlot {
 	id: number;
 	moduleId: number;
 	lessonId: number;
+	order: number;
 }
 
 interface CourseSlotInput {

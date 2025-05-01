@@ -19,8 +19,9 @@ export default async function ModuleEditPage({
 }) {
 	const { id } = await params;
 	const module = await courses.module.outline(id);
+	const lessons = await courses.lesson.list();
 	return module ? (
-		<ModuleEditForm module={module} />
+		<ModuleEditForm module={module} existingLessons={lessons} />
 	) : (
 		<div>Module not found</div>
 	);

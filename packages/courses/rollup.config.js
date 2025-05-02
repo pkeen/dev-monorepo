@@ -6,7 +6,12 @@ import { defineConfig } from "rollup";
 
 export default defineConfig({
 	// input: ["src/index.ts", "src/client/index.ts"],
-	input: ["src/index.ts", "src/db-adapters/index.ts", "src/types/index.ts"],
+	input: [
+		"src/index.ts",
+		"src/db-adapters/index.ts",
+		"src/types/index.ts",
+		"src/validators/index.ts",
+	],
 	output: {
 		dir: "dist",
 		format: "esm",

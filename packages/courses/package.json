@@ -20,6 +20,11 @@
 			"import": "./dist/types/index.mjs",
 			"default": "./dist/types/index.mjs",
 			"types": "./dist/types/index.d.ts"
+		},
+		"./validators": {
+			"import": "./dist/validators/index.mjs",
+			"default": "./dist/validators/index.mjs",
+			"types": "./dist/validators/index.d.ts"
 		}
 	},
 	"scripts": {

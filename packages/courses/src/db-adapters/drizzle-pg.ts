@@ -11,8 +11,10 @@ import type {
 	Lesson,
 	ModuleOutline,
 	ModuleSlotOutline,
+	ModuleSlot,
+	ModuleWithSlots,
 } from "../types";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 
 type DefaultSchema = typeof defaultSchema;
 
@@ -27,6 +29,112 @@ export const DrizzlePGAdapter = (
 	db: DrizzleDatabase,
 	schema: DefaultSchema = defaultSchema
 ) => {
+	/**
+	 * Sync moduleSlots for a given moduleId against incomingSlots array.
+	 */
+	const syncModuleSlots = async (
+		moduleId: number,
+		incomingSlots: ModuleSlot[]
+	) => {
+		// 1) Load existing slots from DB
+		const existingSlots = await db
+			.select()
+			.from(schema.moduleSlot)
+			.where(eq(schema.moduleSlot.moduleId, moduleId));
+
+		// 2) Build maps for diffing
+		const existingMap = new Map(existingSlots.map((s) => [s.id, s]));
+		const incomingMap = new Map<number, ModuleSlot>(
+			incomingSlots.map((s) => [s.id!, s])
+		);
+		console.log("existingMap", existingMap);
+		console.log("incomingMap", incomingMap);
+
+        // TODO: sort error in this logic
+
+		// 3) Determine which slots to delete, update, create
+		const toDelete = existingSlots
+			.filter((s) => !incomingMap.has(s.id))
+			.map((s) => s.id);
+
+		const toCreate = incomingSlots.filter((s) => !s.id);
+
+		const toUpdate = incomingSlots.filter((s) => {
+			if (!s.id) return false;
+			const old = existingMap.get(s.id);
+			// update if order or lessonId changed
+			return (
+				!!old && (old.order !== s.order || old.lessonId !== s.lessonId)
+			);
+		});
+
+		console.log("toDelete", toDelete);
+		console.log("toCreate", toCreate);
+		console.log("toUpdate", toUpdate);
+
+		if (toDelete.length) {
+			await db
+				.delete(schema.moduleSlot)
+				.where(
+					and(
+						eq(schema.moduleSlot.moduleId, moduleId),
+						inArray(schema.moduleSlot.id, toDelete)
+					)
+				);
+		}
+
+		if (toUpdate.length) {
+			for (const slot of toUpdate) {
+				await db
+					.update(schema.moduleSlot)
+					.set({ order: slot.order, lessonId: slot.lessonId })
+					.where(eq(schema.moduleSlot.id, slot.id!));
+			}
+		}
+
+		if (toCreate.length) {
+			await db.insert(schema.moduleSlot).values(
+				toCreate.map((slot) => ({
+					moduleId,
+					lessonId: slot.lessonId,
+					order: slot.order,
+				}))
+			);
+		}
+
+		// // 4) Execute all operations in a transaction
+		// await db.transaction(async (tx) => {
+		// 	// Delete removed slots
+		// 	if (toDelete.length > 0) {
+		// 		await tx
+		// 			.delete(schema.moduleSlot)
+		// 			.where(
+		// 				and(
+		// 					eq(schema.moduleSlot.moduleId, moduleId),
+		// 					inArray(schema.moduleSlot.id, toDelete)
+		// 				)
+		// 			);
+		// 	}
+
+		// 	// Update modified slots
+		// 	for (const slot of toUpdate) {
+		// 		await tx
+		// 			.update(schema.moduleSlot)
+		// 			.set({ order: slot.order, lessonId: slot.lessonId })
+		// 			.where(eq(schema.moduleSlot.id, slot.id!));
+		// 	}
+
+		// 	// Insert new slots
+		// 	for (const slot of toCreate) {
+		// 		await tx.insert(schema.moduleSlot).values({
+		// 			moduleId,
+		// 			lessonId: slot.lessonId,
+		// 			order: slot.order,
+		// 		});
+		// 	}
+		// });
+	};
+
 	return {
 		createCourse: async (input: CourseInput): Promise<Course> => {
 			const [course] = await db
@@ -135,10 +243,8 @@ export const DrizzlePGAdapter = (
 					name,
 					description,
 					isPublished,
-					lessonSlots: lessonSlots,
+					slots: lessonSlots,
 				};
-
-				console.log("OUTLINE", outline);
 
 				return outline;
 			},
@@ -149,6 +255,24 @@ export const DrizzlePGAdapter = (
 					.set(data)
 					.where(eq(schema.module.id, toDBId(id)))
 					.returning();
+				return module;
+			},
+			updateWithSlots: async (data: Partial<ModuleWithSlots>) => {
+				if (!data.id) {
+					throw new Error("Module ID is required");
+				}
+				// const moduleId = data.id);
+				// update module details
+				const [module] = await db
+					.update(schema.module)
+					.set(data)
+					.where(eq(schema.module.id, data.id))
+					.returning();
+
+				// update module slots
+				if (data.slots) {
+					await syncModuleSlots(data.id!, data.slots);
+				}
 				return module;
 			},
 			delete: async (id: string) => {

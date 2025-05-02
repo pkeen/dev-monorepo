@@ -241,14 +241,14 @@ export const SortableSlotList = ({ fields, move }: SlotListProps) => {
 		move(oldIndex, newIndex);
 
 		// Reassign `.order` fields in form state after reordering
-		const updatedSlots = getValues("lessonSlots").map(
+		const updatedSlots = getValues("slots").map(
 			(slot: ModuleSlotOutline, index: number) => ({
 				...slot,
 				order: index,
 			})
 		);
 
-		setValue("lessonSlots", updatedSlots);
+		setValue("slots", updatedSlots);
 	};
 
 	return (

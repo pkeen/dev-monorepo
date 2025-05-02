@@ -7,12 +7,34 @@ export interface Course {
 	isPublished: boolean;
 }
 
+
+// Module Interfaces
 export interface Module {
 	id: number;
 	name: string;
 	description: string | null;
 	isPublished: boolean;
 }
+
+export interface ModuleSlot {
+	id: number;
+	moduleId: number;
+	lessonId: number;
+	order: number;
+}
+
+export interface ModuleWithSlots extends Module {
+	slots: ModuleSlot[];
+}
+
+export interface ModuleSlotOutline extends ModuleSlot {
+	lesson: Omit<Lesson, "description" | "isPublished">;
+}
+
+export interface ModuleOutline extends Module {
+	slots: ModuleSlotOutline[];
+}
+
 
 export interface Lesson {
 	id: number;
@@ -29,12 +51,7 @@ export interface CourseSlot {
 	order: number;
 }
 
-export interface ModuleSlot {
-	id: number;
-	moduleId: number;
-	lessonId: number;
-	order: number;
-}
+
 
 interface CourseSlotInput {
 	courseId: number;
@@ -86,13 +103,7 @@ export interface CourseWithSlots extends Course {
 	slots: CourseSlotWithContent[];
 }
 
-export interface ModuleSlotOutline extends ModuleSlot {
-	lesson: Omit<Lesson, "description" | "isPublished">;
-}
 
-export interface ModuleOutline extends Module {
-	lessonSlots: ModuleSlotOutline[];
-}
 
 export interface CourseSlotWithContent extends CourseSlot {
 	module?: Module;
@@ -120,12 +131,17 @@ interface CRUDOperations<T> {
 	delete: (id: string) => Promise<void>;
 }
 
-interface CRUDOerationsWithOutline<T, O> extends CRUDOperations<T> {
+interface CRUDOerationsComplex<T, O, S> extends CRUDOperations<T> {
 	outline: (id: string) => Promise<O | null>;
+	updateWithSlots: (data: Partial<S>) => Promise<S>;
 }
 
 export type CourseCRUD = CRUDOperations<Course>;
 
-export type ModuleCRUD = CRUDOerationsWithOutline<Module, ModuleOutline>;
+export type ModuleCRUD = CRUDOerationsComplex<
+	Module,
+	ModuleOutline,
+	ModuleWithSlots
+>;
 
 export type LessonCRUD = CRUDOperations<Lesson>;

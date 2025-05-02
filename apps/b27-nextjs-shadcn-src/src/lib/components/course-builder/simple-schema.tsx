@@ -1,36 +1,37 @@
-import { z } from "zod";
+// import { z } from "zod";
 
-export const moduleSlotSchema = z.object({
-	id: z.number(),
-	moduleId: z.number(),
-	lessonId: z.number(),
-	order: z.number(),
-});
+// export const moduleSlotSchema = z.object({
+// 	id: z.number(),
+// 	moduleId: z.number(),
+// 	lessonId: z.number(),
+// 	order: z.number(),
+// });
 
-export const moduleSchema = z.object({
-	id: z.number(),
-	name: z.string(),
-	description: z.string(),
-	isPublished: z.boolean().optional(),
-	slots: z.array(moduleSlotSchema).optional(),
-});
+// export const moduleSchema = z.object({
+// 	id: z.number(),
+// 	name: z.string(),
+// 	description: z.string(),
+// 	isPublished: z.boolean().optional(),
+// 	slots: z.array(moduleSlotSchema).optional(),
+// });
 
-export const moduleSlotWithLessonOutline = moduleSlotSchema.extend({
-	lesson: z.object({
-		id: z.number(),
-		name: z.string(),
-		description: z.string().optional(),
-		isPublished: z.boolean().optional(),
-	}),
-});
+// export const moduleSlotWithLessonOutline = moduleSlotSchema.extend({
+// 	lesson: z.object({
+// 		id: z.number(),
+// 		name: z.string(),
+// 		description: z.string().optional(),
+// 		isPublished: z.boolean().optional(),
+// 	}),
+// });
 
-export const moduleOutlineSchema = z.object({
-	id: z.number(),
-	name: z.string(),
-	description: z.string(),
-	isPublished: z.boolean().optional(),
-	lessonSlots: z.array(moduleSlotWithLessonOutline).optional(),
-});
+// export const moduleOutlineSchema = z.object({
+// 	id: z.number(),
+// 	name: z.string(),
+// 	description: z.string(),
+// 	isPublished: z.boolean().optional(),
+// 	slots: z.array(moduleSlotWithLessonOutline),
+// });
 
-export const createModuleSchema = moduleSchema.omit({ id: true });
-export type CreateModuleInput = z.infer<typeof createModuleSchema>;
+// export const createModuleSchema = moduleSchema.omit({ id: true });
+// export type CreateModuleInput = z.infer<typeof createModuleSchema>;
+import { moduleOutlineDTO, ModuleOutline } from "@pete_keen/courses/validators";

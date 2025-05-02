@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { EditUserForm } from "@/lib/components/edit-user-form";
+import { EditUserForm } from "@/lib/components/users/edit-user-form";
 import {
 	getEnrichedUsers,
 	getEnrichedUserById,

@@ -16,14 +16,17 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 // import { CourseSlot } from "./course-slot";
-import { moduleSchema, moduleOutlineSchema } from "../simple-schema";
+// import { moduleSchema, moduleOutlineSchema } from "../simple-schema";
+import { moduleOutlineDTO, ModuleOutline } from "@pete_keen/courses/validators";
 import { z } from "zod";
 import { AddSlotDialog } from "./add-lesson-dialog";
-import { Lesson, ModuleOutline } from "@pete_keen/courses/types";
-import { useState } from "react";
+import { Lesson } from "@pete_keen/courses/types";
+import { useState, useTransition } from "react";
 import { SelectExistingLessonDialog } from "./select-existing-lesson";
 import { LessonSlotBlock } from "./lesson-slot-block";
 import { SortableSlotList } from "./slot-list";
+import { editModule } from "@/lib/actions/editModule";
+import { toast } from "sonner";
 
 // const existingLessons = [
 // 	{
@@ -47,28 +50,37 @@ export const ModuleEditForm = ({
 	module: ModuleOutline;
 	existingLessons: Lesson[];
 }) => {
-	const form = useForm<z.infer<typeof moduleOutlineSchema>>({
-		resolver: zodResolver(moduleOutlineSchema),
+	const form = useForm({
+		resolver: zodResolver(moduleOutlineDTO),
 		defaultValues: {
 			isPublished: module.isPublished,
 			name: module.name,
 			description: module.description ?? "",
-			lessonSlots: module.lessonSlots ?? [],
+			slots: module.slots,
+			id: module.id,
 		},
 	});
 
 	const { fields, append, remove, move, update } = useFieldArray({
 		control: form.control,
-		name: "lessonSlots",
+		name: "slots",
 	});
 
-	const onSubmit = (values: z.infer<typeof moduleSchema>) => {
-		console.log(values);
+	const onSubmit = (values: z.infer<typeof moduleOutlineDTO>) => {
+		startTransition(async () => {
+			try {
+				await editModule(values);
+				toast.success("Module updated!");
+				// router.refresh(); // reload data if you're on the same page
+			} catch (err) {
+				toast.error("Something went wrong updating the module.");
+				console.error(err);
+			}
+		});
 	};
 
 	const [selectLessonOpen, setSelectLessonOpen] = useState(false);
-
-	console.log("selectLessonOpen", selectLessonOpen);
+	const [isPending, startTransition] = useTransition();
 
 	return (
 		<Form {...form}>
@@ -162,7 +174,7 @@ export const ModuleEditForm = ({
 							items={existingLessons}
 							onSelect={(item) => {
 								append({
-									id: module.id,
+									id: 0,
 									moduleId: module.id,
 									lessonId: item.id,
 									order: fields.length, // <-- Important: add at end
@@ -181,7 +193,9 @@ export const ModuleEditForm = ({
 					<SortableSlotList fields={fields} move={move} />
 				</Card>
 
-				<Button type="submit">Save Module</Button>
+				<Button type="submit" className="mt-4 cursor-pointer">
+					Save Module
+				</Button>
 			</form>
 		</Form>
 	);

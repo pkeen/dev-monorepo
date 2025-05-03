@@ -17,7 +17,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 // import { CourseSlot } from "./course-slot";
 // import { moduleSchema, moduleOutlineSchema } from "../simple-schema";
-import { moduleOutlineDTO, ModuleOutline } from "@pete_keen/courses/validators";
+import {
+	moduleOutlineDTO,
+	ModuleOutline,
+	upsertModuleSlotDTO,
+	moduleDTO,
+} from "@pete_keen/courses/validators";
 import { z } from "zod";
 import { AddSlotDialog } from "./add-lesson-dialog";
 import { Lesson } from "@pete_keen/courses/types";
@@ -28,20 +33,21 @@ import { SortableSlotList } from "./slot-list";
 import { editModule } from "@/lib/actions/editModule";
 import { toast } from "sonner";
 
-// const existingLessons = [
-// 	{
-// 		id: 1,
-// 		name: "Lesson 1",
-// 		description: "Description 1",
-// 		isPublished: false,
-// 	},
-// 	{
-// 		id: 2,
-// 		name: "Lesson 2",
-// 		description: "Description 2",
-// 		isPublished: false,
-// 	},
-// ];
+export const frontendModuleSlotDTO = upsertModuleSlotDTO.extend({
+	id: z.number().optional(),
+	clientId: z.string(), // used only on frontend
+	lesson: z.object({
+		id: z.number(),
+		name: z.string(),
+		description: z.string().optional(),
+		isPublished: z.boolean().optional(),
+	}),
+});
+export type FrontendModuleSlot = z.infer<typeof frontendModuleSlotDTO>;
+export const frontendModuleDTO = moduleDTO.extend({
+	slots: z.array(frontendModuleSlotDTO),
+});
+export type FrontendModule = z.infer<typeof frontendModuleDTO>;
 
 export const ModuleEditForm = ({
 	module,
@@ -51,12 +57,15 @@ export const ModuleEditForm = ({
 	existingLessons: Lesson[];
 }) => {
 	const form = useForm({
-		resolver: zodResolver(moduleOutlineDTO),
+		resolver: zodResolver(frontendModuleDTO),
 		defaultValues: {
 			isPublished: module.isPublished,
 			name: module.name,
 			description: module.description ?? "",
-			slots: module.slots,
+			slots: module.slots.map((slot) => ({
+				...slot,
+				clientId: crypto.randomUUID(),
+			})),
 			id: module.id,
 		},
 	});
@@ -66,7 +75,7 @@ export const ModuleEditForm = ({
 		name: "slots",
 	});
 
-	const onSubmit = (values: z.infer<typeof moduleOutlineDTO>) => {
+	const onSubmit = (values: z.infer<typeof frontendModuleDTO>) => {
 		startTransition(async () => {
 			try {
 				await editModule(values);
@@ -174,7 +183,8 @@ export const ModuleEditForm = ({
 							items={existingLessons}
 							onSelect={(item) => {
 								append({
-									id: 0,
+									id: undefined,
+									clientId: crypto.randomUUID(),
 									moduleId: module.id,
 									lessonId: item.id,
 									order: fields.length, // <-- Important: add at end

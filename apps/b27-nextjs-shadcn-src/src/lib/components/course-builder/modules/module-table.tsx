@@ -31,7 +31,7 @@ export function ModulesTable({ modules }: { modules: Module[] }) {
 	return (
 		<div className="space-y-4">
 			<Input
-				placeholder="Search courses..."
+				placeholder="Search modules..."
 				value={search}
 				onChange={(e) => setSearch(e.target.value)}
 			/>

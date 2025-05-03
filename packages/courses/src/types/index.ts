@@ -1,3 +1,5 @@
+import { ModuleUpsertSlots } from "validators";
+
 // Base interfaces for database models
 export interface Course {
 	id: number;
@@ -6,7 +8,6 @@ export interface Course {
 	description: string | null;
 	isPublished: boolean;
 }
-
 
 // Module Interfaces
 export interface Module {
@@ -35,7 +36,6 @@ export interface ModuleOutline extends Module {
 	slots: ModuleSlotOutline[];
 }
 
-
 export interface Lesson {
 	id: number;
 	name: string;
@@ -50,8 +50,6 @@ export interface CourseSlot {
 	lessonId: number | null;
 	order: number;
 }
-
-
 
 interface CourseSlotInput {
 	courseId: number;
@@ -103,8 +101,6 @@ export interface CourseWithSlots extends Course {
 	slots: CourseSlotWithContent[];
 }
 
-
-
 export interface CourseSlotWithContent extends CourseSlot {
 	module?: Module;
 	lesson?: Lesson;
@@ -141,7 +137,7 @@ export type CourseCRUD = CRUDOperations<Course>;
 export type ModuleCRUD = CRUDOerationsComplex<
 	Module,
 	ModuleOutline,
-	ModuleWithSlots
+	ModuleUpsertSlots
 >;
 
 export type LessonCRUD = CRUDOperations<Lesson>;

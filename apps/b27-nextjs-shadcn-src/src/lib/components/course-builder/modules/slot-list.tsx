@@ -173,12 +173,13 @@ import {
 	useSortable,
 } from "@dnd-kit/sortable";
 import { useFormContext } from "react-hook-form";
-import { ModuleSlotOutline } from "@pete_keen/courses/types";
+// import { ModuleSlotOutline } from "@pete_keen/courses/types";
 import { CSS } from "@dnd-kit/utilities";
 import { LessonSlotBlock } from "./lesson-slot-block";
+import { FrontendModuleSlot } from "./module-edit-form";
 
 interface SlotListProps {
-	fields: ModuleSlotOutline[];
+	fields: FrontendModuleSlot[];
 	move: (from: number, to: number) => void;
 }
 
@@ -186,7 +187,7 @@ const SortableSlotBlock = ({
 	field,
 	index,
 }: {
-	field: ModuleSlotOutline;
+	field: FrontendModuleSlot;
 	index: number;
 }) => {
 	const {
@@ -196,7 +197,7 @@ const SortableSlotBlock = ({
 		transform,
 		transition,
 		isDragging,
-	} = useSortable({ id: field.id });
+	} = useSortable({ id: field.clientId });
 
 	const style = {
 		transform: CSS.Transform.toString(transform),
@@ -206,7 +207,7 @@ const SortableSlotBlock = ({
 	return (
 		<div ref={setNodeRef} style={style} {...attributes} {...listeners}>
 			<LessonSlotBlock
-				key={field.lesson.id}
+				key={field.clientId}
 				title={
 					field.lesson.name
 						? `${index + 1}. ${field.lesson.name}`
@@ -234,15 +235,15 @@ export const SortableSlotList = ({ fields, move }: SlotListProps) => {
 
 		if (!over || active.id === over.id) return;
 
-		const oldIndex = fields.findIndex((f) => f.id === active.id);
-		const newIndex = fields.findIndex((f) => f.id === over.id);
+		const oldIndex = fields.findIndex((f) => f.clientId === active.id);
+		const newIndex = fields.findIndex((f) => f.clientId === over.id);
 		if (oldIndex === -1 || newIndex === -1) return;
 
 		move(oldIndex, newIndex);
 
 		// Reassign `.order` fields in form state after reordering
 		const updatedSlots = getValues("slots").map(
-			(slot: ModuleSlotOutline, index: number) => ({
+			(slot: FrontendModuleSlot, index: number) => ({
 				...slot,
 				order: index,
 			})
@@ -254,7 +255,7 @@ export const SortableSlotList = ({ fields, move }: SlotListProps) => {
 	return (
 		<DndContext sensors={sensors} onDragEnd={handleDragEnd}>
 			<SortableContext
-				items={fields.map((f) => f.id)}
+				items={fields.map((f) => f.clientId)}
 				strategy={verticalListSortingStrategy}
 			>
 				{/* <div className="space-y-2"> */}

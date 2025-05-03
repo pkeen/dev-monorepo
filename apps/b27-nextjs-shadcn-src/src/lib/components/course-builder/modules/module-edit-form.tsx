@@ -32,6 +32,7 @@ import { LessonSlotBlock } from "./lesson-slot-block";
 import { SortableSlotList } from "./slot-list";
 import { editModule } from "@/lib/actions/editModule";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export const frontendModuleSlotDTO = upsertModuleSlotDTO.extend({
 	id: z.number().optional(),
@@ -75,12 +76,14 @@ export const ModuleEditForm = ({
 		name: "slots",
 	});
 
+	const router = useRouter();
+
 	const onSubmit = (values: z.infer<typeof frontendModuleDTO>) => {
 		startTransition(async () => {
 			try {
 				await editModule(values);
 				toast.success("Module updated!");
-				// router.refresh(); // reload data if you're on the same page
+				router.refresh(); // reload data if you're on the same page
 			} catch (err) {
 				toast.error("Something went wrong updating the module.");
 				console.error(err);

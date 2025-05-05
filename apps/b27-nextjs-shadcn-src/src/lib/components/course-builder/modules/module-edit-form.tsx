@@ -28,6 +28,7 @@ import { SortableSlotList } from "./slot-list";
 import { editModule } from "@/lib/actions/editModule";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { Textarea } from "@/components/ui/textarea";
 
 export const frontendModuleSlotDTO = upsertModuleSlotDTO.extend({
 	id: z.number().optional(),
@@ -78,6 +79,7 @@ export const ModuleEditForm = ({
 			try {
 				await editModule(values);
 				toast.success("Module updated!");
+				form.reset(values);
 				router.refresh(); // reload data if you're on the same page
 			} catch (err) {
 				toast.error("Something went wrong updating the module.");
@@ -120,7 +122,7 @@ export const ModuleEditForm = ({
 						<FormItem>
 							<FormLabel>Description</FormLabel>
 							<FormControl>
-								<Input
+								<Textarea
 									placeholder="Enter description"
 									{...field}
 								/>
@@ -201,7 +203,11 @@ export const ModuleEditForm = ({
 					<SortableSlotList fields={fields} move={move} />
 				</Card>
 
-				<Button type="submit" className="mt-4 cursor-pointer">
+				<Button
+					type="submit"
+					className="mt-4 cursor-pointer"
+					disabled={!form.formState.isDirty || isPending}
+				>
 					Save Module
 				</Button>
 			</form>

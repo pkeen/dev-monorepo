@@ -9,12 +9,17 @@ import type {
 	Module,
 	LessonCRUD,
 	Lesson,
-	ModuleSlotOutline,
-	ModuleSlot,
-	ModuleWithSlots,
+	CourseCRUD,
+	CourseSlotOutline,
 } from "../types";
 import { and, eq, inArray } from "drizzle-orm";
-import { ModuleOutline } from "validators";
+import {
+	CourseOutline,
+	ModuleOutline,
+	ModuleSlotWithOutline,
+	ModuleUpsertSlots,
+	UpsertModuleSlot,
+} from "validators";
 
 type DefaultSchema = typeof defaultSchema;
 
@@ -34,7 +39,7 @@ export const DrizzlePGAdapter = (
 	 */
 	const syncModuleSlots = async (
 		moduleId: number,
-		incomingSlots: ModuleSlot[]
+		incomingSlots: UpsertModuleSlot[]
 	) => {
 		// 1) Load existing slots from DB
 		const existingSlots = await db
@@ -44,8 +49,8 @@ export const DrizzlePGAdapter = (
 
 		// 2) Build maps for diffing
 		const existingMap = new Map(existingSlots.map((s) => [s.id, s]));
-		const incomingMap = new Map<number, ModuleSlot>(
-			incomingSlots.map((s) => [s.id!, s])
+		const incomingMap = new Map<number, UpsertModuleSlot>(
+			incomingSlots.map((s) => [s.id ?? 0, s])
 		);
 		console.log("existingMap", existingMap);
 		console.log("incomingMap", incomingMap);
@@ -222,7 +227,7 @@ export const DrizzlePGAdapter = (
 					return null; // or throw new Error("Module not found")
 				}
 
-				const lessonSlots: ModuleSlotOutline[] = rows
+				const lessonSlots: ModuleSlotWithOutline[] = rows
 					.filter((r) => r.moduleSlotId !== null) // filter out “no-slot” row
 					.map((row) => ({
 						id: row.moduleSlotId!,
@@ -257,7 +262,7 @@ export const DrizzlePGAdapter = (
 					.returning();
 				return module;
 			},
-			updateWithSlots: async (data: Partial<ModuleWithSlots>) => {
+			updateWithSlots: async (data: Partial<ModuleUpsertSlots>) => {
 				if (!data.id) {
 					throw new Error("Module ID is required");
 				}
@@ -311,6 +316,111 @@ export const DrizzlePGAdapter = (
 				await db.delete(schema.lesson).where(eq(schema.lesson.id, id));
 			},
 		},
+		course: {
+			list: async () => {
+				return db.select().from(schema.course);
+			},
+			get: async (id: string) => {
+				const [course] = await db
+					.select()
+					.from(schema.course)
+					.where(eq(schema.course.id, toDBId(id)));
+				return course;
+			},
+			outline: async (id: number) => {
+				const rows = await db
+					.select({
+						id: schema.course.id,
+						userId: schema.course.userId,
+						title: schema.course.title,
+						description: schema.course.description,
+						isPublished: schema.course.isPublished,
+						courseSlotId: schema.courseSlot.id,
+						courseSlotOrder: schema.courseSlot.order,
+						moduleId: schema.courseSlot.moduleId,
+						lessonId: schema.courseSlot.lessonId,
+						moduleName: schema.module.name,
+						moduleIsPublished: schema.module.isPublished,
+						lessonName: schema.lesson.name,
+						lessonIsPublished: schema.lesson.isPublished,
+					})
+					.from(schema.course)
+					.leftJoin(
+						schema.courseSlot,
+						eq(schema.courseSlot.courseId, schema.course.id)
+					)
+					.leftJoin(
+						schema.module,
+						eq(schema.module.id, schema.courseSlot.moduleId)
+					)
+					.leftJoin(
+						schema.lesson,
+						eq(schema.lesson.id, schema.courseSlot.lessonId)
+					)
+					.where(eq(schema.course.id, id))
+					.orderBy(schema.courseSlot.order);
+
+				if (rows.length === 0) {
+					return null; // or throw new Error("Module not found")
+				}
+
+				const courseSlots: CourseSlotOutline[] = rows
+					.filter((r) => r.courseSlotId !== null) // filter out “no-slot” row
+					.map((row) => ({
+						id: row.courseSlotId!,
+						courseId: row.id,
+						order: row.courseSlotOrder!,
+						moduleId: row.moduleId ?? undefined,
+						lessonId: row.lessonId ?? undefined,
+						content: row.lessonId
+							? {
+									id: row.lessonId!,
+									name: row.lessonName!,
+									isPublished: row.lessonIsPublished!,
+							  }
+							: {
+									id: row.moduleId!,
+									name: row.moduleName!,
+									isPublished: row.moduleIsPublished!,
+							  },
+					}));
+
+				const { title, description, isPublished, userId } = rows[0];
+
+				const outline: CourseOutline = {
+					id: id,
+					userId,
+					title,
+					description: description ?? undefined,
+					isPublished,
+					slots: courseSlots,
+				};
+
+				console.log("Course outline", outline);
+
+				return outline;
+			},
+			create: async (input: Omit<Course, "id">) => {
+				const [course] = await db
+					.insert(schema.course)
+					.values(input)
+					.returning();
+				return course;
+			},
+			update: async (data: Course) => {
+				const [course] = await db
+					.update(schema.course)
+					.set(data)
+					.where(eq(schema.course.id, data.id))
+					.returning();
+				return course;
+			},
+			delete: async (id: string) => {
+				await db
+					.delete(schema.course)
+					.where(eq(schema.course.id, toDBId(id)));
+			},
+		},
 	};
 };
 
@@ -330,4 +440,5 @@ export interface DBAdapter {
 	listCourses: () => Promise<Course[]>;
 	module: ModuleCRUD;
 	lesson: LessonCRUD;
+	course: CourseCRUD;
 }

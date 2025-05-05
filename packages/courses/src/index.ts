@@ -34,5 +34,6 @@ export const CourseManager = (dbAdapter: DBAdapter) => {
 		},
 		module: dbAdapter.module,
 		lesson: dbAdapter.lesson,
+		course: dbAdapter.course,
 	};
 };

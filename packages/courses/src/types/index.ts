@@ -4,16 +4,22 @@ import {
 	Module,
 	ModuleSlot,
 	ModuleOutline,
+	Course,
+	CourseOutline,
+	CourseSlot,
+	CourseSlotOutline,
+	CourseSlotUpsert,
+    CourseUpsertSlots,
 } from "validators";
 
-// Base interfaces for database models
-export interface Course {
-	id: number;
-	userId: string; // UUID
-	title: string;
-	description: string | null;
-	isPublished: boolean;
-}
+// // Base interfaces for database models
+// export interface Course {
+// 	id: number;
+// 	userId: string; // UUID
+// 	title: string;
+// 	description: string | null;
+// 	isPublished: boolean;
+// }
 
 // // Module Interfaces
 // export interface Module {
@@ -30,100 +36,100 @@ export interface Course {
 // 	order: number;
 // }
 
-export interface ModuleWithSlots extends Module {
-	slots: ModuleSlot[];
-}
-
-export interface ModuleSlotOutline extends ModuleSlot {
-	lesson: Omit<Lesson, "description" | "isPublished">;
-}
-
-// export interface ModuleOutline extends Module {
-// 	slots: ModuleSlotOutline[];
+// export interface ModuleWithSlots extends Module {
+// 	slots: ModuleSlot[];
 // }
 
-// export interface Lesson {
+// export interface ModuleSlotOutline extends ModuleSlot {
+// 	lesson: Omit<Lesson, "description" | "isPublished">;
+// }
+
+// // export interface ModuleOutline extends Module {
+// // 	slots: ModuleSlotOutline[];
+// // }
+
+// // export interface Lesson {
+// // 	id: number;
+// // 	name: string;
+// // 	description: string | null;
+// // 	isPublished: boolean;
+// // }
+
+// export interface CourseSlot {
 // 	id: number;
-// 	name: string;
-// 	description: string | null;
-// 	isPublished: boolean;
+// 	courseId: number;
+// 	moduleId: number | null;
+// 	lessonId: number | null;
+// 	order: number;
 // }
 
-export interface CourseSlot {
-	id: number;
-	courseId: number;
-	moduleId: number | null;
-	lessonId: number | null;
-	order: number;
-}
+// interface CourseSlotInput {
+// 	courseId: number;
+// 	// order: number;
+// 	moduleId?: number;
+// 	lessonId?: number;
+// }
 
-interface CourseSlotInput {
-	courseId: number;
-	// order: number;
-	moduleId?: number;
-	lessonId?: number;
-}
+// // Input types for creating new records
+// export interface CourseInput {
+// 	userId: string;
+// 	title: string;
+// 	description?: string;
+// 	isPublished?: boolean;
+// 	courseSlots: CourseSlotInput[];
+// }
 
-// Input types for creating new records
-export interface CourseInput {
-	userId: string;
-	title: string;
-	description?: string;
-	isPublished?: boolean;
-	courseSlots: CourseSlotInput[];
-}
+// export interface CreateModuleInput {
+// 	name: string;
+// 	description?: string;
+// 	isPublished?: boolean;
+// }
 
-export interface CreateModuleInput {
-	name: string;
-	description?: string;
-	isPublished?: boolean;
-}
+// export interface CreateLessonInput {
+// 	name: string;
+// 	description?: string;
+// 	isPublished?: boolean;
+// }
 
-export interface CreateLessonInput {
-	name: string;
-	description?: string;
-	isPublished?: boolean;
-}
+// export interface CreateCourseSlotInput {
+// 	courseId: number;
+// 	moduleId?: number;
+// 	lessonId?: number;
+// }
 
-export interface CreateCourseSlotInput {
-	courseId: number;
-	moduleId?: number;
-	lessonId?: number;
-}
+// export interface CreateModuleSlotInput {
+// 	moduleId: number;
+// 	lessonId: number;
+// }
 
-export interface CreateModuleSlotInput {
-	moduleId: number;
-	lessonId: number;
-}
+// // Update types for modifying existing records
+// export interface UpdateCourseInput
+// 	extends Partial<Omit<Course, "id" | "userId">> {}
+// export interface UpdateModuleInput extends Partial<Omit<Module, "id">> {}
+// export interface UpdateLessonInput extends Partial<Omit<Lesson, "id">> {}
 
-// Update types for modifying existing records
-export interface UpdateCourseInput
-	extends Partial<Omit<Course, "id" | "userId">> {}
-export interface UpdateModuleInput extends Partial<Omit<Module, "id">> {}
-export interface UpdateLessonInput extends Partial<Omit<Lesson, "id">> {}
+// // Extended interfaces with relationships
+// export interface CourseWithSlots extends Course {
+// 	slots: CourseSlotWithContent[];
+// }
 
-// Extended interfaces with relationships
-export interface CourseWithSlots extends Course {
-	slots: CourseSlotWithContent[];
-}
+// export interface CourseSlotWithContent extends CourseSlot {
+// 	module?: Module;
+// 	lesson?: Lesson;
+// }
 
-export interface CourseSlotWithContent extends CourseSlot {
-	module?: Module;
-	lesson?: Lesson;
-}
+// // Type guards
+// export const isCourseSlotModule = (
+// 	slot: CourseSlot
+// ): slot is CourseSlot & { moduleId: number; lessonId: null } => {
+// 	return slot.moduleId !== null && slot.lessonId === null;
+// };
 
-// Type guards
-export const isCourseSlotModule = (
-	slot: CourseSlot
-): slot is CourseSlot & { moduleId: number; lessonId: null } => {
-	return slot.moduleId !== null && slot.lessonId === null;
-};
-
-export const isCourseSlotLesson = (
-	slot: CourseSlot
-): slot is CourseSlot & { moduleId: null; lessonId: number } => {
-	return slot.moduleId === null && slot.lessonId !== null;
-};
+// export const isCourseSlotLesson = (
+// 	slot: CourseSlot
+// ): slot is CourseSlot & { moduleId: null; lessonId: number } => {
+// 	return slot.moduleId === null && slot.lessonId !== null;
+// };
 
 interface CRUDOperations<T> {
 	list: () => Promise<T[]>;
@@ -138,7 +144,7 @@ interface CRUDOerationsComplex<T, O, S> extends CRUDOperations<T> {
 	updateWithSlots: (data: Partial<S>) => Promise<S>;
 }
 
-export type CourseCRUD = CRUDOperations<Course>;
+export type CourseCRUD = CRUDOerationsComplex<Course, CourseOutline, CourseUpsertSlots>;
 
 export type ModuleCRUD = CRUDOerationsComplex<
 	Module,
@@ -148,4 +154,11 @@ export type ModuleCRUD = CRUDOerationsComplex<
 
 export type LessonCRUD = CRUDOperations<Lesson>;
 
-export { Lesson, Module, ModuleSlot } from "validators";
+export {
+	Lesson,
+	Module,
+	ModuleSlot,
+	Course,
+	CourseSlot,
+	CourseSlotOutline,
+} from "validators";

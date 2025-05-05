@@ -1,4 +1,10 @@
-import { ModuleUpsertSlots, lessonDTO, Lesson } from "validators";
+import {
+	ModuleUpsertSlots,
+	Lesson,
+	Module,
+	ModuleSlot,
+	ModuleOutline,
+} from "validators";
 
 // Base interfaces for database models
 export interface Course {
@@ -9,20 +15,20 @@ export interface Course {
 	isPublished: boolean;
 }
 
-// Module Interfaces
-export interface Module {
-	id: number;
-	name: string;
-	description: string | null;
-	isPublished: boolean;
-}
+// // Module Interfaces
+// export interface Module {
+// 	id: number;
+// 	name: string;
+// 	description: string | null;
+// 	isPublished: boolean;
+// }
 
-export interface ModuleSlot {
-	id: number;
-	moduleId: number;
-	lessonId: number;
-	order: number;
-}
+// export interface ModuleSlot {
+// 	id: number;
+// 	moduleId: number;
+// 	lessonId: number;
+// 	order: number;
+// }
 
 export interface ModuleWithSlots extends Module {
 	slots: ModuleSlot[];
@@ -32,9 +38,9 @@ export interface ModuleSlotOutline extends ModuleSlot {
 	lesson: Omit<Lesson, "description" | "isPublished">;
 }
 
-export interface ModuleOutline extends Module {
-	slots: ModuleSlotOutline[];
-}
+// export interface ModuleOutline extends Module {
+// 	slots: ModuleSlotOutline[];
+// }
 
 // export interface Lesson {
 // 	id: number;
@@ -142,4 +148,4 @@ export type ModuleCRUD = CRUDOerationsComplex<
 
 export type LessonCRUD = CRUDOperations<Lesson>;
 
-export { Lesson } from "validators";
+export { Lesson, Module, ModuleSlot } from "validators";

@@ -9,12 +9,12 @@ import type {
 	Module,
 	LessonCRUD,
 	Lesson,
-	ModuleOutline,
 	ModuleSlotOutline,
 	ModuleSlot,
 	ModuleWithSlots,
 } from "../types";
 import { and, eq, inArray } from "drizzle-orm";
+import { ModuleOutline } from "validators";
 
 type DefaultSchema = typeof defaultSchema;
 
@@ -241,7 +241,7 @@ export const DrizzlePGAdapter = (
 				const outline: ModuleOutline = {
 					id: moduleId,
 					name,
-					description,
+					description: description ?? undefined,
 					isPublished,
 					slots: lessonSlots,
 				};

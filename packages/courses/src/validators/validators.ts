@@ -47,7 +47,6 @@ export const moduleSlotWithOutlineDTO = moduleSlotDTO.extend({
 	lesson: z.object({
 		id: z.number(),
 		name: z.string(),
-		description: z.string().optional(),
 		isPublished: z.boolean().optional(),
 	}),
 });

@@ -1,4 +1,4 @@
-import { ModuleUpsertSlots } from "validators";
+import { ModuleUpsertSlots, lessonDTO, Lesson } from "validators";
 
 // Base interfaces for database models
 export interface Course {
@@ -36,12 +36,12 @@ export interface ModuleOutline extends Module {
 	slots: ModuleSlotOutline[];
 }
 
-export interface Lesson {
-	id: number;
-	name: string;
-	description: string | null;
-	isPublished: boolean;
-}
+// export interface Lesson {
+// 	id: number;
+// 	name: string;
+// 	description: string | null;
+// 	isPublished: boolean;
+// }
 
 export interface CourseSlot {
 	id: number;
@@ -121,10 +121,10 @@ export const isCourseSlotLesson = (
 
 interface CRUDOperations<T> {
 	list: () => Promise<T[]>;
-	get: (id: string) => Promise<T | null>;
-	create: (input: Partial<Omit<T, "id">>) => Promise<T>;
-	update: (id: string, data: Partial<T>) => Promise<T>;
-	delete: (id: string) => Promise<void>;
+	get: (id: number) => Promise<T | null>;
+	create: (input: Omit<T, "id">) => Promise<T>;
+	update: (data: T) => Promise<T>;
+	delete: (id: number) => Promise<void>;
 }
 
 interface CRUDOerationsComplex<T, O, S> extends CRUDOperations<T> {
@@ -141,3 +141,5 @@ export type ModuleCRUD = CRUDOerationsComplex<
 >;
 
 export type LessonCRUD = CRUDOperations<Lesson>;
+
+export { Lesson } from "validators";

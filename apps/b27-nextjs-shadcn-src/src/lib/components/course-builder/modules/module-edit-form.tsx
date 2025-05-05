@@ -2,7 +2,6 @@
 
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-// import { courseSchema, CourseFormValues } from "./schema"; // we'll store schema separately
 import {
 	Form,
 	FormField,
@@ -15,20 +14,16 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-// import { CourseSlot } from "./course-slot";
-// import { moduleSchema, moduleOutlineSchema } from "../simple-schema";
 import {
-	moduleOutlineDTO,
 	ModuleOutline,
 	upsertModuleSlotDTO,
 	moduleDTO,
 } from "@pete_keen/courses/validators";
+import { Lesson } from "@pete_keen/courses/types";
 import { z } from "zod";
 import { AddSlotDialog } from "./add-lesson-dialog";
-import { Lesson } from "@pete_keen/courses/types";
 import { useState, useTransition } from "react";
 import { SelectExistingLessonDialog } from "./select-existing-lesson";
-import { LessonSlotBlock } from "./lesson-slot-block";
 import { SortableSlotList } from "./slot-list";
 import { editModule } from "@/lib/actions/editModule";
 import { toast } from "sonner";

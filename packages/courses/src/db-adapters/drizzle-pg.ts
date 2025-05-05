@@ -50,7 +50,7 @@ export const DrizzlePGAdapter = (
 		console.log("existingMap", existingMap);
 		console.log("incomingMap", incomingMap);
 
-        // TODO: sort error in this logic
+		// TODO: sort error in this logic
 
 		// 3) Determine which slots to delete, update, create
 		const toDelete = existingSlots
@@ -285,11 +285,11 @@ export const DrizzlePGAdapter = (
 			list: async () => {
 				return db.select().from(schema.lesson);
 			},
-			get: async (id: string) => {
+			get: async (id: number) => {
 				const [lesson] = await db
 					.select()
 					.from(schema.lesson)
-					.where(eq(schema.lesson.id, toDBId(id)));
+					.where(eq(schema.lesson.id, id));
 				return lesson;
 			},
 			create: async (input: Omit<Lesson, "id">) => {
@@ -299,18 +299,16 @@ export const DrizzlePGAdapter = (
 					.returning();
 				return lesson;
 			},
-			update: async (id: string, data: Partial<Lesson>) => {
+			update: async (data: Lesson) => {
 				const [lesson] = await db
 					.update(schema.lesson)
 					.set(data)
-					.where(eq(schema.lesson.id, toDBId(id)))
+					.where(eq(schema.lesson.id, data.id))
 					.returning();
 				return lesson;
 			},
-			delete: async (id: string) => {
-				await db
-					.delete(schema.lesson)
-					.where(eq(schema.lesson.id, toDBId(id)));
+			delete: async (id: number) => {
+				await db.delete(schema.lesson).where(eq(schema.lesson.id, id));
 			},
 		},
 	};

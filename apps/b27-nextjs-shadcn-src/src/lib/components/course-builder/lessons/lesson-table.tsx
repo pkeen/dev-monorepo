@@ -73,7 +73,7 @@ export function LessonTable({ lessons }: { lessons: Lesson[] }) {
 										<DropdownMenuContent align="end">
 											<DropdownMenuItem asChild>
 												<Link
-													href={`/admin/courses/modules/${module.id}/edit`}
+													href={`/admin/courses/lessons/${lesson.id}/edit`}
 													className="cursor-pointer"
 												>
 													Edit

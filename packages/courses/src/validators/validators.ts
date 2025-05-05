@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+/*
+ * Module
+ */
+
 export const moduleDTO = z.object({
 	id: z.number(),
 	name: z.string(),
@@ -55,3 +59,17 @@ export const moduleOutlineDTO = moduleDTO.extend({
 });
 
 export type ModuleOutline = z.infer<typeof moduleOutlineDTO>;
+
+/*
+ * Lesson
+ */
+
+export const lessonDTO = z.object({
+	id: z.number(),
+	name: z.string(),
+	description: z.string().optional(),
+	isPublished: z.boolean().optional(),
+});
+export type Lesson = z.infer<typeof lessonDTO>;
+export const createLessonDTO = lessonDTO.omit({ id: true });
+export type CreateLessonDTO = z.infer<typeof createLessonDTO>;

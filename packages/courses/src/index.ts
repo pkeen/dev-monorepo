@@ -1,4 +1,4 @@
-import type { Course, CourseInput, ModuleCRUD } from "./types";
+import type { Course, CourseInput, LessonCRUD, ModuleCRUD } from "./types";
 import { DrizzlePGAdapter, DBAdapter } from "./db-adapters/drizzle-pg";
 // import db from "~/lib/db/index.server";
 // import * as schema from "~/lib/courses/db/schema";
@@ -10,6 +10,7 @@ export interface CourseManager {
 	list: () => Promise<Course[]>;
 	getCourse: (id: string) => Promise<Course | null>;
 	module: ModuleCRUD;
+	lesson: LessonCRUD;
 }
 
 // const dbAdapter = DrizzlePGAdapter(db);

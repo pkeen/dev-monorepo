@@ -2,7 +2,12 @@
 
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { courseOutlineDTO, CourseOutline } from "@pete_keen/courses/validators";
+import {
+	uiCourseDTO,
+	UiCourse,
+	Lesson,
+	Module,
+} from "@pete_keen/courses/validators";
 // import { courseSchema, CourseFormValues } from "./schema"; // we'll store schema separately
 import {
 	Form,
@@ -16,33 +21,76 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
-// import { CourseSlot } from "./course-slot";
+import { AddSlotDialog } from "./add-slot-dialog";
+import { SelectExistingDialog } from "./select-existing";
+import { useMemo, useState } from "react";
+import { SortableSlotList } from "./slot-list";
+import { editCourse } from "@/lib/actions/editCourse";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
 
-export function CourseEditForm({ course }: { course: CourseOutline }) {
-	const form = useForm<CourseOutline>({
-		resolver: zodResolver(courseOutlineDTO),
-		defaultValues: {
-			title: course.title,
-			description: course.description,
-			isPublished: course.isPublished,
-			slots: course.slots,
-		},
+function withClientIds(course: UiCourse): UiCourse {
+	return {
+		...course,
+		slots: course.slots.map((slot, i) => ({
+			...slot,
+			clientId:
+				slot.clientId ?? (slot.id ? `slot-${slot.id}` : `new-${i}`),
+		})),
+	};
+}
+
+export function CourseEditForm({
+	course,
+	existingLessons,
+	existingModules,
+}: {
+	course: UiCourse;
+	existingLessons: Lesson[];
+	existingModules: Module[];
+}) {
+	// 🟣 1. Build a *stable* clientId without randomness
+	const defaultValues = useMemo(() => withClientIds(course), [course]);
+
+	const [selectLessonOpen, setSelectLessonOpen] = useState(false);
+	const [selectModuleOpen, setSelectModuleOpen] = useState(false);
+	const [isPending, startTransition] = useTransition();
+	const router = useRouter();
+
+	const form = useForm({
+		resolver: zodResolver(uiCourseDTO),
+		defaultValues,
 	});
 
-	const { fields, append, remove } = useFieldArray({
+	const { fields, append, move } = useFieldArray({
 		control: form.control,
 		name: "slots",
 	});
 
-	const onSubmit = (values: CourseOutline) => {
+	const onSubmit = (values: UiCourse) => {
 		console.log(values);
+		startTransition(async () => {
+			try {
+				const course = await editCourse(values);
+				toast.success("Course updated!");
+				form.reset(withClientIds(course));
+				// router.refresh(); // reload data if you're on the same page
+			} catch (err) {
+				toast.error("Something went wrong updating the course.");
+				console.error(err);
+			}
+		});
 	};
 
 	return (
 		<div>
 			<Form {...form}>
 				<form
-					onSubmit={form.handleSubmit(onSubmit)}
+					// onSubmit={form.handleSubmit(onSubmit)}
+					onSubmit={form.handleSubmit(onSubmit, (errors) =>
+						console.log("❌ validation errors", errors)
+					)}
 					className="space-y-8"
 				>
 					<Card className="p-6 space-y-4">
@@ -103,55 +151,80 @@ export function CourseEditForm({ course }: { course: CourseOutline }) {
 					<Card className="p-4">
 						<CardHeader>Course Content</CardHeader>
 						<div className="flex gap-4">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() =>
-									append({
-										id: crypto.randomUUID(),
-										type: "module",
-										data: {
-											name: "",
-											description: "",
-											isPublished: false,
-											slots: [],
-										},
-									})
+							<AddSlotDialog
+								trigger={
+									<Button type="button" variant="outline">
+										+ Add Module
+									</Button>
 								}
-							>
-								+ Add Module
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() =>
+								title="Add Module"
+								onSelect={(choice) => {
+									if (choice === "new") {
+										console.log("new");
+									} else {
+										setSelectModuleOpen(true);
+									}
+								}}
+							/>
+							<SelectExistingDialog
+								title="Select Existing Module"
+								open={selectModuleOpen}
+								onOpenChange={setSelectModuleOpen}
+								items={existingModules}
+								onSelect={(item) => {
 									append({
-										id: crypto.randomUUID(),
-										type: "lesson",
-										data: {
-											name: "",
-											description: "",
-											isPublished: false,
+										id: undefined,
+										clientId: `new-${fields.length}`,
+										courseId: course.id,
+										moduleId: item.id,
+										order: fields.length, // <-- Important: add at end
+										content: {
+											id: item.id,
+											name: item.name,
+											isPublished: item.isPublished,
 										},
-									})
+									});
+									setSelectModuleOpen(false); // Close the dialog after selection
+								}}
+							/>
+							<AddSlotDialog
+								trigger={
+									<Button type="button" variant="outline">
+										+ Add Lesson
+									</Button>
 								}
-							>
-								+ Add Lesson
-							</Button>
+								title="Add Lesson"
+								onSelect={(choice) => {
+									if (choice === "new") {
+										console.log("new");
+									} else {
+										setSelectLessonOpen(true);
+									}
+								}}
+							/>
+							<SelectExistingDialog
+								title="Select Existing Lesson"
+								open={selectLessonOpen}
+								onOpenChange={setSelectLessonOpen}
+								items={existingLessons}
+								onSelect={(item) => {
+									append({
+										id: undefined,
+										clientId: `new-${fields.length}`,
+										courseId: course.id,
+										order: fields.length, // <-- Important: add at end
+										lessonId: item.id,
+										content: {
+											id: item.id,
+											name: item.name,
+											isPublished: item.isPublished,
+										},
+									});
+									setSelectLessonOpen(false); // Close the dialog after selection
+								}}
+							/>
 						</div>
-
-						{/* Slots */}
-						{/* <div className="space-y-4">
-							{fields.map((field, index) => (
-								<CourseSlot
-									key={field.id}
-									nestIndex={index}
-									nestPath={`slots.${index}`}
-									control={form.control}
-									remove={() => remove(index)}
-								/>
-							))}
-						</div> */}
+						<SortableSlotList fields={fields} move={move} />
 					</Card>
 
 					<Button type="submit">Save Course</Button>

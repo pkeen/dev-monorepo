@@ -136,3 +136,23 @@ export const courseOutlineDTO = courseDTO.extend({
 	slots: z.array(courseSlotOutlineDTO).default([]),
 });
 export type CourseOutline = z.infer<typeof courseOutlineDTO>;
+
+/*
+ * UI Specific
+ */
+
+export const uiCourseSlotDTO = courseSlotDTO.extend({
+	id: z.number().optional(),
+	clientId: z.string(),
+	content: z.object({
+		id: z.number().optional(),
+		name: z.string(),
+		isPublished: z.boolean().optional(),
+	}),
+});
+export type UiCourseSlot = z.infer<typeof uiCourseSlotDTO>;
+
+export const uiCourseDTO = courseDTO.extend({
+	slots: z.array(uiCourseSlotDTO).default([]),
+});
+export type UiCourse = z.infer<typeof uiCourseDTO>;

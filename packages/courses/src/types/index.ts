@@ -9,7 +9,7 @@ import {
 	CourseSlot,
 	CourseSlotOutline,
 	CourseSlotUpsert,
-    CourseUpsertSlots,
+	CourseUpsertSlots,
 } from "validators";
 
 // // Base interfaces for database models
@@ -140,11 +140,15 @@ interface CRUDOperations<T> {
 }
 
 interface CRUDOerationsComplex<T, O, S> extends CRUDOperations<T> {
-	outline: (id: string) => Promise<O | null>;
+	outline: (id: number) => Promise<O | null>;
 	updateWithSlots: (data: Partial<S>) => Promise<S>;
 }
 
-export type CourseCRUD = CRUDOerationsComplex<Course, CourseOutline, CourseUpsertSlots>;
+export type CourseCRUD = CRUDOerationsComplex<
+	Course,
+	CourseOutline,
+	CourseUpsertSlots
+>;
 
 export type ModuleCRUD = CRUDOerationsComplex<
 	Module,

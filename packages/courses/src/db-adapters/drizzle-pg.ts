@@ -3,7 +3,6 @@ import { PgDatabase, type PgQueryResultHKT } from "drizzle-orm/pg-core";
 import { NeonHttpDatabase } from "drizzle-orm/neon-http";
 import * as defaultSchema from "./schema";
 import type {
-	CourseInput,
 	Course,
 	ModuleCRUD,
 	Module,
@@ -15,6 +14,8 @@ import type {
 import { and, eq, inArray } from "drizzle-orm";
 import {
 	CourseOutline,
+	CourseSlotUpsert,
+	CourseUpsertSlots,
 	ModuleOutline,
 	ModuleSlotWithOutline,
 	ModuleUpsertSlots,
@@ -106,39 +107,246 @@ export const DrizzlePGAdapter = (
 				}))
 			);
 		}
-
-		// // 4) Execute all operations in a transaction
-		// await db.transaction(async (tx) => {
-		// 	// Delete removed slots
-		// 	if (toDelete.length > 0) {
-		// 		await tx
-		// 			.delete(schema.moduleSlot)
-		// 			.where(
-		// 				and(
-		// 					eq(schema.moduleSlot.moduleId, moduleId),
-		// 					inArray(schema.moduleSlot.id, toDelete)
-		// 				)
-		// 			);
-		// 	}
-
-		// 	// Update modified slots
-		// 	for (const slot of toUpdate) {
-		// 		await tx
-		// 			.update(schema.moduleSlot)
-		// 			.set({ order: slot.order, lessonId: slot.lessonId })
-		// 			.where(eq(schema.moduleSlot.id, slot.id!));
-		// 	}
-
-		// 	// Insert new slots
-		// 	for (const slot of toCreate) {
-		// 		await tx.insert(schema.moduleSlot).values({
-		// 			moduleId,
-		// 			lessonId: slot.lessonId,
-		// 			order: slot.order,
-		// 		});
-		// 	}
-		// });
 	};
+
+	const syncCourseSlots = async (
+		courseId: number,
+		incomingSlots: CourseSlotUpsert[]
+	) => {
+		// 1) Load existing slots from DB
+		const existingSlots = await db
+			.select()
+			.from(schema.courseSlot)
+			.where(eq(schema.courseSlot.courseId, courseId));
+
+		// 2) Build maps for diffing
+		const existingMap = new Map(existingSlots.map((s) => [s.id, s]));
+		const incomingMap = new Map<number, CourseSlotUpsert>(
+			incomingSlots.map((s) => [s.id ?? 0, s])
+		);
+
+		console.log("existingMap", existingMap);
+		console.log("incomingMap", incomingMap);
+
+		// 3) Determine which slots to delete, update, create
+		const toDelete = existingSlots
+			.filter((s) => !incomingMap.has(s.id))
+			.map((s) => s.id);
+
+		const toCreate = incomingSlots.filter((s) => !s.id);
+
+		const toUpdate = incomingSlots.filter((s) => {
+			if (!s.id) return false;
+			const old = existingMap.get(s.id);
+			// update if order or lessonId changed
+			return (
+				!!old &&
+				(old.order !== s.order ||
+					old.lessonId != s.lessonId ||
+					old.moduleId != s.moduleId)
+			);
+		});
+
+		console.log("toDelete", toDelete);
+		console.log("toCreate", toCreate);
+		console.log("toUpdate", toUpdate);
+
+		if (toDelete.length) {
+			await db
+				.delete(schema.courseSlot)
+				.where(
+					and(
+						eq(schema.courseSlot.courseId, courseId),
+						inArray(schema.courseSlot.id, toDelete)
+					)
+				);
+		}
+
+		if (toUpdate.length) {
+			for (const slot of toUpdate) {
+				await db
+					.update(schema.courseSlot)
+					.set({
+						order: slot.order,
+						lessonId: slot.lessonId,
+						moduleId: slot.moduleId,
+					})
+					.where(eq(schema.courseSlot.id, slot.id!));
+			}
+		}
+
+		if (toCreate.length) {
+			await db.insert(schema.courseSlot).values(
+				toCreate.map((slot) => ({
+					courseId,
+					lessonId: slot.lessonId,
+					moduleId: slot.moduleId,
+					order: slot.order,
+				}))
+			);
+		}
+	};
+
+	// const courseCRUD = {
+	// 	list: async () => {
+	// 		return db.select().from(schema.course);
+	// 	},
+	// 	get: async (id: string) => {
+	// 		const [course] = await db
+	// 			.select()
+	// 			.from(schema.course)
+	// 			.where(eq(schema.course.id, toDBId(id)));
+	// 		return course;
+	// 	},
+	// 	outline: async (id: number) => {
+	// 		const rows = await db
+	// 			.select({
+	// 				id: schema.course.id,
+	// 				userId: schema.course.userId,
+	// 				title: schema.course.title,
+	// 				description: schema.course.description,
+	// 				isPublished: schema.course.isPublished,
+	// 				courseSlotId: schema.courseSlot.id,
+	// 				courseSlotOrder: schema.courseSlot.order,
+	// 				moduleId: schema.courseSlot.moduleId,
+	// 				lessonId: schema.courseSlot.lessonId,
+	// 				moduleName: schema.module.name,
+	// 				moduleIsPublished: schema.module.isPublished,
+	// 				lessonName: schema.lesson.name,
+	// 				lessonIsPublished: schema.lesson.isPublished,
+	// 			})
+	// 			.from(schema.course)
+	// 			.leftJoin(
+	// 				schema.courseSlot,
+	// 				eq(schema.courseSlot.courseId, schema.course.id)
+	// 			)
+	// 			.leftJoin(
+	// 				schema.module,
+	// 				eq(schema.module.id, schema.courseSlot.moduleId)
+	// 			)
+	// 			.leftJoin(
+	// 				schema.lesson,
+	// 				eq(schema.lesson.id, schema.courseSlot.lessonId)
+	// 			)
+	// 			.where(eq(schema.course.id, id))
+	// 			.orderBy(schema.courseSlot.order);
+
+	// 		if (rows.length === 0) {
+	// 			return null; // or throw new Error("Module not found")
+	// 		}
+
+	// 		const courseSlots: CourseSlotOutline[] = rows
+	// 			.filter((r) => r.courseSlotId !== null) // filter out “no-slot” row
+	// 			.map((row) => ({
+	// 				id: row.courseSlotId!,
+	// 				courseId: row.id,
+	// 				order: row.courseSlotOrder!,
+	// 				moduleId: row.moduleId ?? undefined,
+	// 				lessonId: row.lessonId ?? undefined,
+	// 				content: row.lessonId
+	// 					? {
+	// 							id: row.lessonId!,
+	// 							name: row.lessonName!,
+	// 							isPublished: row.lessonIsPublished!,
+	// 					  }
+	// 					: {
+	// 							id: row.moduleId!,
+	// 							name: row.moduleName!,
+	// 							isPublished: row.moduleIsPublished!,
+	// 					  },
+	// 			}));
+
+	// 		const {
+	// 			title,
+	// 			description,
+	// 			isPublished,
+	// 			userId,
+	// 			id: courseId,
+	// 		} = rows[0];
+
+	// 		const outline: CourseOutline = {
+	// 			id: courseId,
+	// 			userId,
+	// 			title,
+	// 			description: description ?? undefined,
+	// 			isPublished,
+	// 			slots: courseSlots,
+	// 		};
+
+	// 		// console.log("Course outline", outline);
+
+	// 		return outline;
+	// 	},
+	// 	create: async (input: Omit<Course, "id">) => {
+	// 		const [course] = await db
+	// 			.insert(schema.course)
+	// 			.values(input)
+	// 			.returning();
+	// 		return course;
+	// 	},
+	// 	update: async (data: Course) => {
+	// 		const [course] = await db
+	// 			.update(schema.course)
+	// 			.set(data)
+	// 			.where(eq(schema.course.id, data.id))
+	// 			.returning();
+	// 		return course;
+	// 	},
+	// 	delete: async (id: string) => {
+	// 		await db
+	// 			.delete(schema.course)
+	// 			.where(eq(schema.course.id, toDBId(id)));
+	// 	},
+	// };
+
+	// courseCRUD.updateWithSlots = async (data: CourseUpsertSlots) => {
+	// 	if (!data.id) {
+	// 		throw new Error("Course ID is required");
+	// 	}
+
+	// 	const [course] = await db
+	// 		.update(schema.course)
+	// 		.set(data)
+	// 		.where(eq(schema.course.id, data.id))
+	// 		.returning();
+
+	// 	if (data.slots) {
+	// 		await syncCourseSlots(data.id!, data.slots);
+	// 	}
+	// 	return courseCRUD.outline(data.id!);
+	// };
+
+	// // 4) Execute all operations in a transaction
+	// await db.transaction(async (tx) => {
+	// 	// Delete removed slots
+	// 	if (toDelete.length > 0) {
+	// 		await tx
+	// 			.delete(schema.moduleSlot)
+	// 			.where(
+	// 				and(
+	// 					eq(schema.moduleSlot.moduleId, moduleId),
+	// 					inArray(schema.moduleSlot.id, toDelete)
+	// 				)
+	// 			);
+	// 	}
+
+	// 	// Update modified slots
+	// 	for (const slot of toUpdate) {
+	// 		await tx
+	// 			.update(schema.moduleSlot)
+	// 			.set({ order: slot.order, lessonId: slot.lessonId })
+	// 			.where(eq(schema.moduleSlot.id, slot.id!));
+	// 	}
+
+	// 	// Insert new slots
+	// 	for (const slot of toCreate) {
+	// 		await tx.insert(schema.moduleSlot).values({
+	// 			moduleId,
+	// 			lessonId: slot.lessonId,
+	// 			order: slot.order,
+	// 		});
+	// 	}
+	// });
 
 	return {
 		createCourse: async (input: CourseInput): Promise<Course> => {
@@ -385,10 +593,16 @@ export const DrizzlePGAdapter = (
 							  },
 					}));
 
-				const { title, description, isPublished, userId } = rows[0];
+				const {
+					title,
+					description,
+					isPublished,
+					userId,
+					id: courseId,
+				} = rows[0];
 
 				const outline: CourseOutline = {
-					id: id,
+					id: courseId,
 					userId,
 					title,
 					description: description ?? undefined,
@@ -396,7 +610,7 @@ export const DrizzlePGAdapter = (
 					slots: courseSlots,
 				};
 
-				console.log("Course outline", outline);
+				// console.log("Course outline", outline);
 
 				return outline;
 			},
@@ -419,6 +633,22 @@ export const DrizzlePGAdapter = (
 				await db
 					.delete(schema.course)
 					.where(eq(schema.course.id, toDBId(id)));
+			},
+			async updateWithSlots(data: CourseUpsertSlots) {
+				if (!data.id) {
+					throw new Error("Course ID is required");
+				}
+
+				const [course] = await db
+					.update(schema.course)
+					.set(data)
+					.where(eq(schema.course.id, data.id))
+					.returning();
+
+				if (data.slots) {
+					await syncCourseSlots(data.id!, data.slots);
+				}
+				return this.outline(data.id!);
 			},
 		},
 	};

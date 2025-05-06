@@ -227,7 +227,12 @@ export function CourseEditForm({
 						<SortableSlotList fields={fields} move={move} />
 					</Card>
 
-					<Button type="submit">Save Course</Button>
+					<Button
+						type="submit"
+						disabled={isPending || !form.formState.isDirty}
+					>
+						Save Course
+					</Button>
 				</form>
 			</Form>
 		</div>

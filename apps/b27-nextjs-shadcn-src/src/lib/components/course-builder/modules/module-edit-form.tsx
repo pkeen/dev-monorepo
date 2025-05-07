@@ -14,73 +14,61 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-	ModuleOutline,
-	upsertModuleSlotDTO,
-	moduleDTO,
-} from "@pete_keen/courses/validators";
+import { UiModule, uiModuleDTO } from "@pete_keen/courses/validators";
 import { Lesson } from "@pete_keen/courses/types";
 import { z } from "zod";
 import { AddSlotDialog } from "./add-lesson-dialog";
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { SelectExistingLessonDialog } from "./select-existing-lesson";
-import { SortableSlotList } from "./slot-list";
+import { SelectExistingDialog } from "../course/select-existing";
+import { SortableSlotList } from "./module-slot-list";
 import { editModule } from "@/lib/actions/editModule";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
 
-export const frontendModuleSlotDTO = upsertModuleSlotDTO.extend({
-	id: z.number().optional(),
-	clientId: z.string(), // used only on frontend
-	lesson: z.object({
-		id: z.number(),
-		name: z.string(),
-		description: z.string().optional(),
-		isPublished: z.boolean().optional(),
-	}),
-});
-export type FrontendModuleSlot = z.infer<typeof frontendModuleSlotDTO>;
-export const frontendModuleDTO = moduleDTO.extend({
-	slots: z.array(frontendModuleSlotDTO),
-});
-export type FrontendModule = z.infer<typeof frontendModuleDTO>;
+function withClientIds(module: UiModule): UiModule {
+	return {
+		...module,
+		description:
+			module.description === null ? undefined : module.description,
+		slots: module.slots.map((slot, i) => ({
+			...slot,
+			clientId:
+				slot.clientId ?? (slot.id ? `slot-${slot.id}` : `new-${i}`),
+		})),
+	};
+}
 
 export const ModuleEditForm = ({
 	module,
 	existingLessons,
 }: {
-	module: ModuleOutline;
+	module: UiModule;
 	existingLessons: Lesson[];
 }) => {
+	// 🟣 1. Build a *stable* clientId without randomness
+	const defaultValues = useMemo(() => withClientIds(module), [module]);
+
 	const form = useForm({
-		resolver: zodResolver(frontendModuleDTO),
-		defaultValues: {
-			isPublished: module.isPublished,
-			name: module.name,
-			description: module.description ?? "",
-			slots: module.slots.map((slot) => ({
-				...slot,
-				clientId: crypto.randomUUID(),
-			})),
-			id: module.id,
-		},
+		resolver: zodResolver(uiModuleDTO),
+		defaultValues,
 	});
 
-	const { fields, append, remove, move, update } = useFieldArray({
+	const { fields, append, move } = useFieldArray({
 		control: form.control,
 		name: "slots",
 	});
 
 	const router = useRouter();
 
-	const onSubmit = (values: z.infer<typeof frontendModuleDTO>) => {
+	const onSubmit = (values: z.infer<typeof uiModuleDTO>) => {
 		startTransition(async () => {
 			try {
-				await editModule(values);
+				const module = await editModule(values);
 				toast.success("Module updated!");
-				form.reset(values);
-				router.refresh(); // reload data if you're on the same page
+				form.reset(withClientIds(module));
+				router.refresh();
 			} catch (err) {
 				toast.error("Something went wrong updating the module.");
 				console.error(err);
@@ -176,7 +164,7 @@ export const ModuleEditForm = ({
 								}
 							}}
 						/>
-						<SelectExistingLessonDialog
+						<SelectExistingDialog
 							title="Select Existing Lesson"
 							open={selectLessonOpen}
 							onOpenChange={setSelectLessonOpen}
@@ -188,10 +176,9 @@ export const ModuleEditForm = ({
 									moduleId: module.id,
 									lessonId: item.id,
 									order: fields.length, // <-- Important: add at end
-									lesson: {
+									content: {
 										id: item.id,
 										name: item.name,
-										description: item.description ?? "",
 										isPublished: item.isPublished ?? false,
 									},
 								});

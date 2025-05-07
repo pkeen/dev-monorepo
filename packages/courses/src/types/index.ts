@@ -132,12 +132,12 @@ interface CRUDOperations<T> {
 	get: (id: number) => Promise<T | null>;
 	create: (input: Omit<T, "id">) => Promise<T>;
 	update: (data: T) => Promise<T>;
-	delete: (id: number) => Promise<void>;
+	destroy: (id: number) => Promise<void>;
 }
 
 interface CRUDOerationsComplex<T, O, S> extends CRUDOperations<T> {
 	outline: (id: number) => Promise<O | null>;
-	updateWithSlots: (data: Partial<S>) => Promise<S>;
+	updateWithSlots: (data: Partial<S>) => Promise<S | null>;
 }
 
 export type CourseCRUD = CRUDOerationsComplex<

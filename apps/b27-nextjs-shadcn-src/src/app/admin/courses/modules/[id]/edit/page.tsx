@@ -18,7 +18,7 @@ export default async function ModuleEditPage({
 	params: { id: string };
 }) {
 	const { id } = await params;
-	const module = await courses.module.outline(id);
+	const module = await courses.module.outline(parseInt(id));
 	const lessons = await courses.lesson.list();
 	return module ? (
 		<ModuleEditForm module={module} existingLessons={lessons} />

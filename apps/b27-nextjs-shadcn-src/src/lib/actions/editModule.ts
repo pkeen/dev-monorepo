@@ -1,24 +1,21 @@
 "use server";
 import { courses } from "@/courses";
 import {
-	ModuleOutline,
-	ModuleUpsertSlots,
+	EditModuleUpsertSlots,
+    UiModule,
+    UiModuleSlot,
 } from "@pete_keen/courses/validators";
-import {
-	frontendModuleDTO,
-	FrontendModule,
-} from "@/lib/components/course-builder/modules/module-edit-form";
 
-export const editModule = async (input: FrontendModule) => {
+export const editModule = async (input: UiModule) => {
 	const convertToModuleWithSlots = (
-		module: FrontendModule
-	): ModuleUpsertSlots => {
-		const moduleWithSlots: ModuleUpsertSlots = {
+		module: UiModule
+	): EditModuleUpsertSlots => {
+		const moduleWithSlots: EditModuleUpsertSlots = {
 			id: module.id,
 			name: module.name,
 			description: module.description,
 			isPublished: module.isPublished,
-			slots: module.slots.map((slot) => ({
+			slots: module.slots.map((slot: UiModuleSlot) => ({
 				id: slot.id || undefined,
 				moduleId: slot.moduleId,
 				lessonId: slot.lessonId,

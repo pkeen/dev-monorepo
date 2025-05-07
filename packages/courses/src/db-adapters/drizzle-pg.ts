@@ -30,11 +30,10 @@ type DrizzleDatabase =
 
 const toDBId = (id: string): number => parseInt(id, 10);
 
-// what type is this?
-export const DrizzlePGAdapter = (
+const createModuleRepo = (
 	db: DrizzleDatabase,
-	schema: DefaultSchema = defaultSchema
-) => {
+	schema: DefaultSchema
+): ModuleCRUD => {
 	/**
 	 * Sync moduleSlots for a given moduleId against incomingSlots array.
 	 */
@@ -108,6 +107,206 @@ export const DrizzlePGAdapter = (
 			);
 		}
 	};
+
+	const list = async () => {
+		return db.select().from(schema.module);
+	};
+
+	const get = async (id: number) => {
+		const [module] = await db
+			.select()
+			.from(schema.module)
+			.where(eq(schema.module.id, id));
+		return module;
+	};
+
+	const create = async (input: Omit<Module, "id">) => {
+		const [module] = await db
+			.insert(schema.module)
+			.values(input)
+			.returning();
+		return module;
+	};
+
+	const destroy = async (id: number) => {
+		await db.delete(schema.module).where(eq(schema.module.id, id));
+	};
+
+	const update = async (data: Module) => {
+		const [module] = await db
+			.update(schema.module)
+			.set(data)
+			.where(eq(schema.module.id, data.id))
+			.returning();
+		return module;
+	};
+
+	const outline = async (id: number) => {
+		const moduleId = id;
+
+		const rows = await db
+			.select({
+				id: schema.module.id,
+				name: schema.module.name,
+				description: schema.module.description,
+				isPublished: schema.module.isPublished,
+				moduleSlotId: schema.moduleSlot.id,
+				order: schema.moduleSlot.order,
+				lessonName: schema.lesson.name,
+				lessonId: schema.lesson.id,
+				lessonIsPublished: schema.lesson.isPublished,
+			})
+			.from(schema.module)
+			// use LEFT JOIN so modules without slots still return one “module” row
+			.leftJoin(
+				schema.moduleSlot,
+				eq(schema.moduleSlot.moduleId, schema.module.id)
+			)
+			.leftJoin(
+				schema.lesson,
+				eq(schema.lesson.id, schema.moduleSlot.lessonId)
+			)
+			.where(eq(schema.module.id, moduleId))
+			.orderBy(schema.moduleSlot.order);
+
+		if (rows.length === 0) {
+			return null; // or throw new Error("Module not found")
+		}
+
+		const slots: ModuleSlotOutline[] = rows
+			.filter((r) => r.moduleSlotId !== null) // filter out “no-slot” row
+			.map((row) => ({
+				id: row.moduleSlotId!,
+				moduleId: row.id,
+				lessonId: row.lessonId!,
+				order: row.order!,
+				content: {
+					id: row.lessonId!,
+					name: row.lessonName!,
+					isPublished: row.lessonIsPublished!,
+				},
+			}));
+
+		const { name, description, isPublished } = rows[0];
+
+		const outline: ModuleOutline = {
+			id: moduleId,
+			name,
+			description: description ?? undefined,
+			isPublished,
+			slots,
+		};
+
+		return outline;
+	};
+
+	const updateWithSlots = async (data: Partial<EditModuleUpsertSlots>) => {
+		if (!data.id) {
+			throw new Error("Module ID is required");
+		}
+		// const moduleId = data.id);
+		// update module details
+		const [module] = await db
+			.update(schema.module)
+			.set(data)
+			.where(eq(schema.module.id, data.id))
+			.returning();
+
+		// update module slots
+		if (data.slots) {
+			await syncModuleSlots(data.id!, data.slots);
+		}
+		return outline(data.id!);
+	};
+
+	return {
+		list,
+		get,
+		create,
+		destroy,
+		update,
+		outline,
+		updateWithSlots,
+	};
+};
+// what type is this?
+export const DrizzlePGAdapter = (
+	db: DrizzleDatabase,
+	schema: DefaultSchema = defaultSchema
+) => {
+	/**
+	 * Sync moduleSlots for a given moduleId against incomingSlots array.
+	 */
+	// const syncModuleSlots = async (
+	// 	moduleId: number,
+	// 	incomingSlots: UpsertModuleSlot[]
+	// ) => {
+	// 	// 1) Load existing slots from DB
+	// 	const existingSlots = await db
+	// 		.select()
+	// 		.from(schema.moduleSlot)
+	// 		.where(eq(schema.moduleSlot.moduleId, moduleId));
+
+	// 	// 2) Build maps for diffing
+	// 	const existingMap = new Map(existingSlots.map((s) => [s.id, s]));
+	// 	const incomingMap = new Map<number, UpsertModuleSlot>(
+	// 		incomingSlots.map((s) => [s.id ?? 0, s])
+	// 	);
+	// 	console.log("existingMap", existingMap);
+	// 	console.log("incomingMap", incomingMap);
+
+	// 	// TODO: sort error in this logic
+
+	// 	// 3) Determine which slots to delete, update, create
+	// 	const toDelete = existingSlots
+	// 		.filter((s) => !incomingMap.has(s.id))
+	// 		.map((s) => s.id);
+
+	// 	const toCreate = incomingSlots.filter((s) => !s.id);
+
+	// 	const toUpdate = incomingSlots.filter((s) => {
+	// 		if (!s.id) return false;
+	// 		const old = existingMap.get(s.id);
+	// 		// update if order or lessonId changed
+	// 		return (
+	// 			!!old && (old.order !== s.order || old.lessonId !== s.lessonId)
+	// 		);
+	// 	});
+
+	// 	console.log("toDelete", toDelete);
+	// 	console.log("toCreate", toCreate);
+	// 	console.log("toUpdate", toUpdate);
+
+	// 	if (toDelete.length) {
+	// 		await db
+	// 			.delete(schema.moduleSlot)
+	// 			.where(
+	// 				and(
+	// 					eq(schema.moduleSlot.moduleId, moduleId),
+	// 					inArray(schema.moduleSlot.id, toDelete)
+	// 				)
+	// 			);
+	// 	}
+
+	// 	if (toUpdate.length) {
+	// 		for (const slot of toUpdate) {
+	// 			await db
+	// 				.update(schema.moduleSlot)
+	// 				.set({ order: slot.order, lessonId: slot.lessonId })
+	// 				.where(eq(schema.moduleSlot.id, slot.id!));
+	// 		}
+	// 	}
+
+	// 	if (toCreate.length) {
+	// 		await db.insert(schema.moduleSlot).values(
+	// 			toCreate.map((slot) => ({
+	// 				moduleId,
+	// 				lessonId: slot.lessonId,
+	// 				order: slot.order,
+	// 			}))
+	// 		);
+	// 	}
+	// };
 
 	const syncCourseSlots = async (
 		courseId: number,
@@ -479,115 +678,116 @@ export const DrizzlePGAdapter = (
 		logSchema: () => {
 			console.log(schema);
 		},
-		module: {
-			list: async () => {
-				return db.select().from(schema.module);
-			},
-			get: async (id: string) => {
-				const [module] = await db
-					.select()
-					.from(schema.module)
-					.where(eq(schema.module.id, toDBId(id)));
-				return module;
-			},
-			create: async (input: Omit<Module, "id">) => {
-				const [module] = await db
-					.insert(schema.module)
-					.values(input)
-					.returning();
-				return module;
-			},
-			outline: async (id: string) => {
-				const moduleId = toDBId(id);
+		module: createModuleRepo(db, schema),
+		// module: {
+		// 	list: async () => {
+		// 		return db.select().from(schema.module);
+		// 	},
+		// 	get: async (id: string) => {
+		// 		const [module] = await db
+		// 			.select()
+		// 			.from(schema.module)
+		// 			.where(eq(schema.module.id, toDBId(id)));
+		// 		return module;
+		// 	},
+		// 	create: async (input: Omit<Module, "id">) => {
+		// 		const [module] = await db
+		// 			.insert(schema.module)
+		// 			.values(input)
+		// 			.returning();
+		// 		return module;
+		// 	},
+		// 	outline: async (id: string) => {
+		// 		const moduleId = toDBId(id);
 
-				const rows = await db
-					.select({
-						id: schema.module.id,
-						name: schema.module.name,
-						description: schema.module.description,
-						isPublished: schema.module.isPublished,
-						moduleSlotId: schema.moduleSlot.id,
-						order: schema.moduleSlot.order,
-						lessonName: schema.lesson.name,
-						lessonId: schema.lesson.id,
-						lessonIsPublished: schema.lesson.isPublished,
-					})
-					.from(schema.module)
-					// use LEFT JOIN so modules without slots still return one “module” row
-					.leftJoin(
-						schema.moduleSlot,
-						eq(schema.moduleSlot.moduleId, schema.module.id)
-					)
-					.leftJoin(
-						schema.lesson,
-						eq(schema.lesson.id, schema.moduleSlot.lessonId)
-					)
-					.where(eq(schema.module.id, moduleId))
-					.orderBy(schema.moduleSlot.order);
+		// 		const rows = await db
+		// 			.select({
+		// 				id: schema.module.id,
+		// 				name: schema.module.name,
+		// 				description: schema.module.description,
+		// 				isPublished: schema.module.isPublished,
+		// 				moduleSlotId: schema.moduleSlot.id,
+		// 				order: schema.moduleSlot.order,
+		// 				lessonName: schema.lesson.name,
+		// 				lessonId: schema.lesson.id,
+		// 				lessonIsPublished: schema.lesson.isPublished,
+		// 			})
+		// 			.from(schema.module)
+		// 			// use LEFT JOIN so modules without slots still return one “module” row
+		// 			.leftJoin(
+		// 				schema.moduleSlot,
+		// 				eq(schema.moduleSlot.moduleId, schema.module.id)
+		// 			)
+		// 			.leftJoin(
+		// 				schema.lesson,
+		// 				eq(schema.lesson.id, schema.moduleSlot.lessonId)
+		// 			)
+		// 			.where(eq(schema.module.id, moduleId))
+		// 			.orderBy(schema.moduleSlot.order);
 
-				if (rows.length === 0) {
-					return null; // or throw new Error("Module not found")
-				}
+		// 		if (rows.length === 0) {
+		// 			return null; // or throw new Error("Module not found")
+		// 		}
 
-				const lessonSlots: ModuleSlotOutline[] = rows
-					.filter((r) => r.moduleSlotId !== null) // filter out “no-slot” row
-					.map((row) => ({
-						id: row.moduleSlotId!,
-						moduleId: row.id,
-						lessonId: row.lessonId!,
-						order: row.order!,
-						content: {
-							id: row.lessonId!,
-							name: row.lessonName!,
-							isPublished: row.lessonIsPublished!,
-						},
-					}));
+		// 		const lessonSlots: ModuleSlotOutline[] = rows
+		// 			.filter((r) => r.moduleSlotId !== null) // filter out “no-slot” row
+		// 			.map((row) => ({
+		// 				id: row.moduleSlotId!,
+		// 				moduleId: row.id,
+		// 				lessonId: row.lessonId!,
+		// 				order: row.order!,
+		// 				content: {
+		// 					id: row.lessonId!,
+		// 					name: row.lessonName!,
+		// 					isPublished: row.lessonIsPublished!,
+		// 				},
+		// 			}));
 
-				const { name, description, isPublished } = rows[0];
+		// 		const { name, description, isPublished } = rows[0];
 
-				const outline: ModuleOutline = {
-					id: moduleId,
-					name,
-					description: description ?? undefined,
-					isPublished,
-					slots: lessonSlots,
-				};
+		// 		const outline: ModuleOutline = {
+		// 			id: moduleId,
+		// 			name,
+		// 			description: description ?? undefined,
+		// 			isPublished,
+		// 			slots: lessonSlots,
+		// 		};
 
-				return outline;
-			},
+		// 		return outline;
+		// 	},
 
-			update: async (id: string, data: Partial<Module>) => {
-				const [module] = await db
-					.update(schema.module)
-					.set(data)
-					.where(eq(schema.module.id, toDBId(id)))
-					.returning();
-				return module;
-			},
-			updateWithSlots: async (data: Partial<EditModuleUpsertSlots>) => {
-				if (!data.id) {
-					throw new Error("Module ID is required");
-				}
-				// const moduleId = data.id);
-				// update module details
-				const [module] = await db
-					.update(schema.module)
-					.set(data)
-					.where(eq(schema.module.id, data.id))
-					.returning();
+		// 	update: async (id: string, data: Partial<Module>) => {
+		// 		const [module] = await db
+		// 			.update(schema.module)
+		// 			.set(data)
+		// 			.where(eq(schema.module.id, toDBId(id)))
+		// 			.returning();
+		// 		return module;
+		// 	},
+		// 	updateWithSlots: async (data: Partial<EditModuleUpsertSlots>) => {
+		// 		if (!data.id) {
+		// 			throw new Error("Module ID is required");
+		// 		}
+		// 		// const moduleId = data.id);
+		// 		// update module details
+		// 		const [module] = await db
+		// 			.update(schema.module)
+		// 			.set(data)
+		// 			.where(eq(schema.module.id, data.id))
+		// 			.returning();
 
-				// update module slots
-				if (data.slots) {
-					await syncModuleSlots(data.id!, data.slots);
-				}
-				return module;
-			},
-			delete: async (id: string) => {
-				await db
-					.delete(schema.module)
-					.where(eq(schema.module.id, toDBId(id)));
-			},
-		},
+		// 		// update module slots
+		// 		if (data.slots) {
+		// 			await syncModuleSlots(data.id!, data.slots);
+		// 		}
+		// 		return this.outline(data.id!);
+		// 	},
+		// 	delete: async (id: string) => {
+		// 		await db
+		// 			.delete(schema.module)
+		// 			.where(eq(schema.module.id, toDBId(id)));
+		// 	},
+		// },
 		lesson: {
 			list: async () => {
 				return db.select().from(schema.lesson);

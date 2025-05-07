@@ -30,7 +30,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
-function withClientIds(course: UiCourse): UiCourse {
+export function withClientIds(course: UiCourse): UiCourse {
 	return {
 		...course,
 		slots: course.slots.map((slot, i) => ({
@@ -56,7 +56,6 @@ export function CourseEditForm({
 	const [selectLessonOpen, setSelectLessonOpen] = useState(false);
 	const [selectModuleOpen, setSelectModuleOpen] = useState(false);
 	const [isPending, startTransition] = useTransition();
-	const router = useRouter();
 
 	const form = useForm({
 		resolver: zodResolver(uiCourseDTO),

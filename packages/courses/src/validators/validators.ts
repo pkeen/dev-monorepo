@@ -7,7 +7,7 @@ import { z } from "zod";
 export const moduleDTO = z.object({
 	id: z.number(),
 	name: z.string(),
-	description: z.string().optional(),
+	description: z.string().optional().nullable(),
 	isPublished: z.boolean().optional(),
 });
 
@@ -53,6 +53,7 @@ export type ModuleSlotOutline = z.infer<typeof moduleSlotOutlineDTO>;
 
 export const moduleOutlineDTO = moduleDTO.extend({
 	slots: z.array(moduleSlotOutlineDTO).default([]),
+	description: z.string().optional(),
 });
 export type ModuleOutline = z.infer<typeof moduleOutlineDTO>;
 
@@ -70,6 +71,7 @@ export const uiModuleSlotDTO = upsertModuleSlotDTO.extend({
 export type UiModuleSlot = z.infer<typeof uiModuleSlotDTO>;
 export const uiModuleDTO = moduleDTO.extend({
 	slots: z.array(uiModuleSlotDTO).default([]),
+	description: z.string().optional(),
 });
 export type UiModule = z.infer<typeof uiModuleDTO>;
 

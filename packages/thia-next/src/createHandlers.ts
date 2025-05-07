@@ -3,6 +3,7 @@ import { IAuthManager } from "@pete_keen/authentication-core";
 import { renderSignInPage } from "./views/signin";
 import { oauthStateCookie, returnToCookie, thiaSessionCookie } from "./cookies";
 import { verifyCsrfAndParseForm } from "./csrf";
+import { renderErrorPage } from "./views/error";
 
 export async function handleAuthRoute(
 	request: Request,
@@ -93,6 +94,11 @@ export async function handleAuthRoute(
 			} catch (e) {
 				console.log("ERROR:", e);
 			}
+		}
+
+		// Error
+		if (action === "error") {
+			return renderErrorPage();
 		}
 	}
 

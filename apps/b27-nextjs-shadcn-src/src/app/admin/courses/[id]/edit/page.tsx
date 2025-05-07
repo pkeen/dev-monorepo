@@ -8,7 +8,7 @@ export default async function CourseEditPage({
 	params: { id: string };
 }) {
 	const { id } = await params;
-	const course = await courses.course.outline(id);
+	const course = await courses.course.outline(parseInt(id, 10));
 	const existingModules = await courses.module.list();
 	const existingLessons = await courses.lesson.list();
 	if (!course) return notFound();

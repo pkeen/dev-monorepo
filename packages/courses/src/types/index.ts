@@ -1,15 +1,11 @@
 import {
-	ModuleUpsertSlots,
+	EditModuleUpsertSlots,
 	Lesson,
 	Module,
-	ModuleSlot,
 	ModuleOutline,
 	Course,
 	CourseOutline,
-	CourseSlot,
-	CourseSlotOutline,
-	CourseSlotUpsert,
-	CourseUpsertSlots,
+	EditCourseUpsertSlots,
 } from "validators";
 
 // // Base interfaces for database models
@@ -147,13 +143,13 @@ interface CRUDOerationsComplex<T, O, S> extends CRUDOperations<T> {
 export type CourseCRUD = CRUDOerationsComplex<
 	Course,
 	CourseOutline,
-	CourseUpsertSlots
+	EditCourseUpsertSlots
 >;
 
 export type ModuleCRUD = CRUDOerationsComplex<
 	Module,
 	ModuleOutline,
-	ModuleUpsertSlots
+	EditModuleUpsertSlots
 >;
 
 export type LessonCRUD = CRUDOperations<Lesson>;
@@ -163,6 +159,12 @@ export {
 	Module,
 	ModuleSlot,
 	Course,
+	EditCourseUpsertSlots,
+	EditModuleUpsertSlots,
+	UiCourse,
+	UiModule,
+	UiCourseSlot,
+	UiModuleSlot,
 	CourseSlot,
 	CourseSlotOutline,
 } from "validators";

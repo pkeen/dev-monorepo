@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 
 export default async function CoursesPage() {
-	const coursesList = await courses.list();
+	const coursesList = await courses.course.list();
 
 	return (
 		<div className="space-y-4">

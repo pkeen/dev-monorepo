@@ -26,7 +26,7 @@ export const course = courses.table(
 		id: serial("id").primaryKey(),
 		userId: uuid("user_id").notNull(), // references external foreign key from auth
 		title: varchar("title", { length: 256 }).notNull(),
-		description: text("description"),
+		description: text("description").notNull(),
 		isPublished: boolean("is_published").notNull().default(false),
 	},
 	(table) => ({
@@ -91,7 +91,7 @@ export const createSchema = () => {
 				id: serial("id").primaryKey(),
 				userId: uuid("user_id").notNull(), // references external foreign key from auth
 				title: varchar("title", { length: 256 }).notNull(),
-				description: text("description"),
+				description: text("description").notNull(),
 				isPublished: boolean("is_published").notNull().default(false),
 			},
 			(table) => ({

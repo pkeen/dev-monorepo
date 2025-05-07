@@ -19,7 +19,6 @@ import { Lesson } from "@pete_keen/courses/types";
 import { z } from "zod";
 import { AddSlotDialog } from "./add-lesson-dialog";
 import { useMemo, useState, useTransition } from "react";
-import { SelectExistingLessonDialog } from "./select-existing-lesson";
 import { SelectExistingDialog } from "../course/select-existing";
 import { SortableSlotList } from "./module-slot-list";
 import { editModule } from "@/lib/actions/editModule";

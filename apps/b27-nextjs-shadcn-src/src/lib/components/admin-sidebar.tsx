@@ -41,7 +41,7 @@ export function AdminSidebar() {
 									key={item.label}
 									value={item.label}
 								>
-									<AccordionTrigger className="w-full px-3 py-2 text-sm font-medium flex justify-start gap-2">
+									<AccordionTrigger className="w-full px-3 py-2 text-sm font-medium flex justify-start gap-2 cursor-pointer">
 										{item.icon && (
 											<item.icon className="h-4 w-4" />
 										)}
@@ -55,7 +55,7 @@ export function AdminSidebar() {
 											>
 												<Button
 													variant="ghost"
-													className="w-full justify-start gap-2 px-3 py-2 text-sm font-normal"
+													className="w-full justify-start gap-2 px-3 py-2 text-sm font-normal cursor-pointer"
 												>
 													{child.label}
 												</Button>
@@ -69,7 +69,7 @@ export function AdminSidebar() {
 								<Link key={item.href} href={item.href}>
 									<Button
 										variant="ghost"
-										className="w-full justify-start gap-2 px-3 py-2 text-sm font-medium"
+										className="w-full justify-start gap-2 px-3 py-2 text-sm font-medium cursor-pointer"
 									>
 										{item.icon && (
 											<item.icon className="h-4 w-4" />

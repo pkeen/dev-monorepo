@@ -82,7 +82,7 @@ export type UiModule = z.infer<typeof uiModuleDTO>;
 export const lessonDTO = z.object({
 	id: z.number(),
 	name: z.string(),
-	description: z.string().optional(),
+	description: z.string().optional().nullable(),
 	isPublished: z.boolean().optional(),
 });
 export type Lesson = z.infer<typeof lessonDTO>;

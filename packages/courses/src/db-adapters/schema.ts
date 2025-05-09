@@ -55,8 +55,12 @@ export const courseSlot = courses.table(
 		courseId: integer("course_id")
 			.notNull()
 			.references(() => course.id),
-		moduleId: integer("module_id").references(() => module.id),
-		lessonId: integer("lesson_id").references(() => lesson.id),
+		moduleId: integer("module_id").references(() => module.id, {
+			onDelete: "cascade",
+		}),
+		lessonId: integer("lesson_id").references(() => lesson.id, {
+			onDelete: "cascade",
+		}),
 		order: integer("order").notNull(), // NEW
 	},
 	(table) => ({
@@ -75,10 +79,10 @@ export const moduleSlot = courses.table("module_slot", {
 	id: serial("id").primaryKey(),
 	moduleId: integer("module_id")
 		.notNull()
-		.references(() => module.id),
+		.references(() => module.id, { onDelete: "cascade" }),
 	lessonId: integer("lesson_id")
 		.notNull()
-		.references(() => lesson.id),
+		.references(() => lesson.id, { onDelete: "cascade" }),
 	order: integer("order").notNull(), // NEW
 });
 
@@ -116,7 +120,7 @@ export const createSchema = () => {
 				id: serial("id").primaryKey(),
 				courseId: integer("course_id")
 					.notNull()
-					.references(() => course.id),
+					.references(() => course.id, { onDelete: "cascade" }),
 				moduleId: integer("module_id").references(() => module.id),
 				lessonId: integer("lesson_id").references(() => lesson.id),
 				order: integer("order").notNull(), // NEW
@@ -142,10 +146,10 @@ export const createSchema = () => {
 			id: serial("id").primaryKey(),
 			moduleId: integer("module_id")
 				.notNull()
-				.references(() => module.id),
+				.references(() => module.id, { onDelete: "cascade" }),
 			lessonId: integer("lesson_id")
 				.notNull()
-				.references(() => lesson.id),
+				.references(() => lesson.id, { onDelete: "cascade" }),
 			order: integer("order").notNull(), // NEW
 		}),
 	};

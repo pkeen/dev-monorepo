@@ -456,7 +456,55 @@ const createCourseRepo = (
 		updateWithSlots,
 	};
 };
-// what type is this?
+
+const createLessonRepo = (
+	db: DrizzleDatabase,
+	schema: DefaultSchema
+): LessonCRUD => {
+	const list = async () => {
+		return db.select().from(schema.lesson);
+	};
+	const get = async (id: number) => {
+		const [lesson] = await db
+			.select()
+			.from(schema.lesson)
+			.where(eq(schema.lesson.id, id));
+		return lesson;
+	};
+	const create = async (input: Omit<Lesson, "id">) => {
+		const [lesson] = await db
+			.insert(schema.lesson)
+			.values(input)
+			.returning();
+		return lesson;
+	};
+	const update = async (data: Lesson) => {
+		const [lesson] = await db
+			.update(schema.lesson)
+			.set(data)
+			.where(eq(schema.lesson.id, data.id))
+			.returning();
+		return lesson;
+	};
+	const destroy = async (id: number) => {
+		const deleted = await db
+			.delete(schema.lesson)
+			.where(eq(schema.lesson.id, id))
+			.returning();
+
+		if (deleted.length === 0) {
+			throw new Error(`Record with id ${id} not found`);
+		}
+	};
+	return {
+		list,
+		get,
+		create,
+		update,
+		destroy,
+	};
+};
+
 export const DrizzlePGAdapter = (
 	db: DrizzleDatabase,
 	schema: DefaultSchema = defaultSchema
@@ -464,36 +512,7 @@ export const DrizzlePGAdapter = (
 	return {
 		course: createCourseRepo(db, schema),
 		module: createModuleRepo(db, schema),
-		lesson: {
-			list: async () => {
-				return db.select().from(schema.lesson);
-			},
-			get: async (id: number) => {
-				const [lesson] = await db
-					.select()
-					.from(schema.lesson)
-					.where(eq(schema.lesson.id, id));
-				return lesson;
-			},
-			create: async (input: Omit<Lesson, "id">) => {
-				const [lesson] = await db
-					.insert(schema.lesson)
-					.values(input)
-					.returning();
-				return lesson;
-			},
-			update: async (data: Lesson) => {
-				const [lesson] = await db
-					.update(schema.lesson)
-					.set(data)
-					.where(eq(schema.lesson.id, data.id))
-					.returning();
-				return lesson;
-			},
-			destroy: async (id: number) => {
-				await db.delete(schema.lesson).where(eq(schema.lesson.id, id));
-			},
-		},
+		lesson: createLessonRepo(db, schema),
 	};
 };
 

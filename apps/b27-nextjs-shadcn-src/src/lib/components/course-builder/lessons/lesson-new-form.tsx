@@ -19,7 +19,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { createLessonDTO } from "@pete_keen/courses/validators";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { createLesson } from "@/lib/actions/createLesson";
+import { createLesson } from "@/lib/actions/lesson/createLesson";
 
 export const LessonNewForm = () => {
 	const router = useRouter();

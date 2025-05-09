@@ -20,16 +20,43 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { Course } from "@pete_keen/courses/types";
+import { ConfirmDeleteCourseDialog } from "./confirm-delete-course";
+import { deleteCourse } from "@/lib/actions/course/deleteCourse";
+import { toast } from "sonner";
 
 export function CoursesTable({ courses }: { courses: Course[] }) {
+	const [allCourses, setAllCourses] = useState(courses);
 	const [search, setSearch] = useState("");
-	const filteredCourses = courses.filter((course) =>
+	const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
+
+	console.log("courseToDelete", courseToDelete);
+
+	const filteredCourses = allCourses.filter((course) =>
 		`${course.title} ${course.description}`
 			.toLowerCase()
 			.includes(search.toLowerCase())
 	);
+
+	const handleDelete = async (courseId: number) => {
+		try {
+			await deleteCourse(courseId);
+			setAllCourses((prev) => prev.filter((c) => c.id !== courseId));
+			setCourseToDelete(null);
+			toast.success("Course deleted!");
+		} catch (err) {
+			console.error(err);
+			toast.error("Something went wrong deleting the course.");
+		}
+	};
 	return (
 		<div className="space-y-4">
+			<ConfirmDeleteCourseDialog
+				onConfirm={() => handleDelete(courseToDelete?.id)}
+				open={!!courseToDelete}
+				setOpen={(open) => {
+					if (!open) setCourseToDelete(null);
+				}}
+			/>
 			<Input
 				placeholder="Search courses..."
 				value={search}
@@ -70,7 +97,12 @@ export function CoursesTable({ courses }: { courses: Course[] }) {
 												Edit
 											</Link>
 										</DropdownMenuItem>
-										<DropdownMenuItem className="text-red-600">
+										<DropdownMenuItem
+											className="text-red-600 cursor-pointer"
+											onClick={() =>
+												setCourseToDelete(course)
+											}
+										>
 											Delete
 										</DropdownMenuItem>
 									</DropdownMenuContent>

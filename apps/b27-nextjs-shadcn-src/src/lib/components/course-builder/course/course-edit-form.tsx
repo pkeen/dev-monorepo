@@ -25,7 +25,7 @@ import { AddSlotDialog } from "./add-slot-dialog";
 import { SelectExistingDialog } from "./select-existing";
 import { useMemo, useState } from "react";
 import { SortableSlotList } from "./slot-list";
-import { editCourse } from "@/lib/actions/editCourse";
+import { editCourse } from "@/lib/actions/course/editCourse";
 import { toast } from "sonner";
 import { useTransition } from "react";
 

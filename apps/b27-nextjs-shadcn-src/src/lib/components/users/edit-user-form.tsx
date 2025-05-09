@@ -29,7 +29,7 @@ import {
 	CommandInput,
 	CommandItem,
 } from "@/components/ui/command";
-import { updateUserAndRole } from "@/lib/actions/updateUserAndRole";
+import { updateUserAndRole } from "@/lib/actions/course/updateUserAndRole";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";

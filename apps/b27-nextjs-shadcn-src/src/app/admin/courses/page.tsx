@@ -1,5 +1,5 @@
 import { courses } from "@/courses";
-import { CoursesTable } from "@/lib/components/courses-table";
+import { CoursesTable } from "@/lib/components/course-builder/course/courses-table";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Plus } from "lucide-react";

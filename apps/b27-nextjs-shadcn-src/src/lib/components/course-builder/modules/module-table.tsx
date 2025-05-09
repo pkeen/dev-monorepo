@@ -34,8 +34,6 @@ export function ModulesTable({ modules }: { modules: Module[] }) {
 		totalCount: number;
 	} | null>(null);
 
-	console.log("moduleUsage", moduleUsage);
-
 	const filteredModules = allModules.filter((module) =>
 		`${module.name} ${module.description}`
 			.toLowerCase()
@@ -106,7 +104,7 @@ export function ModulesTable({ modules }: { modules: Module[] }) {
 											</Link>
 										</DropdownMenuItem>
 										<DropdownMenuItem
-											className="text-red-600"
+											className="text-red-600 cursor-pointer"
 											onClick={async () => {
 												setModuleUsage(null);
 												setModuleToDelete(module);

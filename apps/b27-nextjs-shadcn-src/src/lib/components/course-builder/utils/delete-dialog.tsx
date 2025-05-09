@@ -15,6 +15,7 @@ interface DeleteDialogProps {
 	onDelete: () => void;
 	open: boolean;
 	setOpen: (open: boolean) => void;
+	children?: React.ReactNode;
 }
 
 export function DeleteDialog({
@@ -24,6 +25,7 @@ export function DeleteDialog({
 	onDelete,
 	open,
 	setOpen,
+	children,
 }: DeleteDialogProps) {
 	const [loading, setLoading] = useState(false);
 
@@ -44,6 +46,7 @@ export function DeleteDialog({
 					<DialogTitle>{title}</DialogTitle>
 				</DialogHeader>
 				<p>{description}</p>
+				{children}
 				<div className="flex justify-end gap-2 mt-4">
 					<Button variant="outline" onClick={() => setOpen(false)}>
 						Cancel

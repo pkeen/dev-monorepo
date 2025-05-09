@@ -496,12 +496,53 @@ const createLessonRepo = (
 			throw new Error(`Record with id ${id} not found`);
 		}
 	};
+
+	const findUsage = async (id: number) => {
+		// const rows = await db
+		//     .select()
+		//     .from(schema.courseSlot)
+		//     .where(eq(schema.courseSlot.lessonId, id));
+		// const inCourseSlots = rows.map((row) => ({
+		//     id: row.id,
+		//     courseId: row.courseId,
+		//     moduleId: row.moduleId,
+		//     lessonId: row.lessonId,
+		//     order: row.order,
+		// }));
+		// const inModuleSlots = await db
+		//     .select()
+		//     .from(schema.moduleSlot)
+		//     .where(eq(schema.moduleSlot.lessonId, id));
+		// const inModuleSlotOutline = inModuleSlots.map((row) => ({
+		//     id: row.id,
+		//     moduleId: row.moduleId,
+		//     lessonId: row.lessonId,
+		//     order: row.order,
+		// }));
+
+		const [courseSlots, moduleSlots] = await Promise.all([
+			db
+				.select()
+				.from(schema.courseSlot)
+				.where(eq(schema.courseSlot.lessonId, id)),
+			db
+				.select()
+				.from(schema.moduleSlot)
+				.where(eq(schema.moduleSlot.lessonId, id)),
+		]);
+		return {
+			inCourseSlots: courseSlots,
+			inModuleSlots: moduleSlots,
+			totalCount: courseSlots.length + moduleSlots.length,
+		};
+	};
 	return {
 		list,
 		get,
 		create,
 		update,
 		destroy,
+		findUsage,
 	};
 };
 

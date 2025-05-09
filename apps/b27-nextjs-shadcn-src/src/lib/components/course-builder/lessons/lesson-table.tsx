@@ -23,14 +23,21 @@ import { Lesson } from "@pete_keen/courses/types";
 import { DeleteDialog } from "../utils/delete-dialog";
 import { deleteLesson } from "@/lib/actions/lesson/deleteLesson";
 import { toast } from "sonner";
+import { getLessonUsage } from "./lesson-find-usage";
 
 export function LessonTable({ lessons }: { lessons: Lesson[] }) {
 	const [allLessons, setAllLessons] = useState(lessons);
 	const [search, setSearch] = useState("");
 	// const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [lessonToDelete, setLessonToDelete] = useState<Lesson | null>(null);
+	const [lessonUsage, setLessonUsage] = useState<{
+		inCourseSlots: number;
+		inModuleSlots: number;
+		total: number;
+	} | null>(null);
+	console.log("lessonUsage", lessonUsage);
 
-	console.log(lessonToDelete);
+	console.log("lessonToDelete", lessonToDelete);
 
 	const filteredLessons = allLessons.filter((lesson) =>
 		`${lesson.name} ${lesson.description}`
@@ -52,16 +59,24 @@ export function LessonTable({ lessons }: { lessons: Lesson[] }) {
 	};
 	return (
 		<div className="space-y-4">
-			{/* <DeleteDialog
-				open={true}
-				setOpen={(open) => {}}
-				title="Test"
-				description="This is a test"
-				onDelete={() => {}}
-			/> */}
 			<DeleteDialog
 				title="Delete Lesson"
-				description="Are you sure you want to delete this lesson?"
+				description={`Are you sure you want to delete this lesson?`}
+				children={
+					lessonUsage &&
+					lessonUsage.total > 0 && (
+						<div className="bg-yellow-100 text-yellow-800 text-sm p-2 rounded mb-4">
+							This lesson is used in {lessonUsage.inCourseSlots}{" "}
+							course slot
+							{lessonUsage.inCourseSlots !== 1
+								? "s"
+								: ""} and {lessonUsage.inModuleSlots} module
+							slot
+							{lessonUsage.inModuleSlots !== 1 ? "s" : ""}.
+							Deleting it will remove it from those slots.
+						</div>
+					)
+				}
 				onDelete={() => handleDelete(lessonToDelete?.id)}
 				open={!!lessonToDelete}
 				setOpen={(open) => {
@@ -117,9 +132,15 @@ export function LessonTable({ lessons }: { lessons: Lesson[] }) {
 										</DropdownMenuItem>
 										<DropdownMenuItem
 											className="text-red-600 cursor-pointer"
-											onClick={() =>
-												setLessonToDelete(lesson)
-											}
+											onClick={async () => {
+												setLessonUsage(null);
+												setLessonToDelete(lesson);
+												const usage =
+													await getLessonUsage(
+														lesson.id
+													);
+												setLessonUsage(usage);
+											}}
 										>
 											Delete
 										</DropdownMenuItem>

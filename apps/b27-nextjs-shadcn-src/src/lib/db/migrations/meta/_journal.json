@@ -22,6 +22,20 @@
       "when": 1746014988567,
       "tag": "0002_free_raza",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1746791396126,
+      "tag": "0003_cheerful_ma_gnuci",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1746791465410,
+      "tag": "0004_dazzling_dagger",
+      "breakpoints": true
     }
   ]
 }

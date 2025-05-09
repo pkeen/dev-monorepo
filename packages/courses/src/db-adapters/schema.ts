@@ -121,8 +121,12 @@ export const createSchema = () => {
 				courseId: integer("course_id")
 					.notNull()
 					.references(() => course.id, { onDelete: "cascade" }),
-				moduleId: integer("module_id").references(() => module.id),
-				lessonId: integer("lesson_id").references(() => lesson.id),
+				moduleId: integer("module_id").references(() => module.id, {
+					onDelete: "cascade",
+				}),
+				lessonId: integer("lesson_id").references(() => lesson.id, {
+					onDelete: "cascade",
+				}),
 				order: integer("order").notNull(), // NEW
 			},
 			(table) => ({

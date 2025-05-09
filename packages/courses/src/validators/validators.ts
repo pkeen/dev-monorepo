@@ -110,8 +110,8 @@ export type CreateCourseDTO = z.infer<typeof createCourseDTO>;
 export const courseSlotDTO = z.object({
 	id: z.number(),
 	courseId: z.number(),
-	moduleId: z.number().optional(),
-	lessonId: z.number().optional(),
+	moduleId: z.number().optional().nullable(),
+	lessonId: z.number().optional().nullable(),
 	order: z.number(),
 });
 

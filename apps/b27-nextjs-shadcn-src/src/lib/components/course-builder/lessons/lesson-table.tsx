@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useState } from "react";
-import { Lesson } from "@pete_keen/courses/types";
+import { Lesson, LessonUsage } from "@pete_keen/courses/types";
 import { deleteLesson } from "@/lib/actions/lesson/deleteLesson";
 import { toast } from "sonner";
 import { getLessonUsage } from "../../../actions/lesson/getLessonUsage";
@@ -29,11 +29,7 @@ export function LessonTable({ lessons }: { lessons: Lesson[] }) {
 	const [allLessons, setAllLessons] = useState(lessons);
 	const [search, setSearch] = useState("");
 	const [lessonToDelete, setLessonToDelete] = useState<Lesson | null>(null);
-	const [lessonUsage, setLessonUsage] = useState<{
-		inCourseSlots: number;
-		inModuleSlots: number;
-		total: number;
-	} | null>(null);
+	const [lessonUsage, setLessonUsage] = useState<LessonUsage | null>(null);
 
 	const filteredLessons = allLessons.filter((lesson) =>
 		`${lesson.name} ${lesson.description}`

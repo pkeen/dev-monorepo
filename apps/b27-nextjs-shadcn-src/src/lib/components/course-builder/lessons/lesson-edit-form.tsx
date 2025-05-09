@@ -15,16 +15,31 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardHeader, CardTitle } from "@/components/ui/card";
 import { lessonDTO, Lesson } from "@pete_keen/courses/validators";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { editLesson } from "@/lib/actions/lesson/editLesson";
+import { deleteLesson } from "@/lib/actions/lesson/deleteLesson";
+import { ConfirmDeleteLessonDialog } from "./confirm-delete-lesson-dialog";
+import { useState } from "react";
+import { LessonUsage } from "@pete_keen/courses/types";
 
-export const LessonEditForm = ({ lesson }: { lesson: Lesson }) => {
+const lessonEditFormSchema = lessonDTO.extend({
+	description: z.string().optional(),
+});
+
+export const LessonEditForm = ({
+	lesson,
+	lessonUsage,
+}: {
+	lesson: Lesson;
+	lessonUsage?: LessonUsage;
+}) => {
+	const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 	const router = useRouter();
 	const form = useForm({
-		resolver: zodResolver(lessonDTO),
+		resolver: zodResolver(lessonEditFormSchema),
 		defaultValues: {
 			id: lesson.id,
 			name: lesson.name,
@@ -33,7 +48,7 @@ export const LessonEditForm = ({ lesson }: { lesson: Lesson }) => {
 		},
 	});
 
-	const onSubmit = async (values: z.infer<typeof lessonDTO>) => {
+	const onSubmit = async (values: z.infer<typeof lessonEditFormSchema>) => {
 		try {
 			await editLesson(values);
 			toast.success("Lesson updated!");
@@ -41,6 +56,17 @@ export const LessonEditForm = ({ lesson }: { lesson: Lesson }) => {
 			router.refresh(); // reload data if you're on the same page
 		} catch (err) {
 			toast.error("Something went wrong updating the lesson.");
+			console.error(err);
+		}
+	};
+
+	const handleDelete = async () => {
+		try {
+			await deleteLesson(lesson.id);
+			toast.success("Lesson deleted!");
+			router.push("/admin/courses");
+		} catch (err) {
+			toast.error("Something went wrong deleting the lesson.");
 			console.error(err);
 		}
 	};
@@ -101,6 +127,33 @@ export const LessonEditForm = ({ lesson }: { lesson: Lesson }) => {
 				>
 					Save Lesson
 				</Button>
+				<Button
+					type="button"
+					variant="outline"
+					onClick={() => {
+						form.reset();
+					}}
+				>
+					Cancel
+				</Button>
+				<Button
+					type="button"
+					variant="destructive"
+					onClick={() => {
+						setOpenDeleteDialog(true);
+					}}
+				>
+					Delete
+				</Button>
+				<ConfirmDeleteLessonDialog
+					open={openDeleteDialog}
+					setOpen={setOpenDeleteDialog}
+					onConfirm={() => {
+						handleDelete();
+					}}
+					actionVerb="Delete"
+					lessonUsage={lessonUsage}
+				/>
 			</form>
 		</Form>
 	);

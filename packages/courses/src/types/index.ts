@@ -157,13 +157,13 @@ export interface LessonCRUD extends CRUDOperations<Lesson> {
 	findUsage: (id: number) => Promise<LessonUsage>;
 }
 
-interface LessonUsage {
+export interface LessonUsage {
 	inCourseSlots: CourseSlot[];
 	inModuleSlots: ModuleSlot[];
 	totalCount: number;
 }
 
-interface ModuleUsage {
+export interface ModuleUsage {
 	inCourseSlots: CourseSlot[];
 	totalCount: number;
 }

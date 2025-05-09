@@ -8,8 +8,9 @@ export default async function LessonEditPage({
 }) {
 	const { id } = await params;
 	const lesson = await courses.lesson.get(parseInt(id));
+	const lessonUsage = await courses.lesson.findUsage(parseInt(id));
 	return lesson ? (
-		<LessonEditForm lesson={lesson} />
+		<LessonEditForm lesson={lesson} lessonUsage={lessonUsage} />
 	) : (
 		<div>Lesson not found</div>
 	);

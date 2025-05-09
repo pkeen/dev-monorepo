@@ -21,7 +21,7 @@ import { AddSlotDialog } from "./add-lesson-dialog";
 import { useMemo, useState, useTransition } from "react";
 import { SelectExistingDialog } from "../course/select-existing";
 import { SortableSlotList } from "./module-slot-list";
-import { editModule } from "@/lib/actions/editModule";
+import { editModule } from "@/lib/actions/module/editModule";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";

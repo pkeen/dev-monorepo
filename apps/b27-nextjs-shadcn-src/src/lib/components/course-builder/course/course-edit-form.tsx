@@ -27,7 +27,6 @@ import { useMemo, useState } from "react";
 import { SortableSlotList } from "./slot-list";
 import { editCourse } from "@/lib/actions/editCourse";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
 export function withClientIds(course: UiCourse): UiCourse {

@@ -219,6 +219,17 @@ const createModuleRepo = (
 		return outline(data.id!);
 	};
 
+	const findUsage = async (id: number) => {
+		const courseSlots = await db
+			.select()
+			.from(schema.courseSlot)
+			.where(eq(schema.courseSlot.moduleId, id));
+		return {
+			inCourseSlots: courseSlots,
+			totalCount: courseSlots.length,
+		};
+	};
+
 	return {
 		list,
 		get,
@@ -227,6 +238,7 @@ const createModuleRepo = (
 		update,
 		outline,
 		updateWithSlots,
+		findUsage,
 	};
 };
 
@@ -498,28 +510,6 @@ const createLessonRepo = (
 	};
 
 	const findUsage = async (id: number) => {
-		// const rows = await db
-		//     .select()
-		//     .from(schema.courseSlot)
-		//     .where(eq(schema.courseSlot.lessonId, id));
-		// const inCourseSlots = rows.map((row) => ({
-		//     id: row.id,
-		//     courseId: row.courseId,
-		//     moduleId: row.moduleId,
-		//     lessonId: row.lessonId,
-		//     order: row.order,
-		// }));
-		// const inModuleSlots = await db
-		//     .select()
-		//     .from(schema.moduleSlot)
-		//     .where(eq(schema.moduleSlot.lessonId, id));
-		// const inModuleSlotOutline = inModuleSlots.map((row) => ({
-		//     id: row.id,
-		//     moduleId: row.moduleId,
-		//     lessonId: row.lessonId,
-		//     order: row.order,
-		// }));
-
 		const [courseSlots, moduleSlots] = await Promise.all([
 			db
 				.select()

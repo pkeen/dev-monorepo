@@ -6,8 +6,8 @@ import {
 	Course,
 	CourseOutline,
 	EditCourseUpsertSlots,
-    CourseSlot,
-    ModuleSlot,
+	CourseSlot,
+	ModuleSlot,
 } from "validators";
 
 // // Base interfaces for database models
@@ -148,20 +148,24 @@ export type CourseCRUD = CRUDOerationsComplex<
 	EditCourseUpsertSlots
 >;
 
-export type ModuleCRUD = CRUDOerationsComplex<
-	Module,
-	ModuleOutline,
-	EditModuleUpsertSlots
->;
+export interface ModuleCRUD
+	extends CRUDOerationsComplex<Module, ModuleOutline, EditModuleUpsertSlots> {
+	findUsage: (id: number) => Promise<ModuleUsage>;
+}
 
 export interface LessonCRUD extends CRUDOperations<Lesson> {
-    findUsage: (id: number) => Promise<LessonUsage>;
+	findUsage: (id: number) => Promise<LessonUsage>;
 }
 
 interface LessonUsage {
-    inCourseSlots: CourseSlot[];
-    inModuleSlots: ModuleSlot[];
-    totalCount: number;
+	inCourseSlots: CourseSlot[];
+	inModuleSlots: ModuleSlot[];
+	totalCount: number;
+}
+
+interface ModuleUsage {
+	inCourseSlots: CourseSlot[];
+	totalCount: number;
 }
 
 export {

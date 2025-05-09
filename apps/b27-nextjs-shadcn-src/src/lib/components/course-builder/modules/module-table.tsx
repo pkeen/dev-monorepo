@@ -20,16 +20,51 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { Module } from "@pete_keen/courses/types";
+import { deleteModule } from "@/lib/actions/module/deleteModule";
+import { toast } from "sonner";
+import { ConfirmDeleteModuleDialog } from "./confirm-delete-module";
+import { getModuleUsage } from "@/lib/actions/module/getModuleUsage";
 
 export function ModulesTable({ modules }: { modules: Module[] }) {
+	const [allModules, setAllModules] = useState(modules);
 	const [search, setSearch] = useState("");
-	const filteredModules = modules.filter((module) =>
+	const [moduleToDelete, setModuleToDelete] = useState<Module | null>(null);
+	const [moduleUsage, setModuleUsage] = useState<{
+		inCourseSlots: number;
+		totalCount: number;
+	} | null>(null);
+
+	console.log("moduleUsage", moduleUsage);
+
+	const filteredModules = allModules.filter((module) =>
 		`${module.name} ${module.description}`
 			.toLowerCase()
 			.includes(search.toLowerCase())
 	);
+
+	const handleDelete = async (moduleId: number) => {
+		if (!moduleToDelete) return;
+		try {
+			await deleteModule(moduleId);
+			setAllModules((prev) => prev.filter((m) => m.id !== moduleId));
+			setModuleToDelete(null);
+			toast.success("Module deleted!");
+		} catch (err) {
+			console.error(err);
+			toast.error("Something went wrong deleting the module.");
+		}
+	};
 	return (
 		<div className="space-y-4">
+			<ConfirmDeleteModuleDialog
+				onConfirm={() => handleDelete(moduleToDelete?.id)}
+				open={!!moduleToDelete}
+				setOpen={(open) => {
+					if (!open) setModuleToDelete(null);
+				}}
+				actionVerb="Delete"
+				moduleUsage={moduleUsage}
+			/>
 			<Input
 				placeholder="Search modules..."
 				value={search}
@@ -70,7 +105,18 @@ export function ModulesTable({ modules }: { modules: Module[] }) {
 												Edit
 											</Link>
 										</DropdownMenuItem>
-										<DropdownMenuItem className="text-red-600">
+										<DropdownMenuItem
+											className="text-red-600"
+											onClick={async () => {
+												setModuleUsage(null);
+												setModuleToDelete(module);
+												const usage =
+													await getModuleUsage(
+														module.id
+													);
+												setModuleUsage(usage);
+											}}
+										>
 											Delete
 										</DropdownMenuItem>
 									</DropdownMenuContent>

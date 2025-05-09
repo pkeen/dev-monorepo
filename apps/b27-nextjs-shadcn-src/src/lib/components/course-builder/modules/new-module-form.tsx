@@ -22,7 +22,7 @@ import {
 } from "@pete_keen/courses/validators";
 
 import { z } from "zod";
-import { createModule } from "@/lib/actions/createModule";
+import { createModule } from "@/lib/actions/module/createModule";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 

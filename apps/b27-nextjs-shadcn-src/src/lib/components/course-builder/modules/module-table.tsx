@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useState } from "react";
-import { Module } from "@pete_keen/courses/types";
+import { Module, ModuleUsage } from "@pete_keen/courses/types";
 import { deleteModule } from "@/lib/actions/module/deleteModule";
 import { toast } from "sonner";
 import { ConfirmDeleteModuleDialog } from "./confirm-delete-module";
@@ -29,10 +29,9 @@ export function ModulesTable({ modules }: { modules: Module[] }) {
 	const [allModules, setAllModules] = useState(modules);
 	const [search, setSearch] = useState("");
 	const [moduleToDelete, setModuleToDelete] = useState<Module | null>(null);
-	const [moduleUsage, setModuleUsage] = useState<{
-		inCourseSlots: number;
-		totalCount: number;
-	} | null>(null);
+	const [moduleUsage, setModuleUsage] = useState<ModuleUsage | null>(null);
+
+	console.log("moduleUsage", moduleUsage);
 
 	const filteredModules = allModules.filter((module) =>
 		`${module.name} ${module.description}`

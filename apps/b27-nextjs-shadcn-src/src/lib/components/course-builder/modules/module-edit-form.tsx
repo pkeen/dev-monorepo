@@ -25,6 +25,9 @@ import { editModule } from "@/lib/actions/module/editModule";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
+import { deleteModule } from "@/lib/actions/module/deleteModule";
+import { ConfirmDeleteModuleDialog } from "./confirm-delete-module";
+import { ModuleUsage } from "@pete_keen/courses/types";
 
 function withClientIds(module: UiModule): UiModule {
 	return {
@@ -42,10 +45,13 @@ function withClientIds(module: UiModule): UiModule {
 export const ModuleEditForm = ({
 	module,
 	existingLessons,
+	moduleUsage,
 }: {
 	module: UiModule;
 	existingLessons: Lesson[];
+	moduleUsage?: ModuleUsage;
 }) => {
+	console.log("moduleUsage", moduleUsage);
 	// 🟣 1. Build a *stable* clientId without randomness
 	const defaultValues = useMemo(() => withClientIds(module), [module]);
 
@@ -58,6 +64,8 @@ export const ModuleEditForm = ({
 		control: form.control,
 		name: "slots",
 	});
+
+	const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
 	const router = useRouter();
 
@@ -73,6 +81,17 @@ export const ModuleEditForm = ({
 				console.error(err);
 			}
 		});
+	};
+
+	const handleDelete = async () => {
+		try {
+			await deleteModule(module.id);
+			toast.success("Module deleted!");
+			router.push("/admin/modules");
+		} catch (err) {
+			toast.error("Something went wrong deleting the module.");
+			console.error(err);
+		}
 	};
 
 	const [selectLessonOpen, setSelectLessonOpen] = useState(false);
@@ -196,6 +215,31 @@ export const ModuleEditForm = ({
 				>
 					Save Module
 				</Button>
+				<Button
+					type="button"
+					variant="outline"
+					className="ml-2 mt-4 cursor-pointer"
+					disabled={isPending}
+					onClick={() => router.back()}
+				>
+					Cancel
+				</Button>
+				<Button
+					type="button"
+					variant="destructive"
+					className="ml-2 mt-4 cursor-pointer"
+					disabled={isPending}
+					onClick={() => setOpenDeleteDialog(true)}
+				>
+					Delete Module
+				</Button>
+				<ConfirmDeleteModuleDialog
+					open={openDeleteDialog}
+					setOpen={setOpenDeleteDialog}
+					actionVerb="Delete Module"
+					moduleUsage={moduleUsage ?? null}
+					onConfirm={handleDelete}
+				/>
 			</form>
 		</Form>
 	);

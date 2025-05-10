@@ -131,7 +131,7 @@ export const LessonEditForm = ({
 					type="button"
 					variant="outline"
 					onClick={() => {
-						form.reset();
+						router.back();
 					}}
 				>
 					Cancel

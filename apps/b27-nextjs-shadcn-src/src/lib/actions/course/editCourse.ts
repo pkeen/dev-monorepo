@@ -1,11 +1,11 @@
 "use server";
 
 import { courses } from "@/courses";
-import { UiCourse, CourseUpsertSlots } from "@pete_keen/courses/validators";
+import { UiCourse, EditCourseDTO } from "@pete_keen/courses/validators";
 
 export const editCourse = async (input: UiCourse) => {
-	const convertToCourseWithSlots = (course: UiCourse): CourseUpsertSlots => {
-		const courseWithSlots: CourseUpsertSlots = {
+	const convertToCourseWithSlots = (course: UiCourse): EditCourseDTO => {
+		const courseWithSlots: EditCourseDTO = {
 			id: course.id,
 			userId: course.userId,
 			title: course.title,
@@ -26,7 +26,7 @@ export const editCourse = async (input: UiCourse) => {
 		const course = await courses.course.updateWithSlots(
 			convertToCourseWithSlots(input)
 		);
-		return course;
+		return courses.course.get(course.id);
 	} catch (error) {
 		console.error(error);
 		throw error;

@@ -1,13 +1,17 @@
 import {
-	EditModuleUpsertSlots,
 	Lesson,
 	Module,
 	ModuleOutline,
 	Course,
 	CourseOutline,
-	EditCourseUpsertSlots,
 	CourseSlot,
 	ModuleSlot,
+	CreateCourseDTO,
+	EditCourseDTO,
+	CreateModuleDTO,
+	EditModuleDTO,
+	EditLessonDTO,
+	CreateLessonDTO,
 } from "validators";
 
 // // Base interfaces for database models
@@ -129,31 +133,39 @@ import {
 // 	return slot.moduleId === null && slot.lessonId !== null;
 // };
 
-interface CRUDOperations<T> {
+interface CRUDOperations<T, C, E> {
 	list: () => Promise<T[]>;
 	get: (id: number) => Promise<T | null>;
-	create: (input: Omit<T, "id">) => Promise<T>;
-	update: (data: T) => Promise<T>;
+	create: (input: C) => Promise<T>;
+	update: (data: E) => Promise<T>;
 	destroy: (id: number) => Promise<void>;
 }
 
-interface CRUDOerationsComplex<T, O, S> extends CRUDOperations<T> {
+interface CRUDOerationsComplex<T, C, E, O> extends CRUDOperations<T, C, E> {
 	outline: (id: number) => Promise<O | null>;
-	updateWithSlots: (data: Partial<S>) => Promise<S | null>;
+	// update: (data: E) => Promise<O>;
+	// updateWithSlots: (data: Partial<S>) => Promise<S | null>;
 }
 
 export type CourseCRUD = CRUDOerationsComplex<
 	Course,
-	CourseOutline,
-	EditCourseUpsertSlots
+	CreateCourseDTO,
+	EditCourseDTO,
+	CourseOutline
 >;
 
 export interface ModuleCRUD
-	extends CRUDOerationsComplex<Module, ModuleOutline, EditModuleUpsertSlots> {
+	extends CRUDOerationsComplex<
+		Module,
+		CreateModuleDTO,
+		EditModuleDTO,
+		ModuleOutline
+	> {
 	findUsage: (id: number) => Promise<ModuleUsage>;
 }
 
-export interface LessonCRUD extends CRUDOperations<Lesson> {
+export interface LessonCRUD
+	extends CRUDOperations<Lesson, CreateLessonDTO, EditLessonDTO> {
 	findUsage: (id: number) => Promise<LessonUsage>;
 }
 
@@ -173,12 +185,11 @@ export {
 	Module,
 	ModuleSlot,
 	Course,
-	EditCourseUpsertSlots,
-	EditModuleUpsertSlots,
 	UiCourse,
 	UiModule,
 	UiCourseSlot,
 	UiModuleSlot,
 	CourseSlot,
 	CourseSlotOutline,
+	EditCourseDTO,
 } from "validators";

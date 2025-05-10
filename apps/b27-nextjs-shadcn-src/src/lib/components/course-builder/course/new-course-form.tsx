@@ -1,67 +1,44 @@
 "use client";
 
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-	uiCourseDTO,
-	UiCourse,
-	Lesson,
-	Module,
-} from "@pete_keen/courses/validators";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useState, useTransition } from "react";
+import { createCourse } from "@/lib/actions/course/createCourse";
+import { Lesson, UiCourseCreate } from "@pete_keen/courses/validators";
 import {
 	Form,
-	FormField,
-	FormItem,
 	FormLabel,
-	FormControl,
 	FormMessage,
+	FormItem,
+	FormControl,
+	FormField,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
+import { useFieldArray, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { uiCourseCreateDTO } from "@pete_keen/courses/validators";
+import { SortableSlotList } from "./slot-list";
+import { Switch } from "@radix-ui/react-switch";
 import { AddSlotDialog } from "./add-slot-dialog";
 import { SelectExistingDialog } from "./select-existing";
-import { useMemo, useState } from "react";
-import { SortableSlotList } from "./slot-list";
-import { editCourse } from "@/lib/actions/course/editCourse";
-import { toast } from "sonner";
-import { useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { deleteCourse } from "@/lib/actions/course/deleteCourse";
-import { ConfirmDeleteCourseDialog } from "./confirm-delete-course";
+import Module from "module";
 
-export function withClientIds(course: UiCourse): UiCourse {
-	return {
-		...course,
-		slots: course.slots.map((slot, i) => ({
-			...slot,
-			clientId:
-				slot.clientId ?? (slot.id ? `slot-${slot.id}` : `new-${i}`),
-		})),
-	};
-}
-
-export function CourseEditForm({
-	course,
+export function NewCourseForm({
 	existingLessons,
 	existingModules,
 }: {
-	course: UiCourse;
 	existingLessons: Lesson[];
 	existingModules: Module[];
 }) {
-	// 🟣 1. Build a *stable* clientId without randomness
-	const defaultValues = useMemo(() => withClientIds(course), [course]);
-
+	const router = useRouter();
+	const [isPending, startTransition] = useTransition();
 	const [selectLessonOpen, setSelectLessonOpen] = useState(false);
 	const [selectModuleOpen, setSelectModuleOpen] = useState(false);
-	const [isPending, startTransition] = useTransition();
-	const router = useRouter();
-	const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+
 	const form = useForm({
-		resolver: zodResolver(uiCourseDTO),
-		defaultValues,
+		resolver: zodResolver(uiCourseCreateDTO),
 	});
 
 	const { fields, append, move } = useFieldArray({
@@ -69,29 +46,14 @@ export function CourseEditForm({
 		name: "slots",
 	});
 
-	const onSubmit = (values: UiCourse) => {
-		console.log(values);
+	const onSubmit = async (values: UiCourseCreate) => {
 		startTransition(async () => {
 			try {
-				const course = await editCourse(values);
-				toast.success("Course updated!");
-				form.reset(withClientIds(course));
-				// router.refresh(); // reload data if you're on the same page
+				const course = await createCourse(values);
+				toast.success("Course created successfully");
+				router.push(`admin/courses/${course.id}/edit`);
 			} catch (err) {
-				toast.error("Something went wrong updating the course.");
-				console.error(err);
-			}
-		});
-	};
-
-	const handleDelete = () => {
-		startTransition(async () => {
-			try {
-				await deleteCourse(course.id);
-				toast.success("Course deleted!");
-				router.push("/admin/courses");
-			} catch (err) {
-				toast.error("Something went wrong deleting the course.");
+				toast.error("Something went wrong creating the course.");
 				console.error(err);
 			}
 		});
@@ -187,9 +149,7 @@ export function CourseEditForm({
 								items={existingModules}
 								onSelect={(item) => {
 									append({
-										id: undefined,
 										clientId: `new-${fields.length}`,
-										courseId: course.id,
 										moduleId: item.id,
 										lessonId: null,
 										order: fields.length, // <-- Important: add at end
@@ -224,9 +184,7 @@ export function CourseEditForm({
 								items={existingLessons}
 								onSelect={(item) => {
 									append({
-										id: undefined,
 										clientId: `new-${fields.length}`,
-										courseId: course.id,
 										order: fields.length, // <-- Important: add at end
 										lessonId: item.id,
 										moduleId: null,
@@ -257,19 +215,6 @@ export function CourseEditForm({
 					>
 						Cancel
 					</Button>
-					<Button
-						type="button"
-						variant="destructive"
-						className="ml-2 mt-4 cursor-pointer"
-						onClick={() => setOpenDeleteDialog(true)}
-					>
-						Delete Course
-					</Button>
-					<ConfirmDeleteCourseDialog
-						open={openDeleteDialog}
-						setOpen={setOpenDeleteDialog}
-						onConfirm={handleDelete}
-					/>
 				</form>
 			</Form>
 		</div>

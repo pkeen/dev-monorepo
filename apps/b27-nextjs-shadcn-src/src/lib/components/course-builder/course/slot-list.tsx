@@ -14,13 +14,17 @@ import {
 	useSortable,
 } from "@dnd-kit/sortable";
 import { useFormContext } from "react-hook-form";
-import { uiCourseSlotDTO, UiCourseSlot } from "@pete_keen/courses/validators";
+import {
+	uiCourseSlotDTO,
+	UiCourseSlot,
+	UiCourseSlotCreate,
+} from "@pete_keen/courses/validators";
 // import { ModuleSlotOutline } from "@pete_keen/courses/types";
 import { CSS } from "@dnd-kit/utilities";
 import { SlotBlock } from "./slot-block";
 
 interface SlotListProps {
-	fields: UiCourseSlot[];
+	fields: UiCourseSlotCreate[];
 	move: (from: number, to: number) => void;
 }
 
@@ -28,7 +32,7 @@ const SortableSlotBlock = ({
 	field,
 	index,
 }: {
-	field: UiCourseSlot;
+	field: UiCourseSlotCreate; // changed type to be this, becuase it is a smaller type that the upsert type can still use
 	index: number;
 }) => {
 	const {
@@ -105,7 +109,7 @@ export const SortableSlotList = ({ fields, move }: SlotListProps) => {
 					.sort((a, b) => a.order - b.order)
 					.map((field, index) => (
 						<SortableSlotBlock
-							key={field.id}
+							key={field.clientId}
 							field={field}
 							index={index}
 						/>

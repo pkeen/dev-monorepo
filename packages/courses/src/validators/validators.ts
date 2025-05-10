@@ -1,22 +1,11 @@
 import { z } from "zod";
 
 /*
- ****** Modules ******
+ ************ Modules ************
  */
 
-export const moduleDTO = z.object({
-	id: z.number(),
-	name: z.string(),
-	description: z.string().optional().nullable(),
-	isPublished: z.boolean().optional(),
-});
-
-export type Module = z.infer<typeof moduleDTO>;
-export const createModuleDTO = moduleDTO.omit({ id: true });
-export type CreateModuleDTO = z.infer<typeof createModuleDTO>;
-
 /*
- * Module Slots
+ ******** GET types ************
  */
 export const moduleSlotDTO = z.object({
 	id: z.number(),
@@ -25,24 +14,46 @@ export const moduleSlotDTO = z.object({
 	order: z.number(),
 });
 export type ModuleSlot = z.infer<typeof moduleSlotDTO>;
+export const moduleDTO = z.object({
+	id: z.number(),
+	name: z.string(),
+	description: z.string().optional().nullable(),
+	isPublished: z.boolean().optional(),
+	slots: z.array(moduleSlotDTO).default([]),
+});
+export type Module = z.infer<typeof moduleDTO>;
 
 /*
- * Upsert Module Slots
+ ****** Create types ******
+ */
+export const createModuleDTO = moduleDTO
+	.extend({
+		slots: z
+			.array(moduleSlotDTO.omit({ id: true, moduleId: true }))
+			.default([]),
+	})
+	.omit({ id: true });
+export type CreateModuleDTO = z.infer<typeof createModuleDTO>;
+
+/*
+ ******* Edit types *******
  */
 export const upsertModuleSlotDTO = moduleSlotDTO.extend({
 	id: z.number().optional(), // <-- now optional for new slots
 });
 export type UpsertModuleSlot = z.infer<typeof upsertModuleSlotDTO>;
 
-export const editModuleUpsertSlotsDTO = moduleDTO.extend({
+export const editModuleDTO = moduleDTO.extend({
 	slots: z.array(upsertModuleSlotDTO).default([]),
 });
-export type EditModuleUpsertSlots = z.infer<typeof editModuleUpsertSlotsDTO>;
+export type EditModuleDTO = z.infer<typeof editModuleDTO>;
 
 /*
- * Module Outline
+ ******** Module Outline ********
  */
 export const moduleSlotOutlineDTO = moduleSlotDTO.extend({
+	moduleId: z.number().optional(),
+	lessonId: z.number().optional(),
 	content: z.object({
 		id: z.number(),
 		name: z.string(),
@@ -88,10 +99,26 @@ export const lessonDTO = z.object({
 export type Lesson = z.infer<typeof lessonDTO>;
 export const createLessonDTO = lessonDTO.omit({ id: true });
 export type CreateLessonDTO = z.infer<typeof createLessonDTO>;
+export const editLessonDTO = lessonDTO;
+export type EditLessonDTO = z.infer<typeof editLessonDTO>;
 
 /*
  ****************** Course ******************
  */
+
+/*
+ ***** Get types *****
+ */
+
+// course slots
+export const courseSlotDTO = z.object({
+	id: z.number(),
+	courseId: z.number(),
+	moduleId: z.number().nullable(),
+	lessonId: z.number().nullable(),
+	order: z.number(),
+});
+export type CourseSlot = z.infer<typeof courseSlotDTO>;
 
 export const courseDTO = z.object({
 	id: z.number(),
@@ -99,42 +126,16 @@ export const courseDTO = z.object({
 	title: z.string(),
 	description: z.string(),
 	isPublished: z.boolean().optional(),
+	slots: z.array(courseSlotDTO).default([]),
 });
 export type Course = z.infer<typeof courseDTO>;
-export const createCourseDTO = courseDTO.omit({ id: true });
-export type CreateCourseDTO = z.infer<typeof createCourseDTO>;
 
 /*
- * Course Slot
- */
-export const courseSlotDTO = z.object({
-	id: z.number(),
-	courseId: z.number(),
-	moduleId: z.number().optional().nullable(),
-	lessonId: z.number().optional().nullable(),
-	order: z.number(),
-});
-
-export type CourseSlot = z.infer<typeof courseSlotDTO>;
-
-/*
- * Upsert
- */
-
-export const courseSlotUpsertDTO = courseSlotDTO.extend({
-	id: z.number().optional(),
-});
-export type CourseSlotUpsert = z.infer<typeof courseSlotUpsertDTO>;
-
-export const editCourseUpsertSlotsDTO = courseDTO.extend({
-	slots: z.array(courseSlotUpsertDTO).default([]),
-});
-export type EditCourseUpsertSlots = z.infer<typeof editCourseUpsertSlotsDTO>;
-
-/*
- * Outline
+ ***** Outline *****
  */
 export const courseSlotOutlineDTO = courseSlotDTO.extend({
+	moduleId: z.number().optional(),
+	lessonId: z.number().optional(),
 	content: z.object({
 		id: z.number(),
 		name: z.string(),
@@ -147,6 +148,33 @@ export const courseOutlineDTO = courseDTO.extend({
 	slots: z.array(courseSlotOutlineDTO).default([]),
 });
 export type CourseOutline = z.infer<typeof courseOutlineDTO>;
+
+/*
+ ***** Create types *****
+ */
+
+export const createCourseDTO = courseDTO
+	.extend({
+		slots: z
+			.array(courseSlotDTO.omit({ id: true, courseId: true }))
+			.default([]),
+	})
+	.omit({ id: true });
+export type CreateCourseDTO = z.infer<typeof createCourseDTO>;
+
+/*
+ ****** Edit types *****
+ */
+
+export const courseSlotUpsertDTO = courseSlotDTO.extend({
+	id: z.number().optional(),
+});
+export type CourseSlotUpsert = z.infer<typeof courseSlotUpsertDTO>;
+
+export const editCourseDTO = courseDTO.extend({
+	slots: z.array(courseSlotUpsertDTO).default([]),
+});
+export type EditCourseDTO = z.infer<typeof editCourseDTO>;
 
 /*
  * UI Edit Course Specific
@@ -166,3 +194,20 @@ export const uiCourseDTO = courseDTO.extend({
 	slots: z.array(uiCourseSlotDTO).default([]),
 });
 export type UiCourse = z.infer<typeof uiCourseDTO>;
+
+/*
+ * UI Create Course
+ */
+
+export const uiCourseSlotCreateDTO = uiCourseSlotDTO.omit({
+	id: true,
+	courseId: true,
+});
+export type UiCourseSlotCreate = z.infer<typeof uiCourseSlotCreateDTO>;
+
+export const uiCourseCreateDTO = courseDTO
+	.extend({
+		slots: z.array(uiCourseSlotCreateDTO).default([]),
+	})
+	.omit({ id: true });
+export type UiCourseCreate = z.infer<typeof uiCourseCreateDTO>;

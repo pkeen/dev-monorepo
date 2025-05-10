@@ -130,6 +130,7 @@ export const LessonEditForm = ({
 				<Button
 					type="button"
 					variant="outline"
+					className="ml-2 mt-4 cursor-pointer"
 					onClick={() => {
 						router.back();
 					}}
@@ -139,6 +140,7 @@ export const LessonEditForm = ({
 				<Button
 					type="button"
 					variant="destructive"
+					className="ml-2 mt-4 cursor-pointer"
 					onClick={() => {
 						setOpenDeleteDialog(true);
 					}}

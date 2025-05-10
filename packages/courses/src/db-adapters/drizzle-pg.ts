@@ -9,17 +9,22 @@ import type {
 	LessonCRUD,
 	Lesson,
 	CourseCRUD,
-	CourseSlotOutline,
+	// CourseSlotOutline,
+	CourseSlot,
+	ModuleSlot,
 } from "../types";
 import { and, eq, inArray } from "drizzle-orm";
 import {
 	CourseOutline,
 	CourseSlotUpsert,
-	EditCourseUpsertSlots,
-	EditModuleUpsertSlots,
+	CreateCourseDTO,
+	CreateModuleDTO,
+	EditCourseDTO,
+	EditModuleDTO,
 	ModuleOutline,
 	ModuleSlotOutline,
 	UpsertModuleSlot,
+	CourseSlotOutline,
 } from "validators";
 
 type DefaultSchema = typeof defaultSchema;
@@ -109,36 +114,130 @@ const createModuleRepo = (
 	};
 
 	const list = async () => {
-		return db.select().from(schema.module);
+		const results = await db
+			.select({
+				module: schema.module,
+				slot: schema.moduleSlot,
+			})
+			.from(schema.module)
+			.leftJoin(
+				schema.moduleSlot,
+				eq(schema.module.id, schema.moduleSlot.moduleId)
+			);
+
+		const moduleMap = new Map<
+			number,
+			Omit<Module, "slots"> & { slots: ModuleSlot[] }
+		>();
+
+		for (const row of results) {
+			const { module, slot } = row;
+
+			if (!moduleMap.has(module.id)) {
+				moduleMap.set(module.id, { ...module, slots: [] });
+			}
+
+			if (slot) {
+				moduleMap.get(module.id)!.slots.push(slot);
+			}
+		}
+
+		return Array.from(moduleMap.values());
 	};
 
 	const get = async (id: number) => {
-		const [module] = await db
-			.select()
+		const results = await db
+			.select({
+				module: schema.module,
+				slot: schema.moduleSlot,
+			})
 			.from(schema.module)
+			.leftJoin(
+				schema.moduleSlot,
+				eq(schema.module.id, schema.moduleSlot.moduleId)
+			)
 			.where(eq(schema.module.id, id));
-		return module;
+
+		if (results.length === 0) return null;
+
+		const { module } = results[0];
+
+		const slots = results
+			.map((r) => r.slot)
+			.filter((slot): slot is ModuleSlot => slot !== null); // ← 🔑 this makes sure slot is NOT null
+
+		return {
+			...module,
+			slots,
+		};
 	};
 
-	const create = async (input: Omit<Module, "id">) => {
-		const [module] = await db
+	const create = async (input: CreateModuleDTO) => {
+		// Step 1: Create the course
+		const [createdModule] = await db
 			.insert(schema.module)
-			.values(input)
+			.values({
+				name: input.name,
+				description: input.description,
+				isPublished: input.isPublished ?? false,
+			})
 			.returning();
-		return module;
+
+		if (!createdModule) {
+			throw new Error("Failed to create module");
+		}
+
+		// Step 2: Create the slots, if any
+		const slots = input.slots ?? [];
+
+		let createdSlots: ModuleSlot[] = [];
+
+		if (slots.length > 0) {
+			createdSlots = await db
+				.insert(schema.moduleSlot)
+				.values(
+					slots.map((slot) => ({
+						...slot,
+						moduleId: createdModule.id,
+					}))
+				)
+				.returning();
+		}
+
+		// Step 3: Return full course with attached slots
+		return {
+			...createdModule,
+			slots: createdSlots,
+		};
 	};
 
 	const destroy = async (id: number) => {
 		await db.delete(schema.module).where(eq(schema.module.id, id));
 	};
 
-	const update = async (data: Module) => {
+	const update = async (data: EditModuleDTO) => {
+		if (!data.id) {
+			throw new Error("Module ID is required");
+		}
+		// const moduleId = data.id);
+		// update module details
 		const [module] = await db
 			.update(schema.module)
 			.set(data)
 			.where(eq(schema.module.id, data.id))
 			.returning();
-		return module;
+
+		// update module slots
+		if (data.slots) {
+			await syncModuleSlots(data.id!, data.slots);
+		}
+
+		const updated = await get(data.id);
+		if (!updated) {
+			throw new Error("Failed to fetch updated module");
+		}
+
+		return updated;
 	};
 
 	const outline = async (id: number) => {
@@ -200,24 +299,24 @@ const createModuleRepo = (
 		return outline;
 	};
 
-	const updateWithSlots = async (data: Partial<EditModuleUpsertSlots>) => {
-		if (!data.id) {
-			throw new Error("Module ID is required");
-		}
-		// const moduleId = data.id);
-		// update module details
-		const [module] = await db
-			.update(schema.module)
-			.set(data)
-			.where(eq(schema.module.id, data.id))
-			.returning();
+	// const updateWithSlots = async (data: Partial<EditModuleUpsertSlots>) => {
+	// 	if (!data.id) {
+	// 		throw new Error("Module ID is required");
+	// 	}
+	// 	// const moduleId = data.id);
+	// 	// update module details
+	// 	const [module] = await db
+	// 		.update(schema.module)
+	// 		.set(data)
+	// 		.where(eq(schema.module.id, data.id))
+	// 		.returning();
 
-		// update module slots
-		if (data.slots) {
-			await syncModuleSlots(data.id!, data.slots);
-		}
-		return outline(data.id!);
-	};
+	// 	// update module slots
+	// 	if (data.slots) {
+	// 		await syncModuleSlots(data.id!, data.slots);
+	// 	}
+	// 	return outline(data.id!);
+	// };
 
 	const findUsage = async (id: number) => {
 		const courseSlots = await db
@@ -237,7 +336,7 @@ const createModuleRepo = (
 		destroy,
 		update,
 		outline,
-		updateWithSlots,
+		// updateWithSlots,
 		findUsage,
 	};
 };
@@ -328,15 +427,62 @@ const createCourseRepo = (
 	};
 
 	const list = async () => {
-		return db.select().from(schema.course);
+		const results = await db
+			.select({
+				course: schema.course,
+				slot: schema.courseSlot,
+			})
+			.from(schema.course)
+			.leftJoin(
+				schema.courseSlot,
+				eq(schema.course.id, schema.courseSlot.courseId)
+			);
+
+		const courseMap = new Map<
+			number,
+			Omit<Course, "slots"> & { slots: CourseSlot[] }
+		>();
+
+		for (const row of results) {
+			const { course, slot } = row;
+
+			if (!courseMap.has(course.id)) {
+				courseMap.set(course.id, { ...course, slots: [] });
+			}
+
+			if (slot) {
+				courseMap.get(course.id)!.slots.push(slot);
+			}
+		}
+
+		return Array.from(courseMap.values());
 	};
 
 	const get = async (id: number) => {
-		const [course] = await db
-			.select()
+		const results = await db
+			.select({
+				course: schema.course,
+				slot: schema.courseSlot,
+			})
 			.from(schema.course)
+			.leftJoin(
+				schema.courseSlot,
+				eq(schema.course.id, schema.courseSlot.courseId)
+			)
 			.where(eq(schema.course.id, id));
-		return course;
+
+		if (results.length === 0) return null;
+
+		const { course } = results[0];
+
+		const slots = results
+			.map((r) => r.slot)
+			.filter((slot): slot is CourseSlot => slot !== null); // ← 🔑 this makes sure slot is NOT null
+
+		return {
+			...course,
+			slots,
+		};
 	};
 
 	const outline = async (id: number) => {
@@ -419,28 +565,47 @@ const createCourseRepo = (
 		return outline;
 	};
 
-	const create = async (input: Omit<Course, "id">) => {
-		const [course] = await db
+	const create = async (input: CreateCourseDTO) => {
+		// Step 1: Create the course
+		const [createdCourse] = await db
 			.insert(schema.course)
-			.values(input)
+			.values({
+				userId: input.userId,
+				title: input.title,
+				description: input.description,
+				isPublished: input.isPublished ?? false,
+			})
 			.returning();
-		return course;
+
+		if (!createdCourse) {
+			throw new Error("Failed to create course");
+		}
+
+		// Step 2: Create the slots, if any
+		const slots = input.slots ?? [];
+
+		let createdSlots: CourseSlot[] = [];
+
+		if (slots.length > 0) {
+			createdSlots = await db
+				.insert(schema.courseSlot)
+				.values(
+					slots.map((slot) => ({
+						...slot,
+						courseId: createdCourse.id,
+					}))
+				)
+				.returning();
+		}
+
+		// Step 3: Return full course with attached slots
+		return {
+			...createdCourse,
+			slots: createdSlots,
+		};
 	};
 
-	const update = async (data: Course) => {
-		const [course] = await db
-			.update(schema.course)
-			.set(data)
-			.where(eq(schema.course.id, data.id))
-			.returning();
-		return course;
-	};
-
-	const destroy = async (id: number) => {
-		await db.delete(schema.course).where(eq(schema.course.id, id));
-	};
-
-	const updateWithSlots = async (data: Partial<EditCourseUpsertSlots>) => {
+	const update = async (data: EditCourseDTO) => {
 		if (!data.id) {
 			throw new Error("Course ID is required");
 		}
@@ -455,8 +620,36 @@ const createCourseRepo = (
 		if (data.slots) {
 			await syncCourseSlots(data.id!, data.slots);
 		}
-		return outline(data.id!);
+
+		const updated = await get(data.id);
+		if (!updated) {
+			throw new Error("Failed to fetch updated course");
+		}
+
+		return updated;
 	};
+
+	const destroy = async (id: number) => {
+		await db.delete(schema.course).where(eq(schema.course.id, id));
+	};
+
+	// const updateWithSlots = async (data: Partial<EditCourseUpsertSlots>) => {
+	// 	if (!data.id) {
+	// 		throw new Error("Course ID is required");
+	// 	}
+	// 	// update course details
+	// 	const [course] = await db
+	// 		.update(schema.course)
+	// 		.set(data)
+	// 		.where(eq(schema.course.id, data.id))
+	// 		.returning();
+
+	// 	// update module slots
+	// 	if (data.slots) {
+	// 		await syncCourseSlots(data.id!, data.slots);
+	// 	}
+	// 	return outline(data.id!);
+	// };
 
 	return {
 		list,
@@ -465,7 +658,7 @@ const createCourseRepo = (
 		update,
 		destroy,
 		outline,
-		updateWithSlots,
+		// updateWithSlots,
 	};
 };
 

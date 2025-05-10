@@ -51,7 +51,6 @@ export const ModuleEditForm = ({
 	existingLessons: Lesson[];
 	moduleUsage?: ModuleUsage;
 }) => {
-	console.log("moduleUsage", moduleUsage);
 	// 🟣 1. Build a *stable* clientId without randomness
 	const defaultValues = useMemo(() => withClientIds(module), [module]);
 

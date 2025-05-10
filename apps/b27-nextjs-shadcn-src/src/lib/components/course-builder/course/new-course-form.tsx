@@ -26,9 +26,11 @@ import { SelectExistingDialog } from "./select-existing";
 import Module from "module";
 
 export function NewCourseForm({
+	userId,
 	existingLessons,
 	existingModules,
 }: {
+	userId: string;
 	existingLessons: Lesson[];
 	existingModules: Module[];
 }) {
@@ -39,6 +41,13 @@ export function NewCourseForm({
 
 	const form = useForm({
 		resolver: zodResolver(uiCourseCreateDTO),
+		defaultValues: {
+			userId,
+			slots: [],
+			isPublished: false,
+			title: "",
+			description: "",
+		},
 	});
 
 	const { fields, append, move } = useFieldArray({
@@ -51,7 +60,7 @@ export function NewCourseForm({
 			try {
 				const course = await createCourse(values);
 				toast.success("Course created successfully");
-				router.push(`admin/courses/${course.id}/edit`);
+				router.push(`/admin/courses/${course.id}/edit`);
 			} catch (err) {
 				toast.error("Something went wrong creating the course.");
 				console.error(err);

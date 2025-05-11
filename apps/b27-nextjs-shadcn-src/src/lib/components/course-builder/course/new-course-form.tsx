@@ -72,10 +72,7 @@ export function NewCourseForm({
 		<div>
 			<Form {...form}>
 				<form
-					// onSubmit={form.handleSubmit(onSubmit)}
-					onSubmit={form.handleSubmit(onSubmit, (errors) =>
-						console.log("❌ validation errors", errors)
-					)}
+					onSubmit={form.handleSubmit(onSubmit)}
 					className="space-y-8"
 				>
 					<Card className="p-6 space-y-4">
@@ -163,7 +160,6 @@ export function NewCourseForm({
 										lessonId: null,
 										order: fields.length, // <-- Important: add at end
 										content: {
-											id: item.id,
 											name: item.name,
 											isPublished: item.isPublished,
 										},
@@ -198,7 +194,6 @@ export function NewCourseForm({
 										lessonId: item.id,
 										moduleId: null,
 										content: {
-											id: item.id,
 											name: item.name,
 											isPublished: item.isPublished,
 										},

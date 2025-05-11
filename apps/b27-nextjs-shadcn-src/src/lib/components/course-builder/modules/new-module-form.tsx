@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 // import { courseSchema, CourseFormValues } from "./schema"; // we'll store schema separately
 import {
@@ -17,28 +17,46 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 // import { CourseSlot } from "./course-slot";
 import {
-	createModuleDTO,
-	CreateModuleDTO,
+	uiModuleCreateDTO,
+	UiModuleCreate,
+	Lesson,
 } from "@pete_keen/courses/validators";
 
-import { z } from "zod";
 import { createModule } from "@/lib/actions/module/createModule";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
+import { SortableSlotList } from "./module-slot-list";
+import { ModuleDetailFields } from "./module-form-fields";
+import { AddSlotDialog } from "./add-lesson-dialog";
+import { SelectExistingDialog } from "../course/select-existing";
+import { useState } from "react";
 
-export const NewModuleForm = () => {
-	const form = useForm<CreateModuleDTO>({
-		resolver: zodResolver(createModuleDTO),
+export const NewModuleForm = ({
+	existingLessons,
+}: {
+	existingLessons: Lesson[];
+}) => {
+	const form = useForm({
+		resolver: zodResolver(uiModuleCreateDTO),
 		defaultValues: {
 			isPublished: false,
 			name: "",
 			description: "",
+			slots: [],
 		},
 	});
 
+	const { fields, append, move } = useFieldArray({
+		control: form.control,
+		name: "slots",
+	});
+
+	const [selectLessonOpen, setSelectLessonOpen] = useState(false);
+
 	const router = useRouter();
 
-	const onSubmit = async (values: CreateModuleDTO) => {
+	const onSubmit = async (values: UiModuleCreate) => {
 		try {
 			const module = await createModule(values);
 			console.log(module);
@@ -68,6 +86,8 @@ export const NewModuleForm = () => {
 					<CardTitle className="font-medium">New Module</CardTitle>
 				</CardHeader>
 
+				{/* <ModuleDetailFields form={form} /> */}
+
 				<FormField
 					control={form.control}
 					name="name"
@@ -92,7 +112,7 @@ export const NewModuleForm = () => {
 						<FormItem>
 							<FormLabel>Module Description</FormLabel>
 							<FormControl>
-								<Input
+								<Textarea
 									placeholder="Enter course title"
 									{...field}
 								/>
@@ -118,6 +138,55 @@ export const NewModuleForm = () => {
 						</FormItem>
 					)}
 				/>
+
+				{/* Buttons to add top-level Modules or Lessons */}
+				<Card className="p-4">
+					<CardHeader>Module Content</CardHeader>
+					<div className="flex gap-4">
+						{/* Add Lesson */}
+						<AddSlotDialog
+							title="Add Lesson"
+							trigger={
+								<Button variant="outline">+ Add Lesson</Button>
+							}
+							onSelect={(choice) => {
+								// This doesnt work for now we'll need to have a dialog and create a lesson in db
+								if (choice === "new") {
+									// append({
+									// 	id: module.id,
+									// 	moduleId: module.id,
+									// 	lessonId: 0,
+									// 	order: fields.length,
+									// 	name: "",
+									// });
+									console.log("new");
+								} else {
+									setSelectLessonOpen(true);
+									// Handle selecting existing lesson (show another modal or combobox)
+								}
+							}}
+						/>
+						<SelectExistingDialog
+							title="Select Existing Lesson"
+							open={selectLessonOpen}
+							onOpenChange={setSelectLessonOpen}
+							items={existingLessons}
+							onSelect={(item) => {
+								append({
+									clientId: `new-${fields.length}`,
+									lessonId: item.id,
+									order: fields.length, // <-- Important: add at end
+									content: {
+										name: item.name,
+										isPublished: item.isPublished ?? false,
+									},
+								});
+								setSelectLessonOpen(false); // Close the dialog after selection
+							}}
+						/>
+					</div>
+					<SortableSlotList fields={fields} move={move} />
+				</Card>
 
 				<Button type="submit">Save Module</Button>
 			</form>

@@ -25,6 +25,7 @@ import {
 	ModuleSlotOutline,
 	UpsertModuleSlot,
 	CourseSlotOutline,
+	createModuleDTO,
 } from "validators";
 
 type DefaultSchema = typeof defaultSchema;
@@ -173,13 +174,15 @@ const createModuleRepo = (
 	};
 
 	const create = async (input: CreateModuleDTO) => {
+		// validate
+		const validatedInput = createModuleDTO.parse(input);
 		// Step 1: Create the course
 		const [createdModule] = await db
 			.insert(schema.module)
 			.values({
-				name: input.name,
-				description: input.description,
-				isPublished: input.isPublished ?? false,
+				name: validatedInput.name,
+				description: validatedInput.description,
+				isPublished: validatedInput.isPublished ?? false,
 			})
 			.returning();
 
@@ -188,7 +191,7 @@ const createModuleRepo = (
 		}
 
 		// Step 2: Create the slots, if any
-		const slots = input.slots ?? [];
+		const slots = validatedInput.slots ?? [];
 
 		let createdSlots: ModuleSlot[] = [];
 

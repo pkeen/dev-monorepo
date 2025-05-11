@@ -167,17 +167,9 @@ export const ModuleEditForm = ({
 							onSelect={(choice) => {
 								// This doesnt work for now we'll need to have a dialog and create a lesson in db
 								if (choice === "new") {
-									// append({
-									// 	id: module.id,
-									// 	moduleId: module.id,
-									// 	lessonId: 0,
-									// 	order: fields.length,
-									// 	name: "",
-									// });
 									console.log("new");
 								} else {
 									setSelectLessonOpen(true);
-									// Handle selecting existing lesson (show another modal or combobox)
 								}
 							}}
 						/>
@@ -188,13 +180,11 @@ export const ModuleEditForm = ({
 							items={existingLessons}
 							onSelect={(item) => {
 								append({
-									id: undefined,
-									clientId: crypto.randomUUID(),
 									moduleId: module.id,
+									clientId: `new-${fields.length}`,
 									lessonId: item.id,
 									order: fields.length, // <-- Important: add at end
 									content: {
-										id: item.id,
 										name: item.name,
 										isPublished: item.isPublished ?? false,
 									},

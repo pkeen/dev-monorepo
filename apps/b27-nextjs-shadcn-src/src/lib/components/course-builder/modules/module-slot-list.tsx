@@ -17,10 +17,10 @@ import { useFormContext } from "react-hook-form";
 // import { ModuleSlotOutline } from "@pete_keen/courses/types";
 import { CSS } from "@dnd-kit/utilities";
 import { LessonSlotBlock } from "./lesson-slot-block";
-import { UiModuleSlot } from "@pete_keen/courses/validators";
+import { UiModuleSlotCreate } from "@pete_keen/courses/validators";
 
 interface SlotListProps {
-	fields: UiModuleSlot[];
+	fields: UiModuleSlotCreate[];
 	move: (from: number, to: number) => void;
 }
 
@@ -28,7 +28,7 @@ const SortableSlotBlock = ({
 	field,
 	index,
 }: {
-	field: UiModuleSlot;
+	field: UiModuleSlotCreate;
 	index: number;
 }) => {
 	const {
@@ -84,7 +84,7 @@ export const SortableSlotList = ({ fields, move }: SlotListProps) => {
 
 		// Reassign `.order` fields in form state after reordering
 		const updatedSlots = getValues("slots").map(
-			(slot: UiModuleSlot, index: number) => ({
+			(slot: UiModuleSlotCreate, index: number) => ({
 				...slot,
 				order: index,
 			})
@@ -104,7 +104,7 @@ export const SortableSlotList = ({ fields, move }: SlotListProps) => {
 					.sort((a, b) => a.order - b.order)
 					.map((field, index) => (
 						<SortableSlotBlock
-							key={field.id}
+							key={field.clientId}
 							field={field}
 							index={index}
 						/>

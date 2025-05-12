@@ -8,7 +8,7 @@ const seed = async (db: db) => {
 	for (let i = 0; i < 30; i++) {
 		const spoofData = {
 			name: faker.company.buzzPhrase(),
-			text: faker.lorem.sentences(),
+			description: faker.lorem.sentences(),
 			isPublished: faker.datatype.boolean(0.75),
 		};
 		spoofArray.push(spoofData);

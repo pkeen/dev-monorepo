@@ -36,6 +36,20 @@
       "when": 1746791465410,
       "tag": "0004_dazzling_dagger",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1747055271683,
+      "tag": "0005_fat_vapor",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1747055367981,
+      "tag": "0006_aromatic_timeslip",
+      "breakpoints": true
     }
   ]
 }

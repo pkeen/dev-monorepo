@@ -1,7 +1,8 @@
 // import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PgDatabase, type PgQueryResultHKT } from "drizzle-orm/pg-core";
 import { NeonHttpDatabase } from "drizzle-orm/neon-http";
-import * as defaultSchema from "./schema";
+// import * as defaultSchema from "./schema";
+import { createSchema } from "./schema";
 import type {
 	Course,
 	ModuleCRUD,
@@ -28,6 +29,7 @@ import {
 	createModuleDTO,
 } from "validators";
 
+const defaultSchema = createSchema();
 type DefaultSchema = typeof defaultSchema;
 
 type DrizzleDatabase =
@@ -746,13 +748,12 @@ export const DrizzlePGAdapter = (
 export const createCoursesDBAdapter = (db: DrizzleDatabase) => {
 	return {
 		adapter: DrizzlePGAdapter(db),
-		schema: defaultSchema.createSchema(),
+		schema: defaultSchema,
 	};
 };
 
 export interface DBAdapter {
 	course: CourseCRUD;
-	logSchema: () => void;
 	module: ModuleCRUD;
 	lesson: LessonCRUD;
 }

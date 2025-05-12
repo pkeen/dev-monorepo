@@ -104,8 +104,9 @@ export type UiModuleCreate = z.infer<typeof uiModuleCreateDTO>;
 export const lessonDTO = z.object({
 	id: z.number(),
 	name: z.string(),
-	description: z.string().optional().nullable(),
 	isPublished: z.boolean().optional(),
+	excerpt: z.string().optional().nullable(),
+	content: z.string().optional().nullable(),
 });
 export type Lesson = z.infer<typeof lessonDTO>;
 export const createLessonDTO = lessonDTO.omit({ id: true });

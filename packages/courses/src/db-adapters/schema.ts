@@ -44,8 +44,9 @@ export const module = courses.table("module", {
 export const lesson = courses.table("lesson", {
 	id: serial("id").primaryKey(),
 	name: varchar("name", { length: 256 }).notNull(),
-	description: text("description"),
 	isPublished: boolean("is_published").notNull().default(false),
+	excerpt: text("excerpt"),
+	content: text("content"),
 });
 
 export const courseSlot = courses.table(
@@ -111,7 +112,9 @@ export const createSchema = () => {
 		lesson: courses.table("lesson", {
 			id: serial("id").primaryKey(),
 			name: varchar("name", { length: 256 }).notNull(),
-			description: text("description"),
+			// description: text("description"),
+			excerpt: text("excerpt"), // short summary for previews
+			content: text("content"), // raw markdown or HTML
 			isPublished: boolean("is_published").notNull().default(false),
 		}),
 		courseSlot: courses.table(

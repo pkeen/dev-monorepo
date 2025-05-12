@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -24,6 +24,7 @@ import { deleteLesson } from "@/lib/actions/lesson/deleteLesson";
 import { ConfirmDeleteLessonDialog } from "./confirm-delete-lesson-dialog";
 import { useState } from "react";
 import { LessonUsage } from "@pete_keen/courses/types";
+import LessonEditor from "./lesson-content-editor";
 
 const lessonEditFormSchema = lessonDTO.extend({
 	description: z.string().optional(),
@@ -43,8 +44,9 @@ export const LessonEditForm = ({
 		defaultValues: {
 			id: lesson.id,
 			name: lesson.name,
-			description: lesson.description ?? "",
 			isPublished: lesson.isPublished ?? false,
+			excerpt: lesson.excerpt ?? "",
+			content: lesson.content ?? "",
 		},
 	});
 
@@ -92,10 +94,10 @@ export const LessonEditForm = ({
 				/>
 				<FormField
 					control={form.control}
-					name="description"
+					name="excerpt"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Description</FormLabel>
+							<FormLabel>Excerpt</FormLabel>
 							<FormControl>
 								<Textarea {...field} />
 							</FormControl>
@@ -105,16 +107,23 @@ export const LessonEditForm = ({
 				/>
 				<FormField
 					control={form.control}
-					name="isPublished"
-					render={({ field }) => (
-						<FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-							<FormLabel>Published Lesson</FormLabel>
+					name="content"
+					render={() => (
+						<FormItem>
+							<FormLabel>Content</FormLabel>
 							<FormControl>
-								<Switch
-									checked={field.value}
-									onCheckedChange={field.onChange}
+								<Controller
+									control={form.control}
+									name="content"
+									render={({ field }) => (
+										<LessonEditor
+											value={field.value ?? ""}
+											onChange={field.onChange}
+										/>
+									)}
 								/>
 							</FormControl>
+							<FormMessage />
 						</FormItem>
 					)}
 				/>

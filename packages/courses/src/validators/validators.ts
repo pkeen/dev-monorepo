@@ -216,6 +216,7 @@ export const lessonDTO = z.object({
 	isPublished: z.boolean().optional(),
 	excerpt: z.string().optional().nullable(),
 	content: z.string().optional().nullable(),
+	videoId: z.number().optional().nullable(),
 });
 export type Lesson = z.infer<typeof lessonDTO>;
 export const createLessonDTO = lessonDTO.omit({ id: true });
@@ -229,12 +230,11 @@ export type EditLessonDTO = z.infer<typeof editLessonDTO>;
 const videoProviderSchema = z.enum(["r2", "youtube", "vimeo", "mux", "bunny"]);
 export const videoDTO = z.object({
 	id: z.number(),
-	lessonId: z.number(),
 	provider: videoProviderSchema,
 	url: z.string(),
 	title: z.string(),
 	thumbnailUrl: z.string(),
-	isPublished: z.boolean().optional(),
+	// isPublished: z.boolean().optional(),
 	order: z.number(),
 	createdAt: z.date().optional(),
 	updatedAt: z.date().optional(),

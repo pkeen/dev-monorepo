@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { CardHeader, CardTitle } from "@/components/ui/card";
-import { lessonDTO, Lesson } from "@pete_keen/courses/validators";
+import { lessonDTO, Lesson, editLessonDTO } from "@pete_keen/courses/validators";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { editLesson } from "@/lib/actions/lesson/editLesson";
@@ -26,9 +26,9 @@ import { useState } from "react";
 import { LessonUsage } from "@pete_keen/courses/types";
 import LessonEditor from "./lesson-content-editor";
 
-const lessonEditFormSchema = lessonDTO.extend({
-	description: z.string().optional(),
-});
+// const lessonEditFormSchema = lessonDTO.extend({
+// 	description: z.string().optional(),
+// });
 
 export const LessonEditForm = ({
 	lesson,
@@ -40,7 +40,7 @@ export const LessonEditForm = ({
 	const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 	const router = useRouter();
 	const form = useForm({
-		resolver: zodResolver(lessonEditFormSchema),
+		resolver: zodResolver(editLessonDTO),
 		defaultValues: {
 			id: lesson.id,
 			name: lesson.name,
@@ -50,7 +50,7 @@ export const LessonEditForm = ({
 		},
 	});
 
-	const onSubmit = async (values: z.infer<typeof lessonEditFormSchema>) => {
+	const onSubmit = async (values: z.infer<typeof editLessonDTO>) => {
 		try {
 			await editLesson(values);
 			toast.success("Lesson updated!");

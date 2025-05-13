@@ -13,6 +13,9 @@ import type {
 	// CourseSlotOutline,
 	CourseSlot,
 	ModuleSlot,
+    VideoCRUD,
+    CreateVideoDTO,
+    EditVideoDTO,
 } from "../types";
 import { and, eq, inArray } from "drizzle-orm";
 import {
@@ -734,6 +737,53 @@ const createLessonRepo = (
 	};
 };
 
+const createVideoRepo = (
+	db: DrizzleDatabase,
+	schema: DefaultSchema
+): VideoCRUD => {
+	const list = async () => {
+		return db.select().from(schema.video);
+	};
+	const get = async (id: number) => {
+		const [video] = await db
+			.select()
+			.from(schema.video)
+			.where(eq(schema.video.id, id));
+		return video;
+	};
+	const create = async (input: CreateVideoDTO) => {
+		const [video] = await db
+			.insert(schema.video)
+			.values(input)
+			.returning();
+		return video;
+	};
+	const update = async (data: EditVideoDTO) => {
+		const [video] = await db
+			.update(schema.video)
+			.set(data)
+			.where(eq(schema.video.id, data.id))
+			.returning();
+		return video;
+	};
+	const destroy = async (id: number) => {
+		const deleted = await db
+			.delete(schema.video)
+			.where(eq(schema.video.id, id))
+			.returning();
+
+		if (deleted.length === 0) {
+			throw new Error(`Record with id ${id} not found`);
+		}
+	};
+	return {
+		list,
+		get,
+		create,
+		update,
+		destroy,
+	};
+};
 export const DrizzlePGAdapter = (
 	db: DrizzleDatabase,
 	schema: DefaultSchema = defaultSchema
@@ -742,6 +792,7 @@ export const DrizzlePGAdapter = (
 		course: createCourseRepo(db, schema),
 		module: createModuleRepo(db, schema),
 		lesson: createLessonRepo(db, schema),
+		video: createVideoRepo(db, schema),
 	};
 };
 
@@ -756,4 +807,5 @@ export interface DBAdapter {
 	course: CourseCRUD;
 	module: ModuleCRUD;
 	lesson: LessonCRUD;
+	video: VideoCRUD;
 }

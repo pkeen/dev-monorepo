@@ -10,6 +10,7 @@ import {
 	serial,
 	uuid,
 	timestamp,
+	PgEnum,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -89,9 +90,16 @@ export const moduleSlot = courses.table("module_slot", {
 });
 
 export const createSchema = () => {
+	const videoProviderEnum = pgEnum("provider", [
+		"r2",
+		"youtube",
+		"vimeo",
+		"mux",
+		"bunny",
+	]);
 	const video = courses.table("video", {
 		id: serial("id").primaryKey(),
-		provider: varchar("provider", { length: 256 }).notNull(),
+		provider: videoProviderEnum("provider").notNull(),
 		url: text("url").notNull(),
 		title: varchar("title", { length: 256 }).notNull(),
 		thumbnailUrl: text("thumbnail_url").notNull(),
@@ -124,6 +132,7 @@ export const createSchema = () => {
 			isPublished: boolean("is_published").notNull().default(false),
 		}),
 		video,
+		videoProviderEnum,
 		lesson: courses.table("lesson", {
 			id: serial("id").primaryKey(),
 			name: varchar("name", { length: 256 }).notNull(),

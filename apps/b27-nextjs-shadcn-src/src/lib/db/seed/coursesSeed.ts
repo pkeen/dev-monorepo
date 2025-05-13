@@ -22,10 +22,10 @@ export default async () => {
 		try {
 			await courseSeed.course(db);
 			await courseSeed.module(db);
+			await courseSeed.video(db);
 			await courseSeed.lesson(db);
 			await courseSeed.moduleSlot(db);
 			await courseSeed.courseSlot(db);
-			await courseSeed.video(db);
 
 			// await seeds.user(db););
 			// logBreak();

@@ -12,6 +12,9 @@ import {
 	EditModuleDTO,
 	EditLessonDTO,
 	CreateLessonDTO,
+	Video,
+	CreateVideoDTO,
+	EditVideoDTO,
 } from "validators";
 
 // // Base interfaces for database models
@@ -169,6 +172,11 @@ export interface LessonCRUD
 	findUsage: (id: number) => Promise<LessonUsage>;
 }
 
+export interface VideoCRUD
+	extends CRUDOperations<Video, CreateVideoDTO, EditVideoDTO> {
+	// findUsage: (id: number) => Promise<VideoUsage>;
+}
+
 export interface LessonUsage {
 	inCourseSlots: CourseSlot[];
 	inModuleSlots: ModuleSlot[];
@@ -192,4 +200,7 @@ export {
 	CourseSlot,
 	CourseSlotOutline,
 	EditCourseDTO,
+	Video,
+	CreateVideoDTO,
+	EditVideoDTO,
 } from "validators";

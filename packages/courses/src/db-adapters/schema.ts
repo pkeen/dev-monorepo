@@ -9,6 +9,7 @@ import {
 	index,
 	serial,
 	uuid,
+	timestamp,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -158,6 +159,21 @@ export const createSchema = () => {
 				.notNull()
 				.references(() => lesson.id, { onDelete: "cascade" }),
 			order: integer("order").notNull(), // NEW
+		}),
+		video: courses.table("video", {
+			id: serial("id").primaryKey(),
+			lessonId: integer("lesson_id")
+				.notNull()
+				.references(() => lesson.id, { onDelete: "cascade" }),
+			provider: varchar("provider", { length: 256 }).notNull(),
+			url: text("url").notNull(),
+			title: varchar("title", { length: 256 }).notNull(),
+			thumbnailUrl: text("thumbnail_url").notNull(),
+			isPublished: boolean("is_published").notNull().default(false),
+			order: integer("order").notNull(), // NEW
+			durationSeconds: integer("duration_seconds").notNull(),
+			createdAt: timestamp("created_at").notNull().defaultNow(),
+			updatedAt: timestamp("updated_at").notNull().defaultNow(),
 		}),
 	};
 };

@@ -98,23 +98,6 @@ export const uiModuleCreateDTO = createModuleDTO.extend({
 export type UiModuleCreate = z.infer<typeof uiModuleCreateDTO>;
 
 /*
- ****** Lesson ******
- */
-
-export const lessonDTO = z.object({
-	id: z.number(),
-	name: z.string(),
-	isPublished: z.boolean().optional(),
-	excerpt: z.string().optional().nullable(),
-	content: z.string().optional().nullable(),
-});
-export type Lesson = z.infer<typeof lessonDTO>;
-export const createLessonDTO = lessonDTO.omit({ id: true });
-export type CreateLessonDTO = z.infer<typeof createLessonDTO>;
-export const editLessonDTO = lessonDTO;
-export type EditLessonDTO = z.infer<typeof editLessonDTO>;
-
-/*
  ****************** Course ******************
  */
 
@@ -222,3 +205,42 @@ export const uiCourseCreateDTO = courseDTO
 	})
 	.omit({ id: true });
 export type UiCourseCreate = z.infer<typeof uiCourseCreateDTO>;
+
+/*
+ ************* Lesson ************
+ */
+
+export const lessonDTO = z.object({
+	id: z.number(),
+	name: z.string(),
+	isPublished: z.boolean().optional(),
+	excerpt: z.string().optional().nullable(),
+	content: z.string().optional().nullable(),
+});
+export type Lesson = z.infer<typeof lessonDTO>;
+export const createLessonDTO = lessonDTO.omit({ id: true });
+export type CreateLessonDTO = z.infer<typeof createLessonDTO>;
+export const editLessonDTO = lessonDTO;
+export type EditLessonDTO = z.infer<typeof editLessonDTO>;
+
+/*
+ * ************* Video *************
+ */
+const videoProviderSchema = z.enum(["r2", "youtube", "vimeo", "mux", "bunny"]);
+export const videoDTO = z.object({
+	id: z.number(),
+	lessonId: z.number(),
+	provider: videoProviderSchema,
+	url: z.string(),
+	title: z.string(),
+	thumbnailUrl: z.string(),
+	isPublished: z.boolean().optional(),
+	order: z.number(),
+	createdAt: z.date().optional(),
+	updatedAt: z.date().optional(),
+});
+export type Video = z.infer<typeof videoDTO>;
+export const createVideoDTO = videoDTO.omit({ id: true });
+export type CreateVideoDTO = z.infer<typeof createVideoDTO>;
+export const editVideoDTO = videoDTO;
+export type EditVideoDTO = z.infer<typeof editVideoDTO>;

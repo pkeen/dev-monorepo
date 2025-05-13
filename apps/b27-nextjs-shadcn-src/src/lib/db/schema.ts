@@ -6,5 +6,5 @@ export const { usersTable, authSchema, accountsTable } = defineTables();
 
 export const { rbacSchema, rolesTable, userRolesTable } = createSchema();
 
-export const { courses, course, module, lesson, courseSlot, moduleSlot } =
+export const { courses, course, module, lesson, courseSlot, moduleSlot, video } =
 	coursesSchema;

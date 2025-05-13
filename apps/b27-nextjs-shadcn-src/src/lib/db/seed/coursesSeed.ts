@@ -25,6 +25,7 @@ export default async () => {
 			await courseSeed.lesson(db);
 			await courseSeed.moduleSlot(db);
 			await courseSeed.courseSlot(db);
+			await courseSeed.video(db);
 
 			// await seeds.user(db););
 			// logBreak();

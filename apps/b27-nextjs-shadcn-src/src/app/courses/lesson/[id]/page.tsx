@@ -11,7 +11,7 @@ export default async function LessonPage({
 	return (
 		<div>
 			<h1>{lesson?.name}</h1>
-			<DisplayMarkdown markdown={lesson?.content ?? ""} />
+			<DisplayMarkdown content={lesson?.content ?? ""} />
 		</div>
 	);
 }

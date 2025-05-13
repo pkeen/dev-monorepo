@@ -1,5 +1,11 @@
 import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
 
-export const DisplayMarkdown = ({ markdown }: { markdown: string }) => {
-	return <ReactMarkdown>{markdown}</ReactMarkdown>;
-};
+export function DisplayMarkdown({ content }: { content: string }) {
+	return (
+		<ReactMarkdown rehypePlugins={[rehypeRaw, rehypeSanitize]}>
+			{content}
+		</ReactMarkdown>
+	);
+}

@@ -99,7 +99,10 @@ export const LessonEditForm = ({
 						<FormItem>
 							<FormLabel>Excerpt</FormLabel>
 							<FormControl>
-								<Textarea {...field} />
+								<Textarea
+									{...field}
+									value={field.value ?? ""}
+								/>
 							</FormControl>
 							<FormMessage />
 						</FormItem>

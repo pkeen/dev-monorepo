@@ -89,6 +89,19 @@ export const moduleSlot = courses.table("module_slot", {
 });
 
 export const createSchema = () => {
+	const video = courses.table("video", {
+		id: serial("id").primaryKey(),
+		provider: varchar("provider", { length: 256 }).notNull(),
+		url: text("url").notNull(),
+		title: varchar("title", { length: 256 }).notNull(),
+		thumbnailUrl: text("thumbnail_url").notNull(),
+		isPublished: boolean("is_published").notNull().default(false),
+		order: integer("order").notNull(), // NEW
+		// durationSeconds: integer("duration_seconds").notNull(),
+		createdAt: timestamp("created_at").notNull().defaultNow(),
+		updatedAt: timestamp("updated_at").notNull().defaultNow(),
+	});
+
 	return {
 		courses: pgSchema("courses"),
 		course: courses.table(
@@ -110,6 +123,7 @@ export const createSchema = () => {
 			description: text("description"),
 			isPublished: boolean("is_published").notNull().default(false),
 		}),
+		video,
 		lesson: courses.table("lesson", {
 			id: serial("id").primaryKey(),
 			name: varchar("name", { length: 256 }).notNull(),
@@ -117,6 +131,9 @@ export const createSchema = () => {
 			excerpt: text("excerpt"), // short summary for previews
 			content: text("content"), // raw markdown or HTML
 			isPublished: boolean("is_published").notNull().default(false),
+			videoId: integer("video_id").references(() => video.id, {
+				onDelete: "cascade",
+			}),
 		}),
 		courseSlot: courses.table(
 			"course_slot",
@@ -159,21 +176,6 @@ export const createSchema = () => {
 				.notNull()
 				.references(() => lesson.id, { onDelete: "cascade" }),
 			order: integer("order").notNull(), // NEW
-		}),
-		video: courses.table("video", {
-			id: serial("id").primaryKey(),
-			lessonId: integer("lesson_id")
-				.notNull()
-				.references(() => lesson.id, { onDelete: "cascade" }),
-			provider: varchar("provider", { length: 256 }).notNull(),
-			url: text("url").notNull(),
-			title: varchar("title", { length: 256 }).notNull(),
-			thumbnailUrl: text("thumbnail_url").notNull(),
-			isPublished: boolean("is_published").notNull().default(false),
-			order: integer("order").notNull(), // NEW
-			durationSeconds: integer("duration_seconds").notNull(),
-			createdAt: timestamp("created_at").notNull().defaultNow(),
-			updatedAt: timestamp("updated_at").notNull().defaultNow(),
 		}),
 	};
 };

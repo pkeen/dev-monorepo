@@ -4,17 +4,15 @@ import { faker } from "@faker-js/faker";
 
 const videoProviders = ["r2", "youtube", "vimeo", "mux", "bunny"];
 
-const getLessonIds = async (db: db) => {
-	const lessonIds = db.select({ id: schema.lesson.id }).from(schema.lesson);
-	return lessonIds;
-};
+// const getLessonIds = async (db: db) => {
+// 	const lessonIds = db.select({ id: schema.lesson.id }).from(schema.lesson);
+// 	return lessonIds;
+// };
 
-const createDummyVideos = (lessonIds: number[], count = 20) => {
+const createDummyVideos = (count = 20) => {
 	const videos = [];
 	for (let i = 0; i < count; i++) {
-		const lessonId = faker.helpers.arrayElement(lessonIds);
 		videos.push({
-			lessonId,
 			provider: faker.helpers.arrayElement(videoProviders),
 			url: faker.internet.url(),
 			title: faker.lorem.sentence({ min: 3, max: 8 }),
@@ -33,15 +31,7 @@ const createDummyVideos = (lessonIds: number[], count = 20) => {
 };
 
 const seed = async (db: db) => {
-	const lessonIds = await getLessonIds(db);
-	if (lessonIds.length === 0) {
-		console.error("No lessons found in the database.");
-		process.exit(1);
-	}
-	const videos = createDummyVideos(
-		lessonIds.map((id) => id.id),
-		30
-	); // adjust number of records
+	const videos = createDummyVideos(30); // adjust number of records
 	try {
 		await db.insert(schema.video).values(videos);
 		console.log("videos succesfully seeded...");

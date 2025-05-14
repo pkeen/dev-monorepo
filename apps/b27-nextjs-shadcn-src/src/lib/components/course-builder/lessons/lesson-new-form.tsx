@@ -27,7 +27,9 @@ export const LessonNewForm = () => {
 		resolver: zodResolver(createLessonDTO),
 		defaultValues: {
 			name: "",
-			description: "",
+			excerpt: "",
+			content: "",
+			videoId: null,
 			isPublished: false,
 		},
 	});
@@ -65,12 +67,25 @@ export const LessonNewForm = () => {
 				/>
 				<FormField
 					control={form.control}
-					name="description"
+					name="excerpt"
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel>Description</FormLabel>
 							<FormControl>
-								<Textarea {...field} />
+								<Textarea {...field} value={field.value ?? ""}/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+				<FormField
+					control={form.control}
+					name="content"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Content</FormLabel>
+							<FormControl>
+								<Textarea {...field} value={field.value ?? ""}/>
 							</FormControl>
 							<FormMessage />
 						</FormItem>

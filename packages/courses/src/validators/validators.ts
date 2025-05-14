@@ -227,7 +227,22 @@ export type EditLessonDTO = z.infer<typeof editLessonDTO>;
 /*
  * ************* Video *************
  */
-const videoProviderSchema = z.enum(["r2", "youtube", "vimeo", "mux", "bunny"]);
+export const videoProviderSchema = z.enum([
+	"r2",
+	"youtube",
+	"vimeo",
+	"mux",
+	"bunny",
+]);
+export type VideoProvider = z.infer<typeof videoProviderSchema>;
+export const videoProviderLabels: Record<VideoProvider, string> = {
+	r2: "R2",
+	youtube: "YouTube",
+	vimeo: "Vimeo",
+	mux: "Mux",
+	bunny: "Bunny",
+};
+
 export const videoDTO = z.object({
 	id: z.number(),
 	provider: videoProviderSchema,

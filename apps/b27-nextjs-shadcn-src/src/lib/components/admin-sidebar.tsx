@@ -24,6 +24,7 @@ const navItems = [
 			{ href: "/admin/courses", label: "Courses" },
 			{ href: "/admin/courses/modules", label: "Modules" },
 			{ href: "/admin/courses/lessons", label: "Lessons" },
+			{ href: "/admin/courses/videos", label: "Videos" },
 		],
 	},
 	{ href: "/admin/settings", label: "Settings", icon: Settings },

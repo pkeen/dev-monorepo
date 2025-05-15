@@ -19,16 +19,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useState } from "react";
-// import { Lesson, LessonUsage } from "@pete_keen/courses/types";
 import { Video } from "@pete_keen/courses/validators";
-// import { deleteLesson } from "@/lib/actions/lesson/deleteLesson";
 import { toast } from "sonner";
 import { VideoUsage } from "@pete_keen/courses/types";
 import { deleteVideo } from "@/lib/actions/video/deleteVideo";
 import { getVideoUsage } from "@/lib/actions/video/getVideoUsage";
 import { ConfirmDeleteVideoDialog } from "./confirm-delete-video-dialog";
-// import { getLessonUsage } from "../../../actions/lesson/getLessonUsage";
-// import { ConfirmDeleteLessonDialog } from "./confirm-delete-lesson-dialog";
 
 export function VideoTable({ videos }: { videos: Video[] }) {
 	const [allVideos, setAllVideos] = useState(videos);

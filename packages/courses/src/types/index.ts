@@ -174,7 +174,7 @@ export interface LessonCRUD
 
 export interface VideoCRUD
 	extends CRUDOperations<Video, CreateVideoDTO, EditVideoDTO> {
-	// findUsage: (id: number) => Promise<VideoUsage>;
+	findUsage: (id: number) => Promise<VideoUsage>;
 }
 
 export interface LessonUsage {
@@ -185,6 +185,11 @@ export interface LessonUsage {
 
 export interface ModuleUsage {
 	inCourseSlots: CourseSlot[];
+	totalCount: number;
+}
+
+export interface VideoUsage {
+	inLessons: Lesson[];
 	totalCount: number;
 }
 

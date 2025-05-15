@@ -23,42 +23,46 @@ import { useState } from "react";
 import { Video } from "@pete_keen/courses/validators";
 // import { deleteLesson } from "@/lib/actions/lesson/deleteLesson";
 import { toast } from "sonner";
+import { VideoUsage } from "@pete_keen/courses/types";
+import { deleteVideo } from "@/lib/actions/video/deleteVideo";
+import { getVideoUsage } from "@/lib/actions/video/getVideoUsage";
+import { ConfirmDeleteVideoDialog } from "./confirm-delete-video-dialog";
 // import { getLessonUsage } from "../../../actions/lesson/getLessonUsage";
 // import { ConfirmDeleteLessonDialog } from "./confirm-delete-lesson-dialog";
 
 export function VideoTable({ videos }: { videos: Video[] }) {
 	const [allVideos, setAllVideos] = useState(videos);
 	const [search, setSearch] = useState("");
-	// const [videoToDelete, setVideoToDelete] = useState<Video | null>(null);
-	// const [videoUsage, setVideoUsage] = useState<VideoUsage | null>(null);
+	const [videoToDelete, setVideoToDelete] = useState<Video | null>(null);
+	const [videoUsage, setVideoUsage] = useState<VideoUsage | null>(null);
 
 	const filteredVideos = allVideos.filter((video) =>
 		`${video.title}`.toLowerCase().includes(search.toLowerCase())
 	);
 
-	// const handleDelete = async (videoId: number) => {
-	// 	if (!videoToDelete) return;
-	// 	try {
-	// 		await deleteVideo(videoId);
-	// 		setAllVideos((prev) => prev.filter((v) => v.id !== videoId));
-	// 		setVideoToDelete(null);
-	// 		toast.success("Lesson deleted!");
-	// 	} catch (err) {
-	// 		console.error(err);
-	// 		toast.error("Something went wrong deleting the lesson.");
-	// 	}
-	// };
+	const handleDelete = async (videoId: number) => {
+		if (!videoToDelete) return;
+		try {
+			await deleteVideo(videoId);
+			setAllVideos((prev) => prev.filter((v) => v.id !== videoId));
+			setVideoToDelete(null);
+			toast.success("Video deleted!");
+		} catch (err) {
+			console.error(err);
+			toast.error("Something went wrong deleting the video.");
+		}
+	};
 	return (
 		<div className="space-y-4">
-			{/* <ConfirmDeleteLessonDialog
-				onConfirm={() => handleDelete(lessonToDelete?.id)}
-				open={!!lessonToDelete}
+			<ConfirmDeleteVideoDialog
+				onConfirm={() => handleDelete(videoToDelete?.id ?? 0)}
+				open={!!videoToDelete}
 				setOpen={(open) => {
-					if (!open) setLessonToDelete(null);
+					if (!open) setVideoToDelete(null);
 				}}
 				actionVerb="Delete"
-				lessonUsage={lessonUsage ?? undefined}
-			/> */}
+				videoUsage={videoUsage ?? undefined}
+			/>
 			<Input
 				placeholder="Search videos..."
 				value={search}
@@ -97,20 +101,20 @@ export function VideoTable({ videos }: { videos: Video[] }) {
 												Edit
 											</Link>
 										</DropdownMenuItem>
-										{/* <DropdownMenuItem
+										<DropdownMenuItem
 											className="text-red-600 cursor-pointer"
 											onClick={async () => {
-												setLessonUsage(null);
-												setLessonToDelete(lesson);
+												setVideoUsage(null);
+												setVideoToDelete(video);
 												const usage =
-													await getLessonUsage(
-														lesson.id
+													await getVideoUsage(
+														video.id
 													);
-												setLessonUsage(usage);
+												setVideoUsage(usage);
 											}}
 										>
 											Delete
-										</DropdownMenuItem> */}
+										</DropdownMenuItem>
 									</DropdownMenuContent>
 								</DropdownMenu>
 							</TableCell>

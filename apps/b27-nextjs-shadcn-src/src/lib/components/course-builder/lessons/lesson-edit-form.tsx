@@ -16,7 +16,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { CardHeader, CardTitle } from "@/components/ui/card";
-import { lessonDTO, Lesson, editLessonDTO } from "@pete_keen/courses/validators";
+import {
+	lessonDTO,
+	Lesson,
+	editLessonDTO,
+	Video,
+} from "@pete_keen/courses/validators";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { editLesson } from "@/lib/actions/lesson/editLesson";
@@ -25,6 +30,7 @@ import { ConfirmDeleteLessonDialog } from "./confirm-delete-lesson-dialog";
 import { useState } from "react";
 import { LessonUsage } from "@pete_keen/courses/types";
 import LessonEditor from "./lesson-content-editor";
+import { VideoComboBox } from "./video-combo-box";
 
 // const lessonEditFormSchema = lessonDTO.extend({
 // 	description: z.string().optional(),
@@ -33,9 +39,11 @@ import LessonEditor from "./lesson-content-editor";
 export const LessonEditForm = ({
 	lesson,
 	lessonUsage,
+	videos,
 }: {
 	lesson: Lesson;
 	lessonUsage?: LessonUsage;
+	videos: Video[];
 }) => {
 	const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 	const router = useRouter();
@@ -47,6 +55,7 @@ export const LessonEditForm = ({
 			isPublished: lesson.isPublished ?? false,
 			excerpt: lesson.excerpt ?? "",
 			content: lesson.content ?? "",
+			videoId: lesson.videoId ?? null,
 		},
 	});
 
@@ -102,6 +111,23 @@ export const LessonEditForm = ({
 								<Textarea
 									{...field}
 									value={field.value ?? ""}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+				<FormField
+					control={form.control}
+					name="videoId"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Video</FormLabel>
+							<FormControl>
+								<VideoComboBox
+									value={field.value ?? null}
+									setValue={field.onChange}
+									videos={videos}
 								/>
 							</FormControl>
 							<FormMessage />

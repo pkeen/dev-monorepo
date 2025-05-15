@@ -13,9 +13,9 @@ import type {
 	// CourseSlotOutline,
 	CourseSlot,
 	ModuleSlot,
-    VideoCRUD,
-    CreateVideoDTO,
-    EditVideoDTO,
+	VideoCRUD,
+	CreateVideoDTO,
+	EditVideoDTO,
 } from "../types";
 import { and, eq, inArray } from "drizzle-orm";
 import {
@@ -752,10 +752,7 @@ const createVideoRepo = (
 		return video;
 	};
 	const create = async (input: CreateVideoDTO) => {
-		const [video] = await db
-			.insert(schema.video)
-			.values(input)
-			.returning();
+		const [video] = await db.insert(schema.video).values(input).returning();
 		return video;
 	};
 	const update = async (data: EditVideoDTO) => {
@@ -776,12 +773,24 @@ const createVideoRepo = (
 			throw new Error(`Record with id ${id} not found`);
 		}
 	};
+
+	const findUsage = async (id: number) => {
+		const lessons = await db
+			.select()
+			.from(schema.lesson)
+			.where(eq(schema.lesson.videoId, id));
+		return {
+			inLessons: lessons,
+			totalCount: lessons.length,
+		};
+	};
 	return {
 		list,
 		get,
 		create,
 		update,
 		destroy,
+		findUsage,
 	};
 };
 export const DrizzlePGAdapter = (

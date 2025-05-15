@@ -1,6 +1,7 @@
 import { lessonDTO } from "@pete_keen/courses/validators";
 import { VideoPlayer } from "./video-player";
 import { DisplayMarkdown } from "./display-markdown";
+import { CustomMarkdown } from "./custom-markdow";
 import { z } from "zod";
 
 const lessonViewDTO = lessonDTO.extend({
@@ -20,7 +21,7 @@ export function LessonView({ lesson }: { lesson: LessonView }) {
 				provider={lesson.video.provider}
 				url={lesson.video.url}
 			/>
-			<DisplayMarkdown content={lesson.content ?? ""} />
+			<CustomMarkdown content={lesson.content ?? ""} />
 		</div>
 	);
 }

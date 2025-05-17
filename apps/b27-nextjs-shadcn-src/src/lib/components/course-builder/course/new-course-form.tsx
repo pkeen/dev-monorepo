@@ -160,6 +160,7 @@ export function NewCourseForm({
 										lessonId: null,
 										order: fields.length, // <-- Important: add at end
 										content: {
+											id: item.id,
 											name: item.name,
 											isPublished: item.isPublished,
 										},
@@ -194,6 +195,7 @@ export function NewCourseForm({
 										lessonId: item.id,
 										moduleId: null,
 										content: {
+											id: item.id,
 											name: item.name,
 											isPublished: item.isPublished,
 										},

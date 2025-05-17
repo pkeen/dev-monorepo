@@ -2,7 +2,6 @@
 
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-// import { courseSchema, CourseFormValues } from "./schema"; // we'll store schema separately
 import {
 	Form,
 	FormField,
@@ -15,7 +14,6 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-// import { CourseSlot } from "./course-slot";
 import {
 	uiModuleCreateDTO,
 	UiModuleCreate,
@@ -31,6 +29,7 @@ import { ModuleDetailFields } from "./module-form-fields";
 import { AddSlotDialog } from "./add-lesson-dialog";
 import { SelectExistingDialog } from "../course/select-existing";
 import { useState } from "react";
+import { SelectExistingLesson } from "../utils/select-existing-lesson";
 
 export const NewModuleForm = ({
 	existingLessons,
@@ -166,7 +165,7 @@ export const NewModuleForm = ({
 								}
 							}}
 						/>
-						<SelectExistingDialog
+						<SelectExistingLesson
 							title="Select Existing Lesson"
 							open={selectLessonOpen}
 							onOpenChange={setSelectLessonOpen}
@@ -177,6 +176,7 @@ export const NewModuleForm = ({
 									lessonId: item.id,
 									order: fields.length, // <-- Important: add at end
 									content: {
+										id: item.id,
 										name: item.name,
 										isPublished: item.isPublished ?? false,
 									},

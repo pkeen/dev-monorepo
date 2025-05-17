@@ -179,6 +179,7 @@ export const uiCourseSlotDTO = courseSlotDTO.extend({
 	id: z.number().optional(),
 	clientId: z.string(),
 	content: z.object({
+		id: z.number(),
 		name: z.string(),
 		isPublished: z.boolean().optional(),
 	}),

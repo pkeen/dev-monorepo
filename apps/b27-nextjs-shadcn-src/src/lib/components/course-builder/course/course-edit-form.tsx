@@ -30,6 +30,8 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { deleteCourse } from "@/lib/actions/course/deleteCourse";
 import { ConfirmDeleteCourseDialog } from "./confirm-delete-course";
+import { SelectExistingModule } from "../utils/select-existing-module";
+import { SelectExistingLesson } from "../utils/select-existing-lesson";
 
 export function withClientIds(course: UiCourse): UiCourse {
 	return {
@@ -180,7 +182,7 @@ export function CourseEditForm({
 									}
 								}}
 							/>
-							<SelectExistingDialog
+							<SelectExistingModule
 								title="Select Existing Module"
 								open={selectModuleOpen}
 								onOpenChange={setSelectModuleOpen}
@@ -217,7 +219,7 @@ export function CourseEditForm({
 									}
 								}}
 							/>
-							<SelectExistingDialog
+							<SelectExistingLesson
 								title="Select Existing Lesson"
 								open={selectLessonOpen}
 								onOpenChange={setSelectLessonOpen}

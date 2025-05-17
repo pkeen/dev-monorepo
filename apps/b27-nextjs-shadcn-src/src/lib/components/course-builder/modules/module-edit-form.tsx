@@ -28,6 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { deleteModule } from "@/lib/actions/module/deleteModule";
 import { ConfirmDeleteModuleDialog } from "./confirm-delete-module";
 import { ModuleUsage } from "@pete_keen/courses/types";
+import { SelectExistingLesson } from "../utils/select-existing-lesson";
 
 function withClientIds(module: UiModule): UiModule {
 	return {
@@ -173,7 +174,7 @@ export const ModuleEditForm = ({
 								}
 							}}
 						/>
-						<SelectExistingDialog
+						<SelectExistingLesson
 							title="Select Existing Lesson"
 							open={selectLessonOpen}
 							onOpenChange={setSelectLessonOpen}
@@ -185,6 +186,7 @@ export const ModuleEditForm = ({
 									lessonId: item.id,
 									order: fields.length, // <-- Important: add at end
 									content: {
+										id: item.id,
 										name: item.name,
 										isPublished: item.isPublished ?? false,
 									},

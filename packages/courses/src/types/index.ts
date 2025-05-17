@@ -15,6 +15,7 @@ import {
 	Video,
 	CreateVideoDTO,
 	EditVideoDTO,
+	CourseDeepOutline,
 } from "validators";
 
 // // Base interfaces for database models
@@ -150,12 +151,15 @@ interface CRUDOerationsComplex<T, C, E, O> extends CRUDOperations<T, C, E> {
 	// updateWithSlots: (data: Partial<S>) => Promise<S | null>;
 }
 
-export type CourseCRUD = CRUDOerationsComplex<
-	Course,
-	CreateCourseDTO,
-	EditCourseDTO,
-	CourseOutline
->;
+export interface CourseCRUD
+	extends CRUDOerationsComplex<
+		Course,
+		CreateCourseDTO,
+		EditCourseDTO,
+		CourseOutline
+	> {
+	deepOutline: (id: number) => Promise<CourseDeepOutline | null>;
+}
 
 export interface ModuleCRUD
 	extends CRUDOerationsComplex<

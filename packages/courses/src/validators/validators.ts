@@ -74,6 +74,7 @@ export type ModuleOutline = z.infer<typeof moduleOutlineDTO>;
 export const uiModuleSlotDTO = upsertModuleSlotDTO.extend({
 	clientId: z.string(),
 	content: z.object({
+		id: z.number(),
 		name: z.string(),
 		isPublished: z.boolean().optional(),
 	}),
@@ -205,6 +206,51 @@ export const uiCourseCreateDTO = courseDTO
 	})
 	.omit({ id: true });
 export type UiCourseCreate = z.infer<typeof uiCourseCreateDTO>;
+
+/*
+ * Course Deep
+ */
+
+export const lessonOutlineDTO = z.object({
+	id: z.number(),
+	name: z.string(),
+	isPublished: z.boolean().optional(),
+});
+export type LessonOutline = z.infer<typeof lessonOutlineDTO>;
+
+export const deepModuleSlotOutlineDTO = z.object({
+	id: z.number(),
+	order: z.number(),
+	content: lessonOutlineDTO,
+});
+export type DeepModuleSlotOutline = z.infer<typeof deepModuleSlotOutlineDTO>;
+
+export const deepModuleOutlineDTO = z.object({
+	id: z.number(),
+	name: z.string(),
+	isPublished: z.boolean(),
+	slots: z.array(deepModuleSlotOutlineDTO),
+});
+export type DeepModuleOutline = z.infer<typeof deepModuleOutlineDTO>;
+
+// Union type: either a lesson or a module
+const deepCourseSlotOutlineDTO = z.object({
+	id: z.number(),
+	courseId: z.number(),
+	order: z.number(),
+	moduleId: z.number().nullable(),
+	lessonId: z.number().nullable(),
+	content: z.union([
+		lessonOutlineDTO.extend({ type: z.literal("lesson") }),
+		deepModuleOutlineDTO.extend({ type: z.literal("module") }),
+	]),
+});
+export type CourseSlotDeepOutline = z.infer<typeof deepCourseSlotOutlineDTO>;
+
+export const courseDeepOutlineDTO = courseDTO.extend({
+	slots: z.array(deepCourseSlotOutlineDTO).default([]),
+});
+export type CourseDeepOutline = z.infer<typeof courseDeepOutlineDTO>;
 
 /*
  ************* Lesson ************

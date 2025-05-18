@@ -114,6 +114,16 @@ export const courseSlotDTO = z.object({
 	lessonId: z.number().nullable(),
 	order: z.number(),
 });
+// .refine(
+// 	(data) =>
+// 		(data.moduleId && !data.lessonId) ||
+// 		(!data.moduleId && data.lessonId),
+// 	{
+// 		message:
+// 			"Each slot must have either a lessonId or moduleId, but not both.",
+// 		path: ["moduleId"], // optional: set a path to highlight
+// 	}
+// );
 export type CourseSlot = z.infer<typeof courseSlotDTO>;
 
 export const courseDTO = z.object({
@@ -130,8 +140,8 @@ export type Course = z.infer<typeof courseDTO>;
  ***** Outline *****
  */
 export const courseSlotOutlineDTO = courseSlotDTO.extend({
-	moduleId: z.number().optional(),
-	lessonId: z.number().optional(),
+	moduleId: z.number().nullable(),
+	lessonId: z.number().nullable(),
 	content: z.object({
 		id: z.number(),
 		name: z.string(),
@@ -235,7 +245,7 @@ export const deepModuleOutlineDTO = z.object({
 export type DeepModuleOutline = z.infer<typeof deepModuleOutlineDTO>;
 
 // Union type: either a lesson or a module
-const deepCourseSlotOutlineDTO = z.object({
+export const deepCourseSlotOutlineDTO = z.object({
 	id: z.number(),
 	courseId: z.number(),
 	order: z.number(),
@@ -248,10 +258,22 @@ const deepCourseSlotOutlineDTO = z.object({
 });
 export type CourseSlotDeepOutline = z.infer<typeof deepCourseSlotOutlineDTO>;
 
+export const UIDeepCourseSlotOutlineDTO = deepCourseSlotOutlineDTO.extend({
+	clientId: z.string(),
+});
+export type UIDeepCourseSlotOutline = z.infer<
+	typeof UIDeepCourseSlotOutlineDTO
+>;
+
 export const courseDeepOutlineDTO = courseDTO.extend({
 	slots: z.array(deepCourseSlotOutlineDTO).default([]),
 });
 export type CourseDeepOutline = z.infer<typeof courseDeepOutlineDTO>;
+
+export const UIDeepCourseDTO = courseDTO.extend({
+	slots: z.array(UIDeepCourseSlotOutlineDTO).default([]),
+});
+export type UIDeepCourse = z.infer<typeof UIDeepCourseDTO>;
 
 /*
  ************* Lesson ************

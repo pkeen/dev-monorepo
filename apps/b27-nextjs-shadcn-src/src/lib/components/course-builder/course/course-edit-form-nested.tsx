@@ -7,6 +7,7 @@ import {
 	UiCourse,
 	Lesson,
 	Module,
+	UIDeepCourse,
 } from "@pete_keen/courses/validators";
 import {
 	Form,
@@ -21,9 +22,8 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { AddSlotDialog } from "./add-slot-dialog";
-import { SelectExistingDialog } from "./select-existing";
 import { useMemo, useState } from "react";
-import { SortableSlotList } from "./slot-list";
+import { NestedSortableSlotList } from "./nested-slot-list";
 import { editCourse } from "@/lib/actions/course/editCourse";
 import { toast } from "sonner";
 import { useTransition } from "react";
@@ -33,7 +33,7 @@ import { ConfirmDeleteCourseDialog } from "./confirm-delete-course";
 import { SelectExistingModule } from "../utils/select-existing-module";
 import { SelectExistingLesson } from "../utils/select-existing-lesson";
 
-export function withClientIds(course: UiCourse): UiCourse {
+export function withClientIds(course: UIDeepCourse): UIDeepCourse {
 	return {
 		...course,
 		slots: course.slots.map((slot, i) => ({
@@ -49,7 +49,7 @@ export function CourseEditForm({
 	existingLessons,
 	existingModules,
 }: {
-	course: UiCourse;
+	course: UIDeepCourse;
 	existingLessons: Lesson[];
 	existingModules: Module[];
 }) {
@@ -71,7 +71,7 @@ export function CourseEditForm({
 		name: "slots",
 	});
 
-	const onSubmit = (values: UiCourse) => {
+	const onSubmit = (values: UIDeepCourse) => {
 		console.log(values);
 		startTransition(async () => {
 			try {
@@ -244,7 +244,7 @@ export function CourseEditForm({
 								}}
 							/>
 						</div>
-						<SortableSlotList fields={fields} move={move} />
+						<NestedSortableSlotList fields={fields} move={move} />
 					</Card>
 
 					<Button

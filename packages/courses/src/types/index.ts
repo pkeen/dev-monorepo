@@ -156,7 +156,7 @@ export interface CourseCRUD
 		Course,
 		CreateCourseDTO,
 		EditCourseDTO,
-		CourseOutline
+		CourseDeepOutline
 	> {
 	deepOutline: (id: number) => Promise<CourseDeepOutline | null>;
 }

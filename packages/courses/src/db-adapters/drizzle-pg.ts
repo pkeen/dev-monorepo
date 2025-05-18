@@ -496,85 +496,85 @@ const createCourseRepo = (
 		};
 	};
 
-	const outline = async (id: number) => {
-		const rows = await db
-			.select({
-				id: schema.course.id,
-				userId: schema.course.userId,
-				title: schema.course.title,
-				description: schema.course.description,
-				isPublished: schema.course.isPublished,
-				courseSlotId: schema.courseSlot.id,
-				courseSlotOrder: schema.courseSlot.order,
-				moduleId: schema.courseSlot.moduleId,
-				lessonId: schema.courseSlot.lessonId,
-				moduleName: schema.module.name,
-				moduleIsPublished: schema.module.isPublished,
-				lessonName: schema.lesson.name,
-				lessonIsPublished: schema.lesson.isPublished,
-			})
-			.from(schema.course)
-			.leftJoin(
-				schema.courseSlot,
-				eq(schema.courseSlot.courseId, schema.course.id)
-			)
-			.leftJoin(
-				schema.module,
-				eq(schema.module.id, schema.courseSlot.moduleId)
-			)
-			.leftJoin(
-				schema.lesson,
-				eq(schema.lesson.id, schema.courseSlot.lessonId)
-			)
-			.where(eq(schema.course.id, id))
-			.orderBy(schema.courseSlot.order);
+	// const outline = async (id: number) => {
+	// 	const rows = await db
+	// 		.select({
+	// 			id: schema.course.id,
+	// 			userId: schema.course.userId,
+	// 			title: schema.course.title,
+	// 			description: schema.course.description,
+	// 			isPublished: schema.course.isPublished,
+	// 			courseSlotId: schema.courseSlot.id,
+	// 			courseSlotOrder: schema.courseSlot.order,
+	// 			moduleId: schema.courseSlot.moduleId,
+	// 			lessonId: schema.courseSlot.lessonId,
+	// 			moduleName: schema.module.name,
+	// 			moduleIsPublished: schema.module.isPublished,
+	// 			lessonName: schema.lesson.name,
+	// 			lessonIsPublished: schema.lesson.isPublished,
+	// 		})
+	// 		.from(schema.course)
+	// 		.leftJoin(
+	// 			schema.courseSlot,
+	// 			eq(schema.courseSlot.courseId, schema.course.id)
+	// 		)
+	// 		.leftJoin(
+	// 			schema.module,
+	// 			eq(schema.module.id, schema.courseSlot.moduleId)
+	// 		)
+	// 		.leftJoin(
+	// 			schema.lesson,
+	// 			eq(schema.lesson.id, schema.courseSlot.lessonId)
+	// 		)
+	// 		.where(eq(schema.course.id, id))
+	// 		.orderBy(schema.courseSlot.order);
 
-		if (rows.length === 0) {
-			return null; // or throw new Error("Module not found")
-		}
+	// 	if (rows.length === 0) {
+	// 		return null; // or throw new Error("Module not found")
+	// 	}
 
-		const courseSlots: CourseSlotOutline[] = rows
-			.filter((r) => r.courseSlotId !== null) // filter out “no-slot” row
-			.map((row) => ({
-				id: row.courseSlotId!,
-				courseId: row.id,
-				order: row.courseSlotOrder!,
-				moduleId: row.moduleId ?? undefined,
-				lessonId: row.lessonId ?? undefined,
-				content: row.lessonId
-					? {
-							id: row.lessonId!,
-							name: row.lessonName!,
-							isPublished: row.lessonIsPublished!,
-					  }
-					: {
-							id: row.moduleId!,
-							name: row.moduleName!,
-							isPublished: row.moduleIsPublished!,
-					  },
-			}));
+	// 	const courseSlots: CourseSlotOutline[] = rows
+	// 		.filter((r) => r.courseSlotId !== null) // filter out “no-slot” row
+	// 		.map((row) => ({
+	// 			id: row.courseSlotId!,
+	// 			courseId: row.id,
+	// 			order: row.courseSlotOrder!,
+	// 			moduleId: row.moduleId ?? undefined,
+	// 			lessonId: row.lessonId ?? undefined,
+	// 			content: row.lessonId
+	// 				? {
+	// 						id: row.lessonId!,
+	// 						name: row.lessonName!,
+	// 						isPublished: row.lessonIsPublished!,
+	// 				  }
+	// 				: {
+	// 						id: row.moduleId!,
+	// 						name: row.moduleName!,
+	// 						isPublished: row.moduleIsPublished!,
+	// 				  },
+	// 		}));
 
-		const {
-			title,
-			description,
-			isPublished,
-			userId,
-			id: courseId,
-		} = rows[0];
+	// 	const {
+	// 		title,
+	// 		description,
+	// 		isPublished,
+	// 		userId,
+	// 		id: courseId,
+	// 	} = rows[0];
 
-		const outline: CourseOutline = {
-			id: courseId,
-			userId,
-			title,
-			description,
-			isPublished,
-			slots: courseSlots,
-		};
+	// 	const outline: CourseOutline = {
+	// 		id: courseId,
+	// 		userId,
+	// 		title,
+	// 		description,
+	// 		isPublished,
+	// 		slots: courseSlots,
+	// 	};
 
-		// console.log("Course outline", outline);
+	// 	// console.log("Course outline", outline);
 
-		return outline;
-	};
+	// 	return outline;
+	// };
 
 	const deepOutline = async (id: number) => {
 		const rows = await db
@@ -710,6 +710,8 @@ const createCourseRepo = (
 
 		return deepOutline;
 	};
+
+	const outline = deepOutline;
 
 	const create = async (input: CreateCourseDTO) => {
 		// Step 1: Create the course

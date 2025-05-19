@@ -106,198 +106,198 @@ export type UiModuleCreate = z.infer<typeof uiModuleCreateDTO>;
  ***** Get types *****
  */
 
-// course slots
-export const courseSlotDTO = z.object({
-	id: z.number(),
-	courseId: z.number(),
-	moduleId: z.number().nullable(),
-	lessonId: z.number().nullable(),
-	order: z.number(),
-});
-// .refine(
-// 	(data) =>
-// 		(data.moduleId && !data.lessonId) ||
-// 		(!data.moduleId && data.lessonId),
-// 	{
-// 		message:
-// 			"Each slot must have either a lessonId or moduleId, but not both.",
-// 		path: ["moduleId"], // optional: set a path to highlight
-// 	}
-// );
-export type CourseSlot = z.infer<typeof courseSlotDTO>;
+// // course slots
+// export const courseSlotDTO = z.object({
+// 	id: z.number(),
+// 	courseId: z.number(),
+// 	moduleId: z.number().nullable(),
+// 	lessonId: z.number().nullable(),
+// 	order: z.number(),
+// });
+// // .refine(
+// // 	(data) =>
+// // 		(data.moduleId && !data.lessonId) ||
+// // 		(!data.moduleId && data.lessonId),
+// // 	{
+// // 		message:
+// // 			"Each slot must have either a lessonId or moduleId, but not both.",
+// // 		path: ["moduleId"], // optional: set a path to highlight
+// // 	}
+// // );
+// export type CourseSlot = z.infer<typeof courseSlotDTO>;
 
-export const courseDTO = z.object({
-	id: z.number(),
-	userId: z.string(),
-	title: z.string(),
-	description: z.string(),
-	isPublished: z.boolean().optional(),
-	slots: z.array(courseSlotDTO).default([]),
-});
-export type Course = z.infer<typeof courseDTO>;
+// export const courseDTO = z.object({
+// 	id: z.number(),
+// 	userId: z.string(),
+// 	title: z.string(),
+// 	description: z.string(),
+// 	isPublished: z.boolean().optional(),
+// 	slots: z.array(courseSlotDTO).default([]),
+// });
+// export type Course = z.infer<typeof courseDTO>;
 
-/*
- ***** Outline *****
- */
-export const courseSlotOutlineDTO = courseSlotDTO.extend({
-	moduleId: z.number().nullable(),
-	lessonId: z.number().nullable(),
-	content: z.object({
-		id: z.number(),
-		name: z.string(),
-		isPublished: z.boolean().optional(),
-	}),
-});
-export type CourseSlotOutline = z.infer<typeof courseSlotOutlineDTO>;
+// /*
+//  ***** Outline *****
+//  */
+// export const courseSlotOutlineDTO = courseSlotDTO.extend({
+// 	moduleId: z.number().nullable(),
+// 	lessonId: z.number().nullable(),
+// 	content: z.object({
+// 		id: z.number(),
+// 		name: z.string(),
+// 		isPublished: z.boolean().optional(),
+// 	}),
+// });
+// export type CourseSlotOutline = z.infer<typeof courseSlotOutlineDTO>;
 
-export const courseOutlineDTO = courseDTO.extend({
-	slots: z.array(courseSlotOutlineDTO).default([]),
-});
-export type CourseOutline = z.infer<typeof courseOutlineDTO>;
+// export const courseOutlineDTO = courseDTO.extend({
+// 	slots: z.array(courseSlotOutlineDTO).default([]),
+// });
+// export type CourseOutline = z.infer<typeof courseOutlineDTO>;
 
-/*
- ***** Create types *****
- */
+// /*
+//  ***** Create types *****
+//  */
 
-export const createCourseDTO = courseDTO
-	.extend({
-		slots: z
-			.array(courseSlotDTO.omit({ id: true, courseId: true }))
-			.default([]),
-	})
-	.omit({ id: true });
-export type CreateCourseDTO = z.infer<typeof createCourseDTO>;
+// export const createCourseDTO = courseDTO
+// 	.extend({
+// 		slots: z
+// 			.array(courseSlotDTO.omit({ id: true, courseId: true }))
+// 			.default([]),
+// 	})
+// 	.omit({ id: true });
+// export type CreateCourseDTO = z.infer<typeof createCourseDTO>;
 
-/*
- ****** Edit types *****
- */
+// /*
+//  ****** Edit types *****
+//  */
 
-export const courseSlotUpsertDTO = courseSlotDTO.extend({
-	id: z.number().optional(),
-});
-export type CourseSlotUpsert = z.infer<typeof courseSlotUpsertDTO>;
+// export const courseSlotUpsertDTO = courseSlotDTO.extend({
+// 	id: z.number().optional(),
+// });
+// export type CourseSlotUpsert = z.infer<typeof courseSlotUpsertDTO>;
 
-export const editCourseDTO = courseDTO.extend({
-	slots: z.array(courseSlotUpsertDTO).default([]),
-});
-export type EditCourseDTO = z.infer<typeof editCourseDTO>;
+// export const editCourseDTO = courseDTO.extend({
+// 	slots: z.array(courseSlotUpsertDTO).default([]),
+// });
+// export type EditCourseDTO = z.infer<typeof editCourseDTO>;
 
-/*
- * UI Edit Course Specific
- */
-export const uiCourseSlotDTO = courseSlotDTO.extend({
-	id: z.number().optional(),
-	clientId: z.string(),
-	content: z.object({
-		id: z.number(),
-		name: z.string(),
-		isPublished: z.boolean().optional(),
-	}),
-});
-export type UiCourseSlot = z.infer<typeof uiCourseSlotDTO>;
+// /*
+//  * UI Edit Course Specific
+//  */
+// export const uiCourseSlotDTO = courseSlotDTO.extend({
+// 	id: z.number().optional(),
+// 	clientId: z.string(),
+// 	content: z.object({
+// 		id: z.number(),
+// 		name: z.string(),
+// 		isPublished: z.boolean().optional(),
+// 	}),
+// });
+// export type UiCourseSlot = z.infer<typeof uiCourseSlotDTO>;
 
-export const uiCourseDTO = courseDTO.extend({
-	slots: z.array(uiCourseSlotDTO).default([]),
-});
-export type UiCourse = z.infer<typeof uiCourseDTO>;
+// export const uiCourseDTO = courseDTO.extend({
+// 	slots: z.array(uiCourseSlotDTO).default([]),
+// });
+// export type UiCourse = z.infer<typeof uiCourseDTO>;
 
-/*
- * UI Create Course
- */
+// /*
+//  * UI Create Course
+//  */
 
-export const uiCourseSlotCreateDTO = uiCourseSlotDTO.omit({
-	id: true,
-	courseId: true,
-});
-export type UiCourseSlotCreate = z.infer<typeof uiCourseSlotCreateDTO>;
+// export const uiCourseSlotCreateDTO = uiCourseSlotDTO.omit({
+// 	id: true,
+// 	courseId: true,
+// });
+// export type UiCourseSlotCreate = z.infer<typeof uiCourseSlotCreateDTO>;
 
-export const uiCourseCreateDTO = courseDTO
-	.extend({
-		slots: z.array(uiCourseSlotCreateDTO).default([]),
-	})
-	.omit({ id: true });
-export type UiCourseCreate = z.infer<typeof uiCourseCreateDTO>;
+// export const uiCourseCreateDTO = courseDTO
+// 	.extend({
+// 		slots: z.array(uiCourseSlotCreateDTO).default([]),
+// 	})
+// 	.omit({ id: true });
+// export type UiCourseCreate = z.infer<typeof uiCourseCreateDTO>;
 
-/*
- * Course Deep
- */
+// /*
+//  * Course Deep
+//  */
 
-export const lessonOutlineDTO = z.object({
-	id: z.number(),
-	name: z.string(),
-	isPublished: z.boolean().optional(),
-});
-export type LessonOutline = z.infer<typeof lessonOutlineDTO>;
+// export const lessonOutlineDTO = z.object({
+// 	id: z.number(),
+// 	name: z.string(),
+// 	isPublished: z.boolean().optional(),
+// });
+// export type LessonOutline = z.infer<typeof lessonOutlineDTO>;
 
-export const deepModuleSlotOutlineDTO = z.object({
-	id: z.number(),
-	order: z.number(),
-	content: lessonOutlineDTO,
-});
-export type DeepModuleSlotOutline = z.infer<typeof deepModuleSlotOutlineDTO>;
+// export const deepModuleSlotOutlineDTO = z.object({
+// 	id: z.number(),
+// 	order: z.number(),
+// 	content: lessonOutlineDTO,
+// });
+// export type DeepModuleSlotOutline = z.infer<typeof deepModuleSlotOutlineDTO>;
 
-export const deepModuleSlotOutlineWithClientIdsDTO =
-	deepModuleSlotOutlineDTO.extend({
-		clientId: z.string(),
-	});
-export type DeepModuleSlotOutlineWithClientIds = z.infer<
-	typeof deepModuleSlotOutlineWithClientIdsDTO
->;
+// export const deepModuleSlotOutlineWithClientIdsDTO =
+// 	deepModuleSlotOutlineDTO.extend({
+// 		clientId: z.string(),
+// 	});
+// export type DeepModuleSlotOutlineWithClientIds = z.infer<
+// 	typeof deepModuleSlotOutlineWithClientIdsDTO
+// >;
 
-export const deepModuleOutlineDTO = z.object({
-	id: z.number(),
-	name: z.string(),
-	isPublished: z.boolean(),
-	slots: z.array(deepModuleSlotOutlineDTO),
-});
-export type DeepModuleOutline = z.infer<typeof deepModuleOutlineDTO>;
+// export const deepModuleOutlineDTO = z.object({
+// 	id: z.number(),
+// 	name: z.string(),
+// 	isPublished: z.boolean(),
+// 	slots: z.array(deepModuleSlotOutlineDTO),
+// });
+// export type DeepModuleOutline = z.infer<typeof deepModuleOutlineDTO>;
 
-export const deepModuleOutlineWithClientIdsDTO = deepModuleOutlineDTO.extend({
-	clientId: z.string(),
-});
-export type DeepModuleOutlineWithClientIds = z.infer<
-	typeof deepModuleOutlineWithClientIdsDTO
->;
+// export const deepModuleOutlineWithClientIdsDTO = deepModuleOutlineDTO.extend({
+// 	clientId: z.string(),
+// });
+// export type DeepModuleOutlineWithClientIds = z.infer<
+// 	typeof deepModuleOutlineWithClientIdsDTO
+// >;
 
-// Union type: either a lesson or a module
-export const deepCourseSlotOutlineDTO = z.object({
-	id: z.number(),
-	courseId: z.number(),
-	order: z.number(),
-	moduleId: z.number().nullable(),
-	lessonId: z.number().nullable(),
-	content: z.union([
-		lessonOutlineDTO.extend({ type: z.literal("lesson") }),
-		deepModuleOutlineDTO.extend({ type: z.literal("module") }),
-	]),
-});
-export type CourseSlotDeepOutline = z.infer<typeof deepCourseSlotOutlineDTO>;
+// // Union type: either a lesson or a module
+// export const deepCourseSlotOutlineDTO = z.object({
+// 	id: z.number(),
+// 	courseId: z.number(),
+// 	order: z.number(),
+// 	moduleId: z.number().nullable(),
+// 	lessonId: z.number().nullable(),
+// 	content: z.union([
+// 		lessonOutlineDTO.extend({ type: z.literal("lesson") }),
+// 		deepModuleOutlineDTO.extend({ type: z.literal("module") }),
+// 	]),
+// });
+// export type CourseSlotDeepOutline = z.infer<typeof deepCourseSlotOutlineDTO>;
 
-export const UIDeepCourseSlotOutlineDTO = z.object({
-	clientId: z.string(),
-	content: z.union([
-		lessonOutlineDTO.extend({ type: z.literal("lesson") }),
-		deepModuleOutlineWithClientIdsDTO.extend({ type: z.literal("module") }),
-	]),
-	id: z.number().optional(),
-	courseId: z.number(),
-	order: z.number(),
-	moduleId: z.number().nullable(),
-	lessonId: z.number().nullable(),
-});
-export type UIDeepCourseSlotOutline = z.infer<
-	typeof UIDeepCourseSlotOutlineDTO
->;
+// export const UIDeepCourseSlotOutlineDTO = z.object({
+// 	clientId: z.string(),
+// 	content: z.union([
+// 		lessonOutlineDTO.extend({ type: z.literal("lesson") }),
+// 		deepModuleOutlineWithClientIdsDTO.extend({ type: z.literal("module") }),
+// 	]),
+// 	id: z.number().optional(),
+// 	courseId: z.number(),
+// 	order: z.number(),
+// 	moduleId: z.number().nullable(),
+// 	lessonId: z.number().nullable(),
+// });
+// export type UIDeepCourseSlotOutline = z.infer<
+// 	typeof UIDeepCourseSlotOutlineDTO
+// >;
 
-export const courseDeepOutlineDTO = courseDTO.extend({
-	slots: z.array(deepCourseSlotOutlineDTO).default([]),
-});
-export type CourseDeepOutline = z.infer<typeof courseDeepOutlineDTO>;
+// export const courseDeepOutlineDTO = courseDTO.extend({
+// 	slots: z.array(deepCourseSlotOutlineDTO).default([]),
+// });
+// export type CourseDeepOutline = z.infer<typeof courseDeepOutlineDTO>;
 
-export const UIDeepCourseDTO = courseDTO.extend({
-	slots: z.array(UIDeepCourseSlotOutlineDTO).default([]),
-});
-export type UIDeepCourse = z.infer<typeof UIDeepCourseDTO>;
+// export const UIDeepCourseDTO = courseDTO.extend({
+// 	slots: z.array(UIDeepCourseSlotOutlineDTO).default([]),
+// });
+// export type UIDeepCourse = z.infer<typeof UIDeepCourseDTO>;
 
 /*
  ************* Lesson ************
@@ -354,9 +354,10 @@ export const editVideoDTO = videoDTO;
 export type EditVideoDTO = z.infer<typeof editVideoDTO>;
 
 /*
- * NEW COURSE
+ * NEW COURSE TYPES
  */
-export const moduleSlotDeepDTO = z.object({
+
+export const moduleSlotDeepDisplay = z.object({
 	id: z.number(),
 	lessonId: z.number(),
 	order: z.number(),
@@ -366,9 +367,9 @@ export const moduleSlotDeepDTO = z.object({
 		isPublished: z.boolean().optional(),
 	}),
 });
-export type ModuleSlotDeepDTO = z.infer<typeof moduleSlotDeepDTO>;
+export type ModuleSlotDeepDisplay = z.infer<typeof moduleSlotDeepDisplay>;
 
-export const slotDeepDTO = z
+export const slotDeepDisplay = z
 	.object({
 		id: z.number(),
 		courseId: z.number(),
@@ -387,7 +388,7 @@ export const slotDeepDTO = z
 				id: z.number(),
 				name: z.string(),
 				isPublished: z.boolean().optional(),
-				moduleSlots: z.array(moduleSlotDeepDTO).default([]),
+				moduleSlots: z.array(moduleSlotDeepDisplay).default([]),
 			}),
 		]),
 	})
@@ -410,24 +411,24 @@ export const slotDeepDTO = z
 			});
 		}
 	});
-export type SlotDeepDTO = z.infer<typeof slotDeepDTO>;
+export type SlotDeepDisplay = z.infer<typeof slotDeepDisplay>;
 
-export const courseDeepDTO = z.object({
+export const courseDeepDisplay = z.object({
 	id: z.number(),
 	userId: z.string(),
 	title: z.string(),
 	description: z.string(),
 	isPublished: z.boolean().optional(),
-	slots: z.array(slotDeepDTO).default([]),
+	slots: z.array(slotDeepDisplay).default([]),
 });
-export type CourseDeepDTO = z.infer<typeof courseDeepDTO>;
+export type CourseDeepDisplay = z.infer<typeof courseDeepDisplay>;
 
-export const uiModuleSlotDeepDTO = moduleSlotDeepDTO.extend({
+export const uiModuleSlotDeep = moduleSlotDeepDisplay.extend({
 	clientId: z.string(),
 });
-export type UiModuleSlotDeepDTO = z.infer<typeof uiModuleSlotDeepDTO>;
+export type UiModuleSlotDeep = z.infer<typeof uiModuleSlotDeep>;
 
-export const uiSlotDeepDTO = z
+export const uiSlotDeep = z
 	.object({
 		id: z.number(),
 		courseId: z.number(),
@@ -447,7 +448,7 @@ export const uiSlotDeepDTO = z
 				id: z.number(),
 				name: z.string(),
 				isPublished: z.boolean().optional(),
-				moduleSlots: z.array(moduleSlotDeepDTO).default([]).optional(),
+				moduleSlots: z.array(uiModuleSlotDeep).default([]).optional(),
 			}),
 		]),
 	})
@@ -471,14 +472,141 @@ export const uiSlotDeepDTO = z
 		}
 	});
 
-export type UiSlotDeep = z.infer<typeof uiSlotDeepDTO>;
+export type UiSlotDeep = z.infer<typeof uiSlotDeep>;
 
-export const uiCourseDeepDTO = z.object({
+export const uiCourseDeep = z.object({
 	id: z.number(),
 	userId: z.string(),
 	title: z.string(),
 	description: z.string(),
 	isPublished: z.boolean().optional(),
-	slots: z.array(uiSlotDeepDTO).default([]).optional(),
+	slots: z.array(uiSlotDeep).default([]).optional(),
 });
-export type UiCourseDeepDTO = z.infer<typeof uiCourseDeepDTO>;
+export type UiCourseDeep = z.infer<typeof uiCourseDeep>;
+
+/*
+ * Data Transfer Objects
+ */
+
+/*
+ * Basic DTO
+ */
+// Step 1: Create a base object (without refinement)
+const baseCourseSlotDTO = z.object({
+	id: z.number(),
+	courseId: z.number(),
+	moduleId: z.number().nullable(),
+	lessonId: z.number().nullable(),
+	order: z.number(),
+	moduleSlots: z.array(moduleSlotDTO).default([]).optional(),
+});
+
+export const courseSlotDTO = baseCourseSlotDTO.superRefine((data, ctx) => {
+	const hasModuleId = data.moduleId !== null;
+	const hasLessonId = data.lessonId !== null;
+
+	if (hasModuleId === hasLessonId) {
+		ctx.addIssue({
+			code: z.ZodIssueCode.custom,
+			message:
+				"You must provide either a moduleId or lessonId, but not both or neither.",
+			path: ["moduleId"],
+		});
+		ctx.addIssue({
+			code: z.ZodIssueCode.custom,
+			message:
+				"You must provide either a moduleId or lessonId, but not both or neither.",
+			path: ["lessonId"],
+		});
+	}
+
+	if (!hasModuleId && data.moduleSlots && data.moduleSlots.length > 0) {
+		ctx.addIssue({
+			code: z.ZodIssueCode.custom,
+			message: "moduleSlots should only be present when moduleId is set.",
+			path: ["moduleSlots"],
+		});
+	}
+});
+export type CourseSlotDTO = z.infer<typeof courseSlotDTO>;
+
+export const courseDTO = z.object({
+	id: z.number(),
+	userId: z.string(),
+	title: z.string(),
+	description: z.string(),
+	isPublished: z.boolean().optional(),
+	slots: z.array(courseSlotDTO).default([]),
+});
+export type CourseDTO = z.infer<typeof courseDTO>;
+
+/**
+ * Update DTO
+ */
+export const moduleSlotUpsertDTO = moduleSlotDTO.omit({ id: true });
+export type ModuleSlotUpsertDTO = z.infer<typeof moduleSlotUpsertDTO>;
+
+export const courseSlotUpsertDTO = baseCourseSlotDTO.extend({
+	id: baseCourseSlotDTO.shape.id.optional(),
+	moduleSlots: z.array(moduleSlotUpsertDTO).default([]).optional(),
+});
+export type CourseSlotUpsertDTO = z.infer<typeof courseSlotUpsertDTO>;
+
+export const editCourseDTO = courseDTO.extend({
+	id: courseDTO.shape.id, // required
+	slots: z.array(courseSlotUpsertDTO).optional(),
+});
+export type EditCourseDTO = z.infer<typeof editCourseDTO>;
+
+export const newCourseDTO = courseDTO.omit({ id: true }).extend({
+	slots: z.array(courseSlotUpsertDTO).optional(),
+});
+export type NewCourseDTO = z.infer<typeof newCourseDTO>;
+
+/**
+ * DISPLAY TYPES
+ */
+
+export const moduleSlotDisplay = moduleSlotDTO.extend({
+	display: z.object({
+		name: z.string(),
+		isPublished: z.boolean().optional(),
+	}),
+});
+export type ModuleSlotDisplay = z.infer<typeof moduleSlotDisplay>;
+
+export const courseSlotDisplay = baseCourseSlotDTO.extend({
+	moduleSlots: z.array(moduleSlotDisplay).default([]).optional(),
+	display: z.object({
+		name: z.string(),
+		isPublished: z.boolean().optional(),
+	}),
+});
+export type CourseSlotDisplay = z.infer<typeof courseSlotDisplay>;
+
+export const courseDisplay = courseDTO.extend({
+	slots: z.array(courseSlotDisplay).default([]),
+});
+export type CourseDisplay = z.infer<typeof courseDisplay>;
+
+/**
+ * UI TYPES
+ */
+
+export const uiModuleSlotDisplay = moduleSlotDisplay.extend({
+	clientId: z.string(),
+	id: moduleSlotDisplay.shape.id.optional(),
+});
+export type UiModuleSlotDisplay = z.infer<typeof uiModuleSlotDisplay>;
+
+export const uiCourseSlotDisplay = courseSlotDisplay.extend({
+	clientId: z.string(),
+	id: courseSlotDisplay.shape.id.optional(),
+	moduleSlots: z.array(uiModuleSlotDisplay).default([]).optional(),
+});
+export type UiCourseSlotDisplay = z.infer<typeof uiCourseSlotDisplay>;
+
+export const uiCourseDisplay = courseDisplay.extend({
+	slots: z.array(uiCourseSlotDisplay).default([]).optional(),
+});
+export type UiCourseDisplay = z.infer<typeof uiCourseDisplay>;

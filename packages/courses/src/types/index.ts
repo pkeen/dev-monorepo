@@ -2,12 +2,7 @@ import {
 	Lesson,
 	Module,
 	ModuleOutline,
-	Course,
-	CourseOutline,
-	CourseSlot,
 	ModuleSlot,
-	CreateCourseDTO,
-	EditCourseDTO,
 	CreateModuleDTO,
 	EditModuleDTO,
 	EditLessonDTO,
@@ -15,8 +10,11 @@ import {
 	Video,
 	CreateVideoDTO,
 	EditVideoDTO,
-	CourseDeepOutline,
-	CourseDeepDTO,
+	CourseDeepDisplay,
+	NewCourseDTO,
+	EditCourseDTO,
+	CourseDTO,
+	CourseDisplay,
 } from "validators";
 
 // // Base interfaces for database models
@@ -154,13 +152,14 @@ interface CRUDOerationsComplex<T, C, E, O> extends CRUDOperations<T, C, E> {
 
 export interface CourseCRUD
 	extends CRUDOerationsComplex<
-		Course,
-		CreateCourseDTO,
+		CourseDTO,
+		NewCourseDTO,
 		EditCourseDTO,
-		CourseDeepOutline
+		CourseDeepDisplay
 	> {
-	deepOutline: (id: number) => Promise<CourseDeepOutline | null>;
-	deep: (id: number) => Promise<CourseDeepDTO | null>;
+	deepOutline: (id: number) => Promise<CourseDeepDisplay | null>;
+	deep: (id: number) => Promise<CourseDeepDisplay | null>;
+	display: (id: number) => Promise<CourseDisplay | null>;
 }
 
 export interface ModuleCRUD
@@ -203,14 +202,8 @@ export {
 	Lesson,
 	Module,
 	ModuleSlot,
-	Course,
-	UiCourse,
 	UiModule,
-	UiCourseSlot,
 	UiModuleSlot,
-	CourseSlot,
-	CourseSlotOutline,
-	EditCourseDTO,
 	Video,
 	CreateVideoDTO,
 	EditVideoDTO,

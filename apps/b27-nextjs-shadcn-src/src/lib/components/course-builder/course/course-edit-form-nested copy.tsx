@@ -3,16 +3,11 @@
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-	uiCourseDTO,
-	UiCourse,
 	Lesson,
 	Module,
-	UIDeepCourse,
-	CourseDeepOutline,
-	UIDeepCourseDTO,
-	CourseDeepDTO,
-	UiCourseDeepDTO,
-	uiCourseDeepDTO,
+	CourseDeepDisplay,
+	UiCourseDeep,
+    uiCourseDeep,
 } from "@pete_keen/courses/validators";
 import {
 	Form,
@@ -38,7 +33,7 @@ import { ConfirmDeleteCourseDialog } from "./confirm-delete-course";
 import { SelectExistingModule } from "../utils/select-existing-module";
 import { SelectExistingLesson } from "../utils/select-existing-lesson";
 
-export function withClientIds(course: CourseDeepDTO): UiCourseDeepDTO {
+export function withClientIds(course: CourseDeepDisplay): UiCourseDeep {
 	return {
 		...course,
 		slots: course.slots.map((slot, i) => {
@@ -87,7 +82,7 @@ export function CourseEditForm({
 	existingLessons,
 	existingModules,
 }: {
-	course: CourseDeepDTO;
+	course: CourseDeepDisplay;
 	existingLessons: Lesson[];
 	existingModules: Module[];
 }) {
@@ -99,8 +94,8 @@ export function CourseEditForm({
 	const [isPending, startTransition] = useTransition();
 	const router = useRouter();
 	const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-	const form = useForm<UiCourseDeepDTO>({
-		resolver: zodResolver(uiCourseDeepDTO),
+	const form = useForm<UiCourseDeep>({
+		resolver: zodResolver(uiCourseDeep),
 		defaultValues,
 	});
 
@@ -109,7 +104,7 @@ export function CourseEditForm({
 		name: "slots",
 	});
 
-	const onSubmit = (values: UIDeepCourse) => {
+	const onSubmit = (values: UiCourseDeep) => {
 		console.log(values);
 		startTransition(async () => {
 			try {

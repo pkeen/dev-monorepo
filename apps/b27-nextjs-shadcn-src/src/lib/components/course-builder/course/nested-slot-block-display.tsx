@@ -7,6 +7,9 @@ import {
 	UiSlotDeep,
 	UiModuleSlotDeep,
 	UiCourseDeep,
+	UiCourseSlotDisplay,
+	UiCourseDisplay,
+	UiModuleSlotDisplay,
 } from "@pete_keen/courses/validators";
 import {
 	DndContext,
@@ -23,11 +26,10 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useFieldArray, useFormContext } from "react-hook-form";
-import { index } from "drizzle-orm/pg-core";
 
 interface SlotBlockProps {
 	// type: "module" | "lesson";
-	slot: UiSlotDeep;
+	slot: UiCourseSlotDisplay;
 	onClick: () => void;
 	isDragging?: boolean;
 	index: number; // Optional for DnD later
@@ -39,7 +41,7 @@ export function NestedSlotBlock({
 	isDragging,
 	index,
 }: SlotBlockProps) {
-	if (slot.content.type === "module") {
+	if (slot.moduleId) {
 		return moduleSlotBlock({
 			slot,
 			onClick,
@@ -48,7 +50,7 @@ export function NestedSlotBlock({
 		});
 	}
 
-	if (slot.content.type === "lesson") {
+	if (slot.lessonId) {
 		return lessonSlotBlock({
 			slot,
 			onClick,
@@ -64,7 +66,7 @@ const moduleSlotBlock = ({
 	onClick,
 	isDragging,
 }: {
-	slot: UiSlotDeep;
+	slot: UiCourseSlotDisplay;
 	index: number;
 	onClick: () => void;
 	isDragging?: boolean;
@@ -82,9 +84,9 @@ const moduleSlotBlock = ({
 			<div className="flex flex-col items-center gap-3">
 				<div className="flex flex-row items-center gap-3">
 					<span className="text-2xl">📚</span>
-					<div className="font-medium">{slot.content.name}</div>
+					<div className="font-medium">{slot.display.name}</div>
 				</div>
-				{slot.content.type === "module" && (
+				{slot.moduleSlots && (
 					<ModuleSlotList
 						parentIndex={index}
 						// move={move}
@@ -104,7 +106,7 @@ const lessonSlotBlock = ({
 	onClick,
 	isDragging,
 }: {
-	slot: UiSlotDeep;
+	slot: UiCourseSlotDisplay;
 	onClick: () => void;
 	isDragging?: boolean;
 }) => {
@@ -120,7 +122,7 @@ const lessonSlotBlock = ({
 		>
 			<div className="flex flex-row items-center gap-3">
 				<span className="text-2xl">🎓</span>
-				<div className="font-medium">{slot.content.name}</div>
+				<div className="font-medium">{slot.display.name}</div>
 			</div>
 
 			<Button size="sm" variant="outline">
@@ -131,18 +133,19 @@ const lessonSlotBlock = ({
 };
 
 const ModuleSlotList = ({ parentIndex }: { parentIndex: number }) => {
-	const { getValues, setValue, control } = useFormContext<UiCourseDeep>();
+	const { getValues, setValue, control } = useFormContext<UiCourseDisplay>();
 
 	const { fields: moduleSlots, move } = useFieldArray<
-		UiCourseDeep, // full form schema
-		`slots.${number}.content.moduleSlots`, // field name path
+		UiCourseDisplay, // full form schema
+		`slots.${number}.moduleSlots`, // field name path
 		string // item index
 	>({
 		control,
-		name: `slots.${parentIndex}.content.moduleSlots` as const,
+		name: `slots.${parentIndex}.moduleSlots` as const,
 	});
 
-	const safeModuleSlots = moduleSlots as unknown as Array<UiModuleSlotDeep>;
+	const safeModuleSlots =
+		moduleSlots as unknown as Array<UiModuleSlotDisplay>;
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -160,13 +163,13 @@ const ModuleSlotList = ({ parentIndex }: { parentIndex: number }) => {
 		move(oldIndex, newIndex);
 
 		const updated = (
-			getValues(`slots.${parentIndex}.content.moduleSlots`) ?? []
+			getValues(`slots.${parentIndex}.moduleSlots`) ?? []
 		).map((slot, i) => ({
 			...slot,
 			order: i,
 		}));
 
-		setValue(`slots.${parentIndex}.content.moduleSlots`, updated);
+		setValue(`slots.${parentIndex}.moduleSlots`, updated);
 	};
 
 	return (
@@ -191,7 +194,7 @@ const SortableLesson = ({
 	moduleSlot,
 	index,
 }: {
-	moduleSlot: UiModuleSlotDeep;
+	moduleSlot: UiModuleSlotDisplay;
 	index: number;
 }) => {
 	const {
@@ -218,7 +221,7 @@ const SortableLesson = ({
 		>
 			<div className="flex flex-row items-center gap-3">
 				<span className="text-2xl">🎓</span>
-				<div className="font-medium">{moduleSlot.content.name}</div>
+				<div className="font-medium">{moduleSlot.display.name}</div>
 			</div>
 		</div>
 	);

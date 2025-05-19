@@ -33,6 +33,9 @@ import {
 	DeepModuleSlotOutline,
 	CourseSlotDeepOutline,
 	CourseDeepOutline,
+	SlotDeepDTO,
+	ModuleSlotDeepDTO,
+	CourseDeepDTO,
 } from "validators";
 
 const defaultSchema = createSchema();
@@ -713,6 +716,143 @@ const createCourseRepo = (
 
 	const outline = deepOutline;
 
+	const deep = async (id: number) => {
+		const rows = await db
+			.select({
+				id: schema.course.id,
+				userId: schema.course.userId,
+				title: schema.course.title,
+				description: schema.course.description,
+				isPublished: schema.course.isPublished,
+				courseSlotId: schema.courseSlot.id,
+				courseSlotOrder: schema.courseSlot.order,
+				moduleId: schema.courseSlot.moduleId,
+				lessonId: schema.courseSlot.lessonId,
+				moduleName: schema.module.name,
+				moduleIsPublished: schema.module.isPublished,
+				lessonName: schema.lesson.name,
+				lessonIsPublished: schema.lesson.isPublished,
+			})
+			.from(schema.course)
+			.leftJoin(
+				schema.courseSlot,
+				eq(schema.courseSlot.courseId, schema.course.id)
+			)
+			.leftJoin(
+				schema.module,
+				eq(schema.module.id, schema.courseSlot.moduleId)
+			)
+			.leftJoin(
+				schema.lesson,
+				eq(schema.lesson.id, schema.courseSlot.lessonId)
+			)
+			.where(eq(schema.course.id, id))
+			.orderBy(schema.courseSlot.order);
+
+		if (rows.length === 0) return null;
+
+		console.log("Course slots", rows);
+
+		const moduleIds = new Set<number>();
+		rows.forEach((row) => {
+			if (row.moduleId !== null) moduleIds.add(row.moduleId);
+		});
+
+		console.log("Module IDs", moduleIds);
+
+		// ✅ Fetch all module slots in one query
+		const moduleLessons = await db
+			.select({
+				moduleSlotId: schema.moduleSlot.id,
+				order: schema.moduleSlot.order,
+				moduleId: schema.moduleSlot.moduleId,
+				lessonId: schema.moduleSlot.lessonId,
+				lessonName: schema.lesson.name,
+				lessonIsPublished: schema.lesson.isPublished,
+			})
+			.from(schema.moduleSlot)
+			.leftJoin(
+				schema.lesson,
+				eq(schema.lesson.id, schema.moduleSlot.lessonId)
+			)
+			.where(inArray(schema.moduleSlot.moduleId, [...moduleIds]))
+			.orderBy(schema.moduleSlot.moduleId, schema.moduleSlot.order);
+
+		console.log("Module lessons", moduleLessons);
+
+		// 🔁 Group by moduleId
+		const moduleSlotMap = new Map<number, ModuleSlotDeepDTO[]>();
+		for (const row of moduleLessons) {
+			if (!moduleSlotMap.has(row.moduleId)) {
+				moduleSlotMap.set(row.moduleId, []);
+			}
+			moduleSlotMap.get(row.moduleId)!.push({
+				id: row.moduleSlotId,
+				order: row.order,
+				lessonId: row.lessonId,
+				content: {
+					name: row.lessonName ?? "",
+					isPublished: row.lessonIsPublished ?? false,
+				},
+			});
+		}
+
+		const courseSlots: SlotDeepDTO[] = rows
+			.filter((r) => r.courseSlotId !== null)
+			.map((row) => {
+				const isModule = !!row.moduleId;
+				return {
+					id: row.courseSlotId!,
+					courseId: row.id,
+					order: row.courseSlotOrder!,
+					moduleId: row.moduleId ?? null,
+					lessonId: row.lessonId ?? null,
+					content: isModule
+						? {
+								id: row.moduleId!,
+								name: row.moduleName!,
+								isPublished: row.moduleIsPublished!,
+								type: "module" as const,
+								moduleSlots:
+									moduleSlotMap.get(row.moduleId!) ?? [],
+						  }
+						: {
+								id: row.lessonId!,
+								name: row.lessonName!,
+								isPublished: row.lessonIsPublished!,
+								type: "lesson" as const,
+						  },
+				};
+			});
+
+		// 🔁 Attach nested lessons to modules in courseSlots
+		for (const slot of courseSlots) {
+			if (slot.moduleId && slot.content.type === "module") {
+				slot.content.moduleSlots =
+					moduleSlotMap.get(slot.moduleId) ?? [];
+			}
+		}
+
+		const {
+			title,
+			description,
+			isPublished,
+			userId,
+			id: courseId,
+		} = rows[0];
+
+		const deepOutline: CourseDeepDTO = {
+			id: courseId,
+			userId,
+			title,
+			description,
+			isPublished,
+			slots: courseSlots,
+		};
+
+		return deepOutline;
+	};
+
 	const create = async (input: CreateCourseDTO) => {
 		// Step 1: Create the course
 		const [createdCourse] = await db
@@ -807,6 +947,7 @@ const createCourseRepo = (
 		destroy,
 		outline,
 		deepOutline,
+		deep,
 		// updateWithSlots,
 	};
 };

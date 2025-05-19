@@ -8,6 +8,11 @@ import {
 	Lesson,
 	Module,
 	UIDeepCourse,
+	CourseDeepOutline,
+	UIDeepCourseDTO,
+	CourseDeepDTO,
+	UiCourseDeepDTO,
+	uiCourseDeepDTO,
 } from "@pete_keen/courses/validators";
 import {
 	Form,
@@ -33,14 +38,47 @@ import { ConfirmDeleteCourseDialog } from "./confirm-delete-course";
 import { SelectExistingModule } from "../utils/select-existing-module";
 import { SelectExistingLesson } from "../utils/select-existing-lesson";
 
-export function withClientIds(course: UIDeepCourse): UIDeepCourse {
+export function withClientIds(course: CourseDeepDTO): UiCourseDeepDTO {
 	return {
 		...course,
-		slots: course.slots.map((slot, i) => ({
-			...slot,
-			clientId:
-				slot.clientId ?? (slot.id ? `slot-${slot.id}` : `new-${i}`),
-		})),
+		slots: course.slots.map((slot, i) => {
+			const topLevelClientId = slot.id
+				? `slot-${slot.id}`
+				: `new-slot-${i}`;
+
+			if (slot.content.type === "lesson") {
+				// Top-level lesson
+				return {
+					...slot,
+					clientId: topLevelClientId,
+					content: {
+						...slot.content,
+					},
+				};
+			} else {
+				// Module with nested lesson slots
+				const enrichedModule = {
+					...slot.content,
+					moduleSlots: slot.content.moduleSlots.map(
+						(lessonSlot, j) => ({
+							...lessonSlot,
+							clientId: lessonSlot.id
+								? `lesson-${lessonSlot.id}`
+								: `new-lesson-${i}-${j}`,
+							content: {
+								...lessonSlot.content,
+							},
+						})
+					),
+				};
+
+				return {
+					...slot,
+					clientId: topLevelClientId,
+					content: enrichedModule,
+				};
+			}
+		}),
 	};
 }
 
@@ -49,7 +87,7 @@ export function CourseEditForm({
 	existingLessons,
 	existingModules,
 }: {
-	course: UIDeepCourse;
+	course: CourseDeepDTO;
 	existingLessons: Lesson[];
 	existingModules: Module[];
 }) {
@@ -61,8 +99,8 @@ export function CourseEditForm({
 	const [isPending, startTransition] = useTransition();
 	const router = useRouter();
 	const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-	const form = useForm({
-		resolver: zodResolver(uiCourseDTO),
+	const form = useForm<UiCourseDeepDTO>({
+		resolver: zodResolver(uiCourseDeepDTO),
 		defaultValues,
 	});
 
@@ -200,6 +238,7 @@ export function CourseEditForm({
 										content: {
 											id: item.id,
 											name: item.name,
+											type: "module",
 											isPublished: item.isPublished,
 										},
 									});
@@ -236,6 +275,7 @@ export function CourseEditForm({
 										moduleId: null,
 										content: {
 											id: item.id,
+											type: "lesson",
 											name: item.name,
 											isPublished: item.isPublished,
 										},

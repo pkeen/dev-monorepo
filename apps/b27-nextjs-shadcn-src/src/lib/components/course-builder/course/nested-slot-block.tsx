@@ -3,21 +3,50 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils"; // if you have className utils (optional)
-import { UIDeepCourseSlotOutline } from "@pete_keen/courses/validators";
+import {
+	UIDeepCourseSlotOutline,
+	DeepModuleSlotOutline,
+	UiSlotDeep,
+	UiModuleSlotDeepDTO,
+	UiCourseDeepDTO,
+} from "@pete_keen/courses/validators";
+import {
+	DndContext,
+	DragEndEvent,
+	PointerSensor,
+	useSensor,
+	useSensors,
+} from "@dnd-kit/core";
+import {
+	SortableContext,
+	verticalListSortingStrategy,
+	arrayMove,
+	useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { useFieldArray, useFormContext } from "react-hook-form";
+import { index } from "drizzle-orm/pg-core";
 
 interface SlotBlockProps {
 	// type: "module" | "lesson";
-	slot: UIDeepCourseSlotOutline;
+	slot: UiSlotDeep;
 	onClick: () => void;
-	isDragging?: boolean; // Optional for DnD later
+	isDragging?: boolean;
+	index: number; // Optional for DnD later
 }
 
-export function NestedSlotBlock({ slot, onClick, isDragging }: SlotBlockProps) {
+export function NestedSlotBlock({
+	slot,
+	onClick,
+	isDragging,
+	index,
+}: SlotBlockProps) {
 	if (slot.content.type === "module") {
 		return moduleSlotBlock({
 			slot,
 			onClick,
 			isDragging,
+			index,
 		});
 	}
 
@@ -33,10 +62,12 @@ export function NestedSlotBlock({ slot, onClick, isDragging }: SlotBlockProps) {
 
 const moduleSlotBlock = ({
 	slot,
+	index,
 	onClick,
 	isDragging,
 }: {
-	slot: UIDeepCourseSlotOutline;
+	slot: UiSlotDeep;
+	index: number;
 	onClick: () => void;
 	isDragging?: boolean;
 }) => {
@@ -51,26 +82,16 @@ const moduleSlotBlock = ({
 			onClick={onClick}
 		>
 			<div className="flex flex-col items-center gap-3">
-				<div className="flex items-center gap-3">
+				<div className="flex flex-row items-center gap-3">
 					<span className="text-2xl">📚</span>
 					<div className="font-medium">{slot.content.name}</div>
 				</div>
-				{slot.content.type === "module" &&
-					slot.content.slots.length > 0 && (
-						<span className="text-xs text-muted-foreground">
-							<ul>
-								{slot.content.slots.map((slot) => {
-									if (slot.content.name) {
-										return (
-											<li key={slot.id}>
-												{slot.content.name}
-											</li>
-										);
-									}
-								})}
-							</ul>
-						</span>
-					)}
+				{slot.content.type === "module" && (
+					<ModuleSlotList
+						parentIndex={index}
+						// move={move}
+					/>
+				)}
 			</div>
 
 			<Button size="sm" variant="outline">
@@ -85,7 +106,7 @@ const lessonSlotBlock = ({
 	onClick,
 	isDragging,
 }: {
-	slot: UIDeepCourseSlotOutline;
+	slot: UiSlotDeep;
 	onClick: () => void;
 	isDragging?: boolean;
 }) => {
@@ -99,7 +120,7 @@ const lessonSlotBlock = ({
 			)}
 			onClick={onClick}
 		>
-			<div className="flex items-center gap-3">
+			<div className="flex flex-row items-center gap-3">
 				<span className="text-2xl">🎓</span>
 				<div className="font-medium">{slot.content.name}</div>
 			</div>
@@ -108,5 +129,100 @@ const lessonSlotBlock = ({
 				Edit
 			</Button>
 		</Card>
+	);
+};
+
+const ModuleSlotList = ({ parentIndex }: { parentIndex: number }) => {
+	const { getValues, setValue, control } = useFormContext<UiCourseDeepDTO>();
+
+	const { fields: moduleSlots, move } = useFieldArray<
+		UiCourseDeepDTO, // full form schema
+		`slots.${number}.content.moduleSlots`, // field name path
+		string // item index
+	>({
+		control,
+		name: `slots.${parentIndex}.content.moduleSlots` as const,
+	});
+
+	const safeModuleSlots =
+		moduleSlots as unknown as Array<UiModuleSlotDeepDTO>;
+
+	const sensors = useSensors(
+		useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+	);
+
+	const handleDragEnd = (event: DragEndEvent) => {
+		const { active, over } = event;
+
+		if (!over || active.id === over.id) return;
+
+		const oldIndex = moduleSlots.findIndex((f) => f.clientId === active.id);
+		const newIndex = moduleSlots.findIndex((f) => f.clientId === over.id);
+		if (oldIndex === -1 || newIndex === -1) return;
+
+		move(oldIndex, newIndex);
+
+		const updated = (
+			getValues(`slots.${parentIndex}.content.moduleSlots`) ?? []
+		).map((slot, i) => ({
+			...slot,
+			order: i,
+		}));
+
+		setValue(`slots.${parentIndex}.content.moduleSlots`, updated);
+	};
+
+	return (
+		<DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+			<SortableContext
+				items={safeModuleSlots.map((f) => f.clientId)}
+				strategy={verticalListSortingStrategy}
+			>
+				{safeModuleSlots.map((slot, index) => (
+					<SortableLesson
+						key={slot.clientId}
+						moduleSlot={slot}
+						index={index}
+					/>
+				))}
+			</SortableContext>
+		</DndContext>
+	);
+};
+
+const SortableLesson = ({
+	moduleSlot,
+	index,
+}: {
+	moduleSlot: UiModuleSlotDeepDTO;
+	index: number;
+}) => {
+	const {
+		attributes,
+		listeners,
+		setNodeRef,
+		transform,
+		transition,
+		isDragging,
+	} = useSortable({ id: moduleSlot.clientId }); // Need to create a clientId for this
+
+	const style = {
+		transform: CSS.Transform.toString(transform),
+		transition,
+	};
+
+	return (
+		<div
+			className="space-y-2"
+			ref={setNodeRef}
+			style={style}
+			{...attributes}
+			{...listeners}
+		>
+			<div className="flex flex-row items-center gap-3">
+				<span className="text-2xl">🎓</span>
+				<div className="font-medium">{moduleSlot.content.name}</div>
+			</div>
+		</div>
 	);
 };

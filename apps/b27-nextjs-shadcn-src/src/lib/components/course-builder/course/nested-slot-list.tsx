@@ -14,21 +14,21 @@ import {
 	useSortable,
 } from "@dnd-kit/sortable";
 import { useFormContext } from "react-hook-form";
-import { UIDeepCourseSlotOutline } from "@pete_keen/courses/validators";
+import { UiSlotDeep } from "@pete_keen/courses/validators";
 // import { ModuleSlotOutline } from "@pete_keen/courses/types";
 import { CSS } from "@dnd-kit/utilities";
 import { NestedSlotBlock } from "./nested-slot-block";
 
 interface SlotListProps {
-	fields: UIDeepCourseSlotOutline[];
+	fields: UiSlotDeep[];
 	move: (from: number, to: number) => void;
 }
 
-const SortableSlotBlock = ({
+const NestedSortableSlotBlock = ({
 	field,
 	index,
 }: {
-	field: UIDeepCourseSlotOutline; // May need to change to create type to allow for no ids
+	field: UiSlotDeep; // May need to change to create type to allow for no ids
 	index: number;
 }) => {
 	const {
@@ -53,6 +53,7 @@ const SortableSlotBlock = ({
 				onClick={() => {
 					/* open edit modal */
 				}}
+				index={index}
 				isDragging={isDragging}
 			/>
 		</div>
@@ -79,7 +80,7 @@ export const NestedSortableSlotList = ({ fields, move }: SlotListProps) => {
 
 		// Reassign `.order` fields in form state after reordering
 		const updatedSlots = getValues("slots").map(
-			(slot: UIDeepCourseSlotOutline, index: number) => ({
+			(slot: UiSlotDeep, index: number) => ({
 				...slot,
 				order: index,
 			})
@@ -98,7 +99,7 @@ export const NestedSortableSlotList = ({ fields, move }: SlotListProps) => {
 				{fields
 					.sort((a, b) => a.order - b.order)
 					.map((field, index) => (
-						<SortableSlotBlock
+						<NestedSortableSlotBlock
 							key={field.clientId}
 							field={field}
 							index={index}

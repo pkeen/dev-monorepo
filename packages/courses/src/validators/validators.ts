@@ -236,6 +236,14 @@ export const deepModuleSlotOutlineDTO = z.object({
 });
 export type DeepModuleSlotOutline = z.infer<typeof deepModuleSlotOutlineDTO>;
 
+export const deepModuleSlotOutlineWithClientIdsDTO =
+	deepModuleSlotOutlineDTO.extend({
+		clientId: z.string(),
+	});
+export type DeepModuleSlotOutlineWithClientIds = z.infer<
+	typeof deepModuleSlotOutlineWithClientIdsDTO
+>;
+
 export const deepModuleOutlineDTO = z.object({
 	id: z.number(),
 	name: z.string(),
@@ -243,6 +251,13 @@ export const deepModuleOutlineDTO = z.object({
 	slots: z.array(deepModuleSlotOutlineDTO),
 });
 export type DeepModuleOutline = z.infer<typeof deepModuleOutlineDTO>;
+
+export const deepModuleOutlineWithClientIdsDTO = deepModuleOutlineDTO.extend({
+	clientId: z.string(),
+});
+export type DeepModuleOutlineWithClientIds = z.infer<
+	typeof deepModuleOutlineWithClientIdsDTO
+>;
 
 // Union type: either a lesson or a module
 export const deepCourseSlotOutlineDTO = z.object({
@@ -258,8 +273,17 @@ export const deepCourseSlotOutlineDTO = z.object({
 });
 export type CourseSlotDeepOutline = z.infer<typeof deepCourseSlotOutlineDTO>;
 
-export const UIDeepCourseSlotOutlineDTO = deepCourseSlotOutlineDTO.extend({
+export const UIDeepCourseSlotOutlineDTO = z.object({
 	clientId: z.string(),
+	content: z.union([
+		lessonOutlineDTO.extend({ type: z.literal("lesson") }),
+		deepModuleOutlineWithClientIdsDTO.extend({ type: z.literal("module") }),
+	]),
+	id: z.number().optional(),
+	courseId: z.number(),
+	order: z.number(),
+	moduleId: z.number().nullable(),
+	lessonId: z.number().nullable(),
 });
 export type UIDeepCourseSlotOutline = z.infer<
 	typeof UIDeepCourseSlotOutlineDTO
@@ -328,3 +352,133 @@ export const createVideoDTO = videoDTO.omit({ id: true });
 export type CreateVideoDTO = z.infer<typeof createVideoDTO>;
 export const editVideoDTO = videoDTO;
 export type EditVideoDTO = z.infer<typeof editVideoDTO>;
+
+/*
+ * NEW COURSE
+ */
+export const moduleSlotDeepDTO = z.object({
+	id: z.number(),
+	lessonId: z.number(),
+	order: z.number(),
+	content: z.object({
+		// id: z.number(),
+		name: z.string(),
+		isPublished: z.boolean().optional(),
+	}),
+});
+export type ModuleSlotDeepDTO = z.infer<typeof moduleSlotDeepDTO>;
+
+export const slotDeepDTO = z
+	.object({
+		id: z.number(),
+		courseId: z.number(),
+		moduleId: z.number().nullable(),
+		lessonId: z.number().nullable(),
+		order: z.number(),
+		content: z.union([
+			z.object({
+				type: z.literal("lesson"),
+				id: z.number(),
+				name: z.string(),
+				isPublished: z.boolean().optional(),
+			}),
+			z.object({
+				type: z.literal("module"),
+				id: z.number(),
+				name: z.string(),
+				isPublished: z.boolean().optional(),
+				moduleSlots: z.array(moduleSlotDeepDTO).default([]),
+			}),
+		]),
+	})
+	.superRefine((data, ctx) => {
+		const bothNull = data.moduleId === null && data.lessonId === null;
+		const bothSet = data.moduleId !== null && data.lessonId !== null;
+
+		if (bothNull || bothSet) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message:
+					"You must provide either a moduleId or lessonId, but not both or neither.",
+				path: ["moduleId"],
+			});
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message:
+					"You must provide either a moduleId or lessonId, but not both or neither.",
+				path: ["lessonId"],
+			});
+		}
+	});
+export type SlotDeepDTO = z.infer<typeof slotDeepDTO>;
+
+export const courseDeepDTO = z.object({
+	id: z.number(),
+	userId: z.string(),
+	title: z.string(),
+	description: z.string(),
+	isPublished: z.boolean().optional(),
+	slots: z.array(slotDeepDTO).default([]),
+});
+export type CourseDeepDTO = z.infer<typeof courseDeepDTO>;
+
+export const uiModuleSlotDeepDTO = moduleSlotDeepDTO.extend({
+	clientId: z.string(),
+});
+export type UiModuleSlotDeepDTO = z.infer<typeof uiModuleSlotDeepDTO>;
+
+export const uiSlotDeepDTO = z
+	.object({
+		id: z.number(),
+		courseId: z.number(),
+		moduleId: z.number().nullable(),
+		lessonId: z.number().nullable(),
+		order: z.number(),
+		clientId: z.string(),
+		content: z.union([
+			z.object({
+				type: z.literal("lesson"),
+				id: z.number(),
+				name: z.string(),
+				isPublished: z.boolean().optional(),
+			}),
+			z.object({
+				type: z.literal("module"),
+				id: z.number(),
+				name: z.string(),
+				isPublished: z.boolean().optional(),
+				moduleSlots: z.array(moduleSlotDeepDTO).default([]).optional(),
+			}),
+		]),
+	})
+	.superRefine((data, ctx) => {
+		if (
+			(data.moduleId === null && data.lessonId === null) ||
+			(data.moduleId !== null && data.lessonId !== null)
+		) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message:
+					"You must provide either a moduleId or lessonId, not both or neither.",
+				path: ["moduleId"],
+			});
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message:
+					"You must provide either a moduleId or lessonId, not both or neither.",
+				path: ["lessonId"],
+			});
+		}
+	});
+
+export type UiSlotDeep = z.infer<typeof uiSlotDeepDTO>;
+
+export const uiCourseDeepDTO = z.object({
+	id: z.number(),
+	userId: z.string(),
+	title: z.string(),
+	description: z.string(),
+	isPublished: z.boolean().optional(),
+	slots: z.array(uiSlotDeepDTO).default([]).optional(),
+});
+export type UiCourseDeepDTO = z.infer<typeof uiCourseDeepDTO>;

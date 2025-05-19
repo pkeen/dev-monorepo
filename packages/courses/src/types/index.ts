@@ -16,6 +16,7 @@ import {
 	CreateVideoDTO,
 	EditVideoDTO,
 	CourseDeepOutline,
+	CourseDeepDTO,
 } from "validators";
 
 // // Base interfaces for database models
@@ -159,6 +160,7 @@ export interface CourseCRUD
 		CourseDeepOutline
 	> {
 	deepOutline: (id: number) => Promise<CourseDeepOutline | null>;
+	deep: (id: number) => Promise<CourseDeepDTO | null>;
 }
 
 export interface ModuleCRUD

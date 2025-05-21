@@ -4,10 +4,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	Lesson,
-	Module,
-	CourseDeepDisplay,
-	UiCourseDeep,
-	uiCourseDeep,
+	ModuleDTO,
 	CourseDisplay,
 	UiCourseDisplay,
 	uiCourseDisplay,
@@ -88,7 +85,7 @@ export function CourseEditForm({
 }: {
 	course: CourseDisplay;
 	existingLessons: Lesson[];
-	existingModules: Module[];
+	existingModules: ModuleDTO[];
 }) {
 	// 🟣 1. Build a *stable* clientId without randomness
 	const defaultValues = useMemo(() => courseDisplayToUi(course), [course]);

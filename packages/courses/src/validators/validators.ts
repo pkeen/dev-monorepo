@@ -13,7 +13,7 @@ export const moduleSlotDTO = z.object({
 	lessonId: z.number(),
 	order: z.number(),
 });
-export type ModuleSlot = z.infer<typeof moduleSlotDTO>;
+export type ModuleSlotDTO = z.infer<typeof moduleSlotDTO>;
 export const moduleDTO = z.object({
 	id: z.number(),
 	name: z.string(),
@@ -21,7 +21,7 @@ export const moduleDTO = z.object({
 	isPublished: z.boolean().optional(),
 	slots: z.array(moduleSlotDTO).default([]),
 });
-export type Module = z.infer<typeof moduleDTO>;
+export type ModuleDTO = z.infer<typeof moduleDTO>;
 
 /*
  ****** Create types ******

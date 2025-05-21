@@ -37,6 +37,8 @@ import {
 	CourseSlotDisplay,
 	ModuleSlotDisplay,
 	SlotDeepDisplay,
+	CourseSlotDTO,
+	ModuleSlotDTO,
 } from "validators";
 
 const defaultSchema = createSchema();
@@ -451,11 +453,8 @@ const createCRUD = (
 
 			// After syncing course slots, now handle module slots
 			for (const slot of incomingSlots) {
-				if (slot.moduleId && slot.content.type === "module") {
-					await syncModuleSlots(
-						slot.moduleId,
-						slot.content.moduleSlots
-					);
+				if (slot.moduleId && slot.moduleSlots) {
+					await syncModuleSlots(slot.moduleId, slot.moduleSlots);
 				}
 			}
 		};
@@ -492,30 +491,88 @@ const createCRUD = (
 			return Array.from(courseMap.values());
 		};
 
+		// const get = async (id: number) => {
+		// 	const results = await db
+		// 		.select({
+		// 			course: schema.course,
+		// 			slot: schema.courseSlot,
+		// 			moduleSlot: schema.moduleSlot,
+		// 		})
+		// 		.from(schema.course)
+		// 		.leftJoin(
+		// 			schema.courseSlot,
+		// 			eq(schema.course.id, schema.courseSlot.courseId)
+		// 		)
+		// 		.leftJoin(
+		// 			schema.moduleSlot,
+		// 			eq(schema.courseSlot.moduleId, schema.moduleSlot.moduleId)
+		// 		)
+		// 		.where(eq(schema.course.id, id))
+		// 		.orderBy(schema.courseSlot.order);
+
+		// 	if (results.length === 0) return null;
+
+		// 	const { course } = results[0];
+
+		// 	const slots = results
+		// 		.map((r) => r.slot)
+		// 		.filter((slot): slot is CourseSlotDTO => slot !== null); // ← 🔑 this makes sure slot is NOT null
+
+		// 	return {
+		// 		...course,
+		// 		slots,
+		// 	};
+		// };
+
 		const get = async (id: number) => {
 			const results = await db
 				.select({
 					course: schema.course,
 					slot: schema.courseSlot,
+					moduleSlot: schema.moduleSlot,
 				})
 				.from(schema.course)
 				.leftJoin(
 					schema.courseSlot,
 					eq(schema.course.id, schema.courseSlot.courseId)
 				)
-				.where(eq(schema.course.id, id));
+				.leftJoin(
+					schema.moduleSlot,
+					eq(schema.courseSlot.moduleId, schema.moduleSlot.moduleId)
+				)
+				.where(eq(schema.course.id, id))
+				.orderBy(schema.courseSlot.order, schema.moduleSlot.order); // Order module slots too
 
 			if (results.length === 0) return null;
 
 			const { course } = results[0];
 
-			const slots = results
-				.map((r) => r.slot)
-				.filter((slot): slot is CourseSlot => slot !== null); // ← 🔑 this makes sure slot is NOT null
+			const slotMap = new Map<
+				number,
+				CourseSlotDTO & { moduleSlots?: ModuleSlotDTO[] }
+			>();
+
+			for (const row of results) {
+				const slot = row.slot;
+				const moduleSlot = row.moduleSlot;
+
+				if (!slot) continue;
+
+				if (!slotMap.has(slot.id)) {
+					slotMap.set(slot.id, {
+						...slot,
+						moduleSlots: [],
+					});
+				}
+
+				if (slot.moduleId && moduleSlot) {
+					slotMap.get(slot.id)!.moduleSlots!.push(moduleSlot);
+				}
+			}
 
 			return {
 				...course,
-				slots,
+				slots: Array.from(slotMap.values()),
 			};
 		};
 
@@ -1095,9 +1152,9 @@ const createCRUD = (
 			create,
 			update,
 			destroy,
-			outline,
-			deepOutline,
-			deep,
+			// outline,
+			// deepOutline,
+			// deep,
 			display,
 			// updateWithSlots,
 		};

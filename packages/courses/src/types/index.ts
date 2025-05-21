@@ -145,7 +145,7 @@ interface CRUDOperations<T, C, E> {
 }
 
 interface CRUDOerationsComplex<T, C, E, O> extends CRUDOperations<T, C, E> {
-	outline: (id: number) => Promise<O | null>;
+	display: (id: number) => Promise<O | null>;
 	// update: (data: E) => Promise<O>;
 	// updateWithSlots: (data: Partial<S>) => Promise<S | null>;
 }
@@ -155,11 +155,11 @@ export interface CourseCRUD
 		CourseDTO,
 		NewCourseDTO,
 		EditCourseDTO,
-		CourseDeepDisplay
+		CourseDisplay
 	> {
-	deepOutline: (id: number) => Promise<CourseDeepDisplay | null>;
-	deep: (id: number) => Promise<CourseDeepDisplay | null>;
-	display: (id: number) => Promise<CourseDisplay | null>;
+	// deepOutline: (id: number) => Promise<CourseDeepDisplay | null>;
+	// deep: (id: number) => Promise<CourseDeepDisplay | null>;
+	// display: (id: number) => Promise<CourseDisplay | null>;
 }
 
 export interface ModuleCRUD

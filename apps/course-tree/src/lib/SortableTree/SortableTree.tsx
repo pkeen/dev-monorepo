@@ -34,7 +34,11 @@ import {
 	removeChildrenOf,
 	setProperty,
 } from "./utilities";
-import type { FlattenedItem, SensorContext, TreeItems } from "./types";
+import type {
+	FlattenedItem,
+	SensorContext,
+	TreeItems,
+} from "./components/types";
 import { sortableTreeKeyboardCoordinates } from "./keyboardCoordinates";
 import { SortableTreeItem } from "./components";
 

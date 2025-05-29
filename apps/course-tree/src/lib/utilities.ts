@@ -22,3 +22,4 @@ export function courseDisplayToUi(course: CourseDisplay): UiCourseDisplay {
 		}),
 	};
 }
+

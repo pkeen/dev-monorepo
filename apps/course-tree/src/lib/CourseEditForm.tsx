@@ -11,7 +11,7 @@ import { courseDisplayToUi } from "./utilities";
 import { SortableTree } from "./SortableTree";
 
 export function CourseEditForm({course}: {course: CourseDisplay}) {
-	const uiCourse = courseDisplayToUi(course);
+	// const uiCourse = courseDisplayToUi(course);
 
-    return <SortableTree items={uiCourse.slots} />
+    // return <SortableTree defaultItems={uiCourse.slots} />
 }

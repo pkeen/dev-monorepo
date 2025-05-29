@@ -25,9 +25,9 @@ export type SensorContext = RefObject<{
 export interface CourseTreeItem {
 	id: number;
 	type: "module" | "lesson";
-	clientId: string;
+	// clientId: string;
 	name: string;
-	children: TreeItem[]; // type lesson cannot have children
+	children: CourseTreeItem[]; // type lesson cannot have children
 	order: number; // have to see how this works (maybe its just added at saving time
 	moduleId: number | null;
 	lessonId: number | null;
@@ -35,6 +35,7 @@ export interface CourseTreeItem {
 }
 
 export interface FlattenedCourseTreeItem extends CourseTreeItem {
+	clientId: string;
 	parentId: null | string;
 	depth: number;
 	index: number;

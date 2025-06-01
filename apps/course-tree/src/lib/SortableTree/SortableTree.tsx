@@ -316,7 +316,7 @@ export function SortableTree({
 	}
 
 	function handleDragOver({ over }: DragOverEvent) {
-		setOverId(over?.id ?? null);
+		setOverId(over?.id.toString() ?? null);
 	}
 
 	function handleDragEnd({ active, over }: DragEndEvent) {

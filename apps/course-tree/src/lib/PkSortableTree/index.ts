@@ -1,4 +1,4 @@
-export * from "./types";
+export * from "./components/types";
 export * from "./utilities";
 export * from "./server-utilities";
 // export * from "./components";

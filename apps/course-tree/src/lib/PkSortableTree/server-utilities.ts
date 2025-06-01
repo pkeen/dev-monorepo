@@ -1,5 +1,5 @@
 import { UiCourseDisplay, CourseDisplay } from "@pete_keen/courses/validators";
-import { CourseTreeItem, FlattenedCourseTreeItem } from "./types";
+import { CourseTreeItem, FlattenedCourseTreeItem } from "./components/types";
 
 export function courseDisplayToUi(course: CourseDisplay): UiCourseDisplay {
 	return {

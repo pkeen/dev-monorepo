@@ -1,7 +1,7 @@
 "use client";
 
 import { UiCourseDisplay, CourseDisplay } from "@pete_keen/courses/validators";
-import { CourseTreeItem, FlattenedCourseTreeItem } from "./types";
+import { CourseTreeItem, FlattenedCourseTreeItem } from "./components/types";
 import { arrayMove } from "@dnd-kit/sortable";
 import { findItem } from "../SortableTree/utilities";
 
@@ -182,7 +182,7 @@ export function getProjection(
 		}
 
 		if (depth > previousItem.depth) {
-			return previousItem.id;
+			return previousItem.clientId;
 		}
 
 		const newParent = newItems
@@ -210,7 +210,11 @@ export function getMaxDepth({
 	return 0;
 }
 
-export function getMinDepth({ nextItem }: { nextItem: FlattenedCourseTreeItem }) {
+export function getMinDepth({
+	nextItem,
+}: {
+	nextItem: FlattenedCourseTreeItem;
+}) {
 	if (nextItem) {
 		return nextItem.depth;
 	}

@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { CourseTreeItem, FlattenedCourseTreeItem } from "./types";
+import {
+	CourseTreeItem,
+	FlattenedCourseTreeItem,
+	SensorContext,
+} from "./components/types";
 import {
 	flattenTree,
 	getChildCount,
@@ -25,7 +29,6 @@ import {
 	DropAnimation,
 	Modifier,
 	PointerSensor,
-	SensorContext,
 	useSensor,
 	useSensors,
 } from "@dnd-kit/core";
@@ -65,23 +68,27 @@ export function SortableTree({
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const [overId, setOverId] = useState<string | null>(null);
 	const [offsetLeft, setOffsetLeft] = useState(0);
+	// console.log("offsetLeft", offsetLeft);
 	const [currentPosition, setCurrentPosition] = useState<{
 		parentId: string | null;
 		overId: string;
 	} | null>(null);
 
-	const sensorContext = useRef<SensorContext>({
-		activatorEvent: null,
-		active: null,
-		activeNode: null,
-		collisionRect: null,
+	const sensorContext: SensorContext = useRef({
 		items: flattenedItems,
 		offset: offsetLeft,
 	});
 
+	const sortedIds = useMemo(
+		() => flattenedItems.map(({ clientId }) => clientId),
+		[flattenedItems]
+	);
+
 	const activeItem = activeId
 		? flattenedItems.find(({ clientId }) => clientId === activeId)
 		: null;
+
+	// console.log({ activeItem });
 
 	const projected =
 		activeId && overId
@@ -103,14 +110,21 @@ export function SortableTree({
 
 	useEffect(() => {
 		sensorContext.current = {
-			activatorEvent: null,
-			active: null,
-			activeNode: null,
-			collisionRect: null,
 			items: flattenedItems,
 			offset: offsetLeft,
 		};
 	}, [flattenedItems, offsetLeft]);
+
+	console.log("Dragging:", { activeId, overId, projected });
+	// console.log("Flattened items", flattenedItems);
+    // console.log(
+	// 	"Rendering item:",
+	// 	name,
+	// 	"depth:",
+	// 	depth,
+	// 	"parentId:",
+	// 	parentId
+	// );
 
 	// // isClient
 	// const [isClient, setIsClient] = useState(false);
@@ -127,9 +141,17 @@ export function SortableTree({
 	if (!hasMounted) return null;
 
 	return (
-		<DndContext collisionDetection={closestCenter}>
+		<DndContext
+			collisionDetection={closestCenter}
+			sensors={sensors}
+			onDragStart={handleDragStart}
+			onDragMove={handleDragMove}
+			onDragOver={handleDragOver}
+			onDragEnd={handleDragEnd}
+			onDragCancel={handleDragCancel}
+		>
 			<SortableContext
-				items={flattenedItems}
+				items={sortedIds}
 				strategy={verticalListSortingStrategy}
 			>
 				{flattenedItems.map(({ clientId, name, depth }) => (
@@ -168,13 +190,16 @@ export function SortableTree({
 							{activeId && activeItem ? (
 								<SortableTreeItem
 									name={activeItem.name}
-									id={activeId}
+									id={activeItem.clientId}
 									depth={activeItem.depth}
 									clone
 									childCount={
-										getChildCount(items, activeId) + 1
+										getChildCount(
+											items,
+											activeItem.clientId
+										) + 1
 									}
-									value={activeId}
+									value={activeItem.clientId}
 									indentationWidth={indentationWidth}
 								/>
 							) : null}
@@ -189,10 +214,20 @@ export function SortableTree({
 		setItems((items) => removeItem(items, clientId));
 	}
 
-	function handleDragStart(event: DragStartEvent) {
-		const { active } = event;
-		setActiveId(active.id.toString());
-		setOverId(null);
+	function handleDragStart({ active: { id: activeId } }: DragStartEvent) {
+		setActiveId(activeId.toString());
+		setOverId(activeId.toString());
+
+		const activeItem = flattenedItems.find(({ id }) => id === activeId);
+
+		if (activeItem) {
+			setCurrentPosition({
+				parentId: activeItem.parentId,
+				overId: activeId.toString(),
+			});
+		}
+
+		document.body.style.setProperty("cursor", "grabbing");
 	}
 
 	function handleDragMove({ delta }: DragMoveEvent) {
@@ -200,55 +235,105 @@ export function SortableTree({
 	}
 
 	function handleDragOver({ over }: DragOverEvent) {
-		setOverId(over?.id ?? null);
+		const newOverId = over?.id?.toString() ?? null;
+		console.log("handleDragOver → overId:", newOverId);
+		setOverId(newOverId);
 	}
 
-	function handleDragEnd(event: DragEndEvent) {
-		const { active, over } = event;
-		if (over?.id.toString() === active.id.toString()) {
-			return;
-		}
+	// function handleDragEnd({ active, over }: DragEndEvent) {
+	// 	resetState();
 
-		const activeItem = flattenedItems.find(
-			(item) => item.id.toString() === active.id.toString()
+	// 	if (projected && over) {
+	// 		const { depth, parentId } = projected;
+	// 		const clonedItems: FlattenedCourseTreeItem[] = JSON.parse(
+	// 			JSON.stringify(flattenTree(items))
+	// 		);
+	// 		const overId = over.id.toString();
+	// 		const activeId = active.id.toString();
+
+	// 		const overIndex = clonedItems.findIndex(
+	// 			(item) => item.clientId === overId
+	// 		);
+	// 		const activeIndex = clonedItems.findIndex(
+	// 			(item) => item.clientId === activeId
+	// 		);
+
+	// 		const activeTreeItem = clonedItems[activeIndex];
+
+	// 		clonedItems[activeIndex] = {
+	// 			...activeTreeItem,
+	// 			depth,
+	// 			parentId: parentId?.toString() ?? null,
+	// 		};
+
+	// 		const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
+	// 		const newItems = buildTree(sortedItems);
+
+	// 		setItems(newItems);
+	// 	}
+	// }
+
+    function handleDragEnd({ active, over }: DragEndEvent) {
+		resetState();
+
+		if (!over) return;
+
+		const clonedItems = [...flattenedItems]; // or deep clone if needed
+		const activeId = active.id.toString();
+		const overId = over.id.toString();
+
+		const activeIndex = clonedItems.findIndex(
+			(item) => item.clientId === activeId
+		);
+		const overIndex = clonedItems.findIndex(
+			(item) => item.clientId === overId
 		);
 
-		if (!activeItem) {
-			return;
-		}
-
-		const newItems = arrayMove(
-			flattenedItems,
-			activeItem.index,
-			over?.index || 0
+		const projection = getProjection(
+			clonedItems,
+			activeId,
+			overId,
+			offsetLeft,
+			indentationWidth
 		);
-		const previousItem = newItems[over?.index || 0 - 1];
-		const nextItem = newItems[over?.index || 0 + 1];
-		const dragDepth = getDragDepth(offsetLeft, indentationWidth);
-		const projectedDepth = activeItem.depth + dragDepth;
-		const maxDepth = getMaxDepth({ previousItem });
-		const minDepth = getMinDepth({ nextItem });
-		let depth = projectedDepth;
+		if (!projection) return;
 
-		if (projectedDepth >= maxDepth) {
-			depth = maxDepth;
-		} else if (projectedDepth < minDepth) {
-			depth = minDepth;
-		}
+		const { depth, parentId } = projection;
 
-		const newTree = buildTree(newItems);
+		clonedItems[activeIndex] = {
+			...clonedItems[activeIndex],
+			depth,
+			parentId: parentId?.toString() ?? null,
+		};
+
+		const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
+		const newTree = buildTree(sortedItems);
+
+		console.log("Built new tree", newTree);
 		setItems(newTree);
-		setActiveId(null);
-		setOverId(null);
 	}
 
-	function handleDragCancel() {
+
+	// function handleDragCancel() {
+	// 	setOverId(null);
+	// 	setActiveId(null);
+	// 	setOffsetLeft(0);
+	// 	setCurrentPosition(null);
+
+	// 	document.body.style.setProperty("cursor", "");
+	// }
+
+	function resetState() {
 		setOverId(null);
 		setActiveId(null);
 		setOffsetLeft(0);
 		setCurrentPosition(null);
 
 		document.body.style.setProperty("cursor", "");
+	}
+
+	function handleDragCancel() {
+		resetState();
 	}
 
 	// function handleCollapse(id: string) {

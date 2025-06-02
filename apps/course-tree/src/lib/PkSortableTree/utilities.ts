@@ -277,3 +277,50 @@ export function buildTree(
 	}
 	return root.children;
 }
+
+// const isDescendant = (parentId: string, childId: string): boolean => {
+// 	if (parentId === childId) return true;
+
+// 	const stack = [childId];
+// 	while (stack.length > 0) {
+// 		const currentId = stack.pop();
+// 		const currentItem = flattenedItems.find(
+// 			(item) => item.clientId === currentId
+// 		);
+// 		if (!currentItem || !currentItem.parentId) continue;
+// 		if (currentItem.parentId === parentId) return true;
+// 		stack.push(currentItem.parentId);
+// 	}
+
+// 	return false;
+// };
+
+export function removeChildrenOf(
+	items: FlattenedCourseTreeItem[],
+	ids: string[]
+) {
+	const excludeParentIds = [...ids];
+
+	return items.filter((item) => {
+		if (item.parentId && excludeParentIds.includes(item.parentId)) {
+			if (item.children.length) {
+				excludeParentIds.push(item.clientId);
+			}
+			return false;
+		}
+
+		return true;
+	});
+}
+
+export function isLesson(item: FlattenedCourseTreeItem): boolean {
+	return item.type === "lesson";
+}
+
+export function isModule(item: FlattenedCourseTreeItem): boolean {
+	return item.type === "module";
+}
+
+export function isTopLevel(item: FlattenedCourseTreeItem): boolean {
+	return item.parentId === null;
+}

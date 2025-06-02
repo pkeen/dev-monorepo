@@ -26,6 +26,7 @@ export interface CourseTreeItem {
 	moduleId: number | null;
 	lessonId: number | null;
 	clientId: string;
+	collapsed?: boolean;
 	// collapsed?: boolean;
 }
 

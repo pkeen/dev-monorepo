@@ -16,6 +16,11 @@ import {
 	getMaxDepth,
 	getMinDepth,
 	buildTree,
+	removeChildrenOf,
+	isModule,
+	isLesson,
+	isRoot,
+	isTopLevel,
 } from "./utilities";
 import {
 	closestCenter,
@@ -61,11 +66,26 @@ export function SortableTree({
 }: Props) {
 	const [items, setItems] = useState<CourseTreeItem[]>(initialItems || []);
 
-	const flattenedItems = useMemo<FlattenedCourseTreeItem[]>(() => {
-		return flattenTree(items);
-	}, [items]);
+	// const flattenedItems = useMemo<FlattenedCourseTreeItem[]>(() => {
+	// 	return flattenTree(items);
+	// }, [items]);
 
 	const [activeId, setActiveId] = useState<string | null>(null);
+
+	const flattenedItems = useMemo(() => {
+		const flattenedTree = flattenTree(items);
+		const collapsedItems = flattenedTree.reduce<string[]>(
+			(acc, { children, collapsed, clientId }) =>
+				collapsed && children.length ? [...acc, clientId] : acc,
+			[]
+		);
+
+		return removeChildrenOf(
+			flattenedTree,
+			activeId ? [activeId, ...collapsedItems] : collapsedItems
+		);
+	}, [activeId, items]);
+
 	const [overId, setOverId] = useState<string | null>(null);
 	const [offsetLeft, setOffsetLeft] = useState(0);
 	// console.log("offsetLeft", offsetLeft);
@@ -117,7 +137,7 @@ export function SortableTree({
 
 	console.log("Dragging:", { activeId, overId, projected });
 	// console.log("Flattened items", flattenedItems);
-    // console.log(
+	// console.log(
 	// 	"Rendering item:",
 	// 	name,
 	// 	"depth:",
@@ -154,31 +174,35 @@ export function SortableTree({
 				items={sortedIds}
 				strategy={verticalListSortingStrategy}
 			>
-				{flattenedItems.map(({ clientId, name, depth }) => (
-					<SortableTreeItem
-						key={clientId}
-						id={clientId}
-						value={clientId}
-						name={name}
-						// ref={setDroppableNodeRef}
-						depth={
-							clientId === activeId && projected
-								? projected.depth
-								: depth
-						}
-						indentationWidth={indentationWidth}
-						indicator={indicator}
-						// collapsed={Boolean(collapsed && children.length)}
-						// onCollapse={
-						// 	collapsible && children.length
-						// 		? () => handleCollapse(id)
-						// 		: undefined
-						// }
-						onRemove={
-							removable ? () => handleRemove(clientId) : undefined
-						}
-					/>
-				))}
+				{flattenedItems.map(
+					({ clientId, name, depth, collapsed, children }) => (
+						<SortableTreeItem
+							key={clientId}
+							id={clientId}
+							value={clientId}
+							name={name}
+							// ref={setDroppableNodeRef}
+							depth={
+								clientId === activeId && projected
+									? projected.depth
+									: depth
+							}
+							indentationWidth={indentationWidth}
+							indicator={indicator}
+							collapsed={Boolean(collapsed && children.length)}
+							onCollapse={
+								collapsible && children.length
+									? () => handleCollapse(clientId)
+									: undefined
+							}
+							onRemove={
+								removable
+									? () => handleRemove(clientId)
+									: undefined
+							}
+						/>
+					)
+				)}
 				{hasMounted &&
 					createPortal(
 						<DragOverlay
@@ -218,7 +242,9 @@ export function SortableTree({
 		setActiveId(activeId.toString());
 		setOverId(activeId.toString());
 
-		const activeItem = flattenedItems.find(({ id }) => id === activeId);
+		const activeItem = flattenedItems.find(
+			({ clientId }) => clientId === activeId
+		);
 
 		if (activeItem) {
 			setCurrentPosition({
@@ -240,54 +266,23 @@ export function SortableTree({
 		setOverId(newOverId);
 	}
 
-	// function handleDragEnd({ active, over }: DragEndEvent) {
-	// 	resetState();
-
-	// 	if (projected && over) {
-	// 		const { depth, parentId } = projected;
-	// 		const clonedItems: FlattenedCourseTreeItem[] = JSON.parse(
-	// 			JSON.stringify(flattenTree(items))
-	// 		);
-	// 		const overId = over.id.toString();
-	// 		const activeId = active.id.toString();
-
-	// 		const overIndex = clonedItems.findIndex(
-	// 			(item) => item.clientId === overId
-	// 		);
-	// 		const activeIndex = clonedItems.findIndex(
-	// 			(item) => item.clientId === activeId
-	// 		);
-
-	// 		const activeTreeItem = clonedItems[activeIndex];
-
-	// 		clonedItems[activeIndex] = {
-	// 			...activeTreeItem,
-	// 			depth,
-	// 			parentId: parentId?.toString() ?? null,
-	// 		};
-
-	// 		const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
-	// 		const newItems = buildTree(sortedItems);
-
-	// 		setItems(newItems);
-	// 	}
-	// }
-
-    function handleDragEnd({ active, over }: DragEndEvent) {
+	function handleDragEnd({ active, over }: DragEndEvent) {
 		resetState();
 
 		if (!over) return;
 
-		const clonedItems = [...flattenedItems]; // or deep clone if needed
+		const clonedItems = flattenTree(items); // or deep clone if needed
+		console.log("clonedItems", clonedItems);
 		const activeId = active.id.toString();
 		const overId = over.id.toString();
 
-		const activeIndex = clonedItems.findIndex(
+		const activeItem = clonedItems.find(
 			(item) => item.clientId === activeId
 		);
-		const overIndex = clonedItems.findIndex(
-			(item) => item.clientId === overId
-		);
+		if (!activeItem) return;
+		const overItem = clonedItems.find((item) => item.clientId === overId);
+		console.log("overItem", overItem);
+		if (!overItem) return;
 
 		const projection = getProjection(
 			clonedItems,
@@ -299,6 +294,35 @@ export function SortableTree({
 		if (!projection) return;
 
 		const { depth, parentId } = projection;
+
+		// Enforce nesting rules
+		if (isModule(activeItem)) {
+			// Modules can't be nested
+
+			console.log("isModule(activeItem)", isModule(activeItem));
+			console.log("isTopLevel(overItem)", isTopLevel(overItem));
+			// if (!isTopLevel(overItem)) return; // Modules can only be 2nd level
+			if (parentId !== null) return; // Modules can only be top level
+		} else if (isLesson(activeItem)) {
+			// Lessons can only be nested under modules or be top-level
+			console.log("isLesson(activeItem)", isLesson(activeItem));
+			const parentItem = clonedItems.find(
+				(item) => item.clientId === parentId
+			);
+			console.log("parentItem", parentItem);
+			console.log(
+				"isModule(parentItem)",
+				parentId && isModule(parentItem!)
+			);
+			if (parentItem && !isModule(parentItem!)) return;
+		}
+
+		const activeIndex = clonedItems.findIndex(
+			(item) => item.clientId === activeId
+		);
+		const overIndex = clonedItems.findIndex(
+			(item) => item.clientId === overId
+		);
 
 		clonedItems[activeIndex] = {
 			...clonedItems[activeIndex],
@@ -313,16 +337,6 @@ export function SortableTree({
 		setItems(newTree);
 	}
 
-
-	// function handleDragCancel() {
-	// 	setOverId(null);
-	// 	setActiveId(null);
-	// 	setOffsetLeft(0);
-	// 	setCurrentPosition(null);
-
-	// 	document.body.style.setProperty("cursor", "");
-	// }
-
 	function resetState() {
 		setOverId(null);
 		setActiveId(null);
@@ -336,13 +350,13 @@ export function SortableTree({
 		resetState();
 	}
 
-	// function handleCollapse(id: string) {
-	// 	setItems((items) =>
-	// 		setProperty(items, id, "collapsed", (value) => {
-	// 			return !value;
-	// 		})
-	// 	);
-	// }
+	function handleCollapse(clientId: string) {
+		setItems((items) =>
+			setProperty(items, clientId, "collapsed", (value) => {
+				return !value;
+			})
+		);
+	}
 }
 
 const adjustTranslate: Modifier = ({ transform }) => {

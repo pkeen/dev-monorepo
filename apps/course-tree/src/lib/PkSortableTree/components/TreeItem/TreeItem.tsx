@@ -7,6 +7,7 @@ import classNames from "classnames";
 import { Handle } from "./Handle";
 import { Remove } from "./Remove";
 import styles from "./TreeItem.module.css";
+import { Action } from "./Action";
 
 export interface Props extends HTMLAttributes<HTMLLIElement> {
 	childCount?: number;
@@ -72,8 +73,8 @@ export const TreeItem = ({
 			{/* <Card> */}
 			<div className={styles.TreeItem} ref={ref} style={style}>
 				<Handle {...handleProps} />
-				{/* 
-                    Hide this for now as not working anyway
+				
+                    {/* Hide this for now as not working anyway */}
                     {onCollapse && (
 						<Action
 							onClick={onCollapse}
@@ -84,7 +85,7 @@ export const TreeItem = ({
 						>
 							{collapseIcon}
 						</Action>
-					)} */}
+					)}
 				<span className={styles.Text}>{name}</span>
 				{!clone && onRemove && <Remove onClick={onRemove} />}
 				{clone && childCount && childCount > 1 ? (

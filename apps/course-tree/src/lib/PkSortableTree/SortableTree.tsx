@@ -19,7 +19,6 @@ import {
 	removeChildrenOf,
 	isModule,
 	isLesson,
-	isRoot,
 	isTopLevel,
 } from "./utilities";
 import {
@@ -66,9 +65,9 @@ export function SortableTree({
 }: Props) {
 	const [items, setItems] = useState<CourseTreeItem[]>(initialItems || []);
 
-	// const flattenedItems = useMemo<FlattenedCourseTreeItem[]>(() => {
-	// 	return flattenTree(items);
-	// }, [items]);
+	useEffect(() => {
+		console.log("Updated items:", items);
+	}, [items]);
 
 	const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -281,7 +280,7 @@ export function SortableTree({
 		);
 		if (!activeItem) return;
 		const overItem = clonedItems.find((item) => item.clientId === overId);
-		console.log("overItem", overItem);
+		// console.log("overItem", overItem);
 		if (!overItem) return;
 
 		const projection = getProjection(
@@ -298,21 +297,12 @@ export function SortableTree({
 		// Enforce nesting rules
 		if (isModule(activeItem)) {
 			// Modules can't be nested
-
-			console.log("isModule(activeItem)", isModule(activeItem));
-			console.log("isTopLevel(overItem)", isTopLevel(overItem));
 			// if (!isTopLevel(overItem)) return; // Modules can only be 2nd level
 			if (parentId !== null) return; // Modules can only be top level
 		} else if (isLesson(activeItem)) {
 			// Lessons can only be nested under modules or be top-level
-			console.log("isLesson(activeItem)", isLesson(activeItem));
 			const parentItem = clonedItems.find(
 				(item) => item.clientId === parentId
-			);
-			console.log("parentItem", parentItem);
-			console.log(
-				"isModule(parentItem)",
-				parentId && isModule(parentItem!)
 			);
 			if (parentItem && !isModule(parentItem!)) return;
 		}

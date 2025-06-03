@@ -159,6 +159,7 @@ export function getProjection(
 	const dragDepth = getDragDepth(dragOffset, indentationWidth);
 	const projectedDepth = activeItem.depth + dragDepth;
 	const maxDepth = getMaxDepth({
+		activeItem,
 		previousItem,
 	});
 	const minDepth = getMinDepth({ nextItem });
@@ -199,12 +200,23 @@ export function getDragDepth(offset: number, indentationWidth: number) {
 }
 
 export function getMaxDepth({
+	activeItem,
 	previousItem,
 }: {
+	activeItem: FlattenedCourseTreeItem;
 	previousItem: FlattenedCourseTreeItem;
 }) {
+	// May need to add rules in here
 	if (previousItem) {
-		return previousItem.depth + 1;
+		if (isModule(activeItem)) {
+			return previousItem.depth;
+		}
+		if (isModule(previousItem) && isLesson(activeItem)) {
+			return previousItem.depth + 1;
+		}
+		if (isLesson(previousItem) && isLesson(activeItem)) {
+			return previousItem.depth;
+		}
 	}
 
 	return 0;
@@ -222,24 +234,49 @@ export function getMinDepth({
 	return 0;
 }
 
+// export function setProperty<T extends keyof CourseTreeItem>(
+// 	items: CourseTreeItem[],
+// 	id: string,
+// 	property: T,
+// 	setter: (value: CourseTreeItem[T]) => CourseTreeItem[T]
+// ) {
+// 	for (const item of items) {
+// 		if (item.clientId === id) {
+// 			item[property] = setter(item[property]);
+// 			continue;
+// 		}
+
+// 		if (item.children.length) {
+// 			item.children = setProperty(item.children, id, property, setter);
+// 		}
+// 	}
+
+// 	return [...items];
+// }
+
 export function setProperty<T extends keyof CourseTreeItem>(
 	items: CourseTreeItem[],
 	id: string,
 	property: T,
 	setter: (value: CourseTreeItem[T]) => CourseTreeItem[T]
-) {
-	for (const item of items) {
+): CourseTreeItem[] {
+	return items.map((item) => {
 		if (item.clientId === id) {
-			item[property] = setter(item[property]);
-			continue;
+			return {
+				...item,
+				[property]: setter(item[property]),
+			};
 		}
 
 		if (item.children.length) {
-			item.children = setProperty(item.children, id, property, setter);
+			return {
+				...item,
+				children: setProperty(item.children, id, property, setter),
+			};
 		}
-	}
 
-	return [...items];
+		return item;
+	});
 }
 
 export function buildTree(

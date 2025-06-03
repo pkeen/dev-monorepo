@@ -9,5 +9,12 @@ export default async function PK() {
 	console.log("TREE:", tree);
 	// const flattenedTree = flattenTree(tree);
 	// console.log("FLATTENED TREE:", flattenedTree);
-	return <SortableTree collapsible indicator removable={false} initialItems={tree} />;
+	return (
+		<SortableTree
+			collapsible
+			indicator
+			removable={true}
+			initialItems={tree}
+		/>
+	);
 }

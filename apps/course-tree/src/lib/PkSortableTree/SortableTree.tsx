@@ -46,7 +46,9 @@ import { createPortal } from "react-dom";
 
 interface Props {
 	collapsible?: boolean;
-	initialItems?: CourseTreeItem[];
+	// initialItems?: CourseTreeItem[];
+	items: CourseTreeItem[];
+	onChange: (items: CourseTreeItem[]) => void;
 	indentationWidth?: number;
 	indicator?: boolean;
 	removable?: boolean;
@@ -58,16 +60,14 @@ const dropAnimation: DropAnimation = {
 
 export function SortableTree({
 	collapsible,
-	initialItems,
+	// initialItems,
+	onChange,
+	items,
 	indicator,
 	indentationWidth = 20,
 	removable,
 }: Props) {
-	const [items, setItems] = useState<CourseTreeItem[]>(initialItems || []);
-
-	useEffect(() => {
-		console.log("Updated items:", items);
-	}, [items]);
+	// const [items, setItems] = useState<CourseTreeItem[]>(initialItems || []);
 
 	const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -234,7 +234,7 @@ export function SortableTree({
 	);
 
 	function handleRemove(clientId: string) {
-		setItems((items) => removeItem(items, clientId));
+		onChange(removeItem(items, clientId));
 	}
 
 	function handleDragStart({ active: { id: activeId } }: DragStartEvent) {
@@ -324,7 +324,7 @@ export function SortableTree({
 		const newTree = buildTree(sortedItems);
 
 		console.log("Built new tree", newTree);
-		setItems(newTree);
+		onChange(newTree);
 	}
 
 	function resetState() {
@@ -341,11 +341,7 @@ export function SortableTree({
 	}
 
 	function handleCollapse(clientId: string) {
-		setItems((items) =>
-			setProperty(items, clientId, "collapsed", (value) => {
-				return !value;
-			})
-		);
+		onChange(setProperty(items, clientId, "collapsed", (value) => !value));
 	}
 }
 

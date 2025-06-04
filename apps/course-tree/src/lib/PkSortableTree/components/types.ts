@@ -27,11 +27,12 @@ export interface CourseTreeItem {
 	lessonId: number | null;
 	clientId: string;
 	collapsed?: boolean;
+	isPublished: boolean;
 	// collapsed?: boolean;
 }
 
 export interface FlattenedCourseTreeItem extends CourseTreeItem {
-	clientId: string;
+	// clientId: string;
 	parentId: null | string;
 	depth: number;
 	index: number;

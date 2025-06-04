@@ -291,6 +291,7 @@ export function buildTree(
 		order: 0,
 		moduleId: null,
 		lessonId: null,
+		isPublished: true,
 	};
 	const nodes: Record<string, CourseTreeItem> = { [root.clientId]: root };
 	// Clone and register all nodes

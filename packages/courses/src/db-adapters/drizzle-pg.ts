@@ -39,6 +39,8 @@ import {
 	SlotDeepDisplay,
 	CourseSlotDTO,
 	ModuleSlotDTO,
+	CourseTreeDTO,
+	CourseTreeItem,
 } from "validators";
 
 const defaultSchema = createSchema();
@@ -718,7 +720,7 @@ const createCRUD = (
 				.where(inArray(schema.moduleSlot.moduleId, [...moduleIds]))
 				.orderBy(schema.moduleSlot.moduleId, schema.moduleSlot.order);
 
-			console.log("Module lessons", moduleLessons);
+			// console.log("Module lessons", moduleLessons);
 
 			// 🔁 Group by moduleId
 			const moduleSlotMap = new Map<number, DeepModuleSlotOutline[]>();
@@ -856,7 +858,7 @@ const createCRUD = (
 				.where(inArray(schema.moduleSlot.moduleId, [...moduleIds]))
 				.orderBy(schema.moduleSlot.moduleId, schema.moduleSlot.order);
 
-			console.log("Module lessons", moduleLessons);
+			// console.log("Module lessons", moduleLessons);
 
 			// 🔁 Group by moduleId
 			const moduleSlotMap = new Map<number, ModuleSlotDeepDTO[]>();
@@ -993,7 +995,7 @@ const createCRUD = (
 				.where(inArray(schema.moduleSlot.moduleId, [...moduleIds]))
 				.orderBy(schema.moduleSlot.moduleId, schema.moduleSlot.order);
 
-			console.log("Module lessons", moduleLessons);
+			// console.log("Module lessons", moduleLessons);
 
 			// 🔁 Group by moduleId
 			const moduleSlotMap = new Map<number, ModuleSlotDisplay[]>();
@@ -1058,6 +1060,131 @@ const createCRUD = (
 			};
 
 			return display;
+		};
+
+		const tree = async (id: number): Promise<CourseTreeDTO | null> => {
+			const rows = await db
+				.select({
+					id: schema.course.id,
+					userId: schema.course.userId,
+					title: schema.course.title,
+					description: schema.course.description,
+					isPublished: schema.course.isPublished,
+					courseSlotId: schema.courseSlot.id,
+					courseSlotOrder: schema.courseSlot.order,
+					moduleId: schema.courseSlot.moduleId,
+					lessonId: schema.courseSlot.lessonId,
+					moduleName: schema.module.name,
+					moduleIsPublished: schema.module.isPublished,
+					lessonName: schema.lesson.name,
+					lessonIsPublished: schema.lesson.isPublished,
+				})
+				.from(schema.course)
+				.leftJoin(
+					schema.courseSlot,
+					eq(schema.courseSlot.courseId, schema.course.id)
+				)
+				.leftJoin(
+					schema.module,
+					eq(schema.module.id, schema.courseSlot.moduleId)
+				)
+				.leftJoin(
+					schema.lesson,
+					eq(schema.lesson.id, schema.courseSlot.lessonId)
+				)
+				.where(eq(schema.course.id, id))
+				.orderBy(schema.courseSlot.order);
+
+			if (rows.length === 0) return null;
+
+			const moduleIds = rows
+				.filter((row) => row.moduleId !== null)
+				.map((row) => row.moduleId!)
+				.filter((value, index, self) => self.indexOf(value) === index);
+
+			const moduleLessons = await db
+				.select({
+					moduleSlotId: schema.moduleSlot.id,
+					order: schema.moduleSlot.order,
+					moduleId: schema.moduleSlot.moduleId,
+					lessonId: schema.moduleSlot.lessonId,
+					lessonName: schema.lesson.name,
+					lessonIsPublished: schema.lesson.isPublished,
+				})
+				.from(schema.moduleSlot)
+				.leftJoin(
+					schema.lesson,
+					eq(schema.lesson.id, schema.moduleSlot.lessonId)
+				)
+				.where(inArray(schema.moduleSlot.moduleId, moduleIds))
+				.orderBy(schema.moduleSlot.moduleId, schema.moduleSlot.order);
+
+			// 🔁 Group lessons by moduleId
+			const moduleChildrenMap = new Map<number, CourseTreeItem[]>();
+			for (const row of moduleLessons) {
+				const list = moduleChildrenMap.get(row.moduleId) ?? [];
+				const child: CourseTreeItem = {
+					id: row.moduleSlotId,
+					type: "lesson",
+					name: row.lessonName ?? "",
+					order: row.order,
+					moduleId: row.moduleId,
+					lessonId: row.lessonId ?? undefined,
+					isPublished: row.lessonIsPublished ?? false,
+					clientId: "", // to be filled later
+					children: [],
+				};
+				list.push(child);
+				moduleChildrenMap.set(row.moduleId, list);
+			}
+
+			// 🧱 Build course tree with clientIds
+			const items: CourseTreeItem[] = rows
+				.filter((r) => r.courseSlotId !== null)
+				.map((row, i) => {
+					const isModule = !!row.moduleId;
+					const children = isModule
+						? (moduleChildrenMap.get(row.moduleId!) ?? []).map(
+								(child, j) => ({
+									...child,
+									clientId: `${i}-${j}`,
+								})
+						  )
+						: [];
+
+					const item: CourseTreeItem = {
+						id: row.courseSlotId!,
+						type: isModule ? "module" : "lesson",
+						name: isModule ? row.moduleName! : row.lessonName!,
+						order: row.courseSlotOrder!,
+						moduleId: row.moduleId ?? undefined,
+						lessonId: row.lessonId ?? undefined,
+						isPublished: isModule
+							? row.moduleIsPublished ?? false
+							: row.lessonIsPublished ?? false,
+						clientId: `${i}`,
+						children,
+					};
+
+					return item;
+				});
+
+			const {
+				title,
+				description,
+				isPublished,
+				userId,
+				id: courseId,
+			} = rows[0];
+
+			return {
+				id: courseId,
+				userId,
+				title,
+				description,
+				isPublished,
+				items,
+			};
 		};
 
 		const create = async (input: CreateCourseDTO) => {
@@ -1154,7 +1281,8 @@ const createCRUD = (
 			destroy,
 			// outline,
 			// deepOutline,
-			// deep,
+			// deep,    
+			tree,
 			display,
 			// updateWithSlots,
 		};

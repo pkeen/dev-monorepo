@@ -610,3 +610,33 @@ export const uiCourseDisplay = courseDisplay.extend({
 	slots: z.array(uiCourseSlotDisplay).default([]).optional(),
 });
 export type UiCourseDisplay = z.infer<typeof uiCourseDisplay>;
+
+/**
+ * Tree Types
+ */
+
+export const courseTreeItem: z.ZodType<any> = z.lazy(() =>
+	z.object({
+		id: z.number(),
+		type: z.enum(["module", "lesson"]),
+		name: z.string(),
+		order: z.number(),
+		moduleId: z.number().optional(),
+		lessonId: z.number().optional(),
+		isPublished: z.boolean().optional(),
+		clientId: z.string(),
+		collapsed: z.boolean().optional(),
+		children: z.array(courseTreeItem).default([]),
+	})
+);
+export type CourseTreeItem = z.infer<typeof courseTreeItem>;
+
+export const courseTreeDTO = z.object({
+	id: z.number(),
+	userId: z.string(),
+	title: z.string(),
+	description: z.string(),
+	isPublished: z.boolean().optional(),
+	items: z.array(courseTreeItem).default([]),
+});
+export type CourseTreeDTO = z.infer<typeof courseTreeDTO>;

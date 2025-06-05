@@ -20,6 +20,7 @@ import {
 	isModule,
 	isLesson,
 	isTopLevel,
+	assignSiblingOrder,
 } from "./utilities";
 import {
 	closestCenter,
@@ -321,7 +322,8 @@ export function SortableTree({
 		};
 
 		const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
-		const newTree = buildTree(sortedItems);
+		const orderedItems = assignSiblingOrder(sortedItems);
+		const newTree = buildTree(orderedItems);
 
 		console.log("Built new tree", newTree);
 		onChange(newTree);

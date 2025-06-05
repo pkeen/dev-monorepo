@@ -279,6 +279,37 @@ export function setProperty<T extends keyof CourseTreeItem>(
 	});
 }
 
+/**
+ * Assigns `.order` to each item based on position within its sibling group.
+ * Sibling groups are determined by `parentId`.
+ */
+export function assignSiblingOrder(
+	items: FlattenedCourseTreeItem[]
+): FlattenedCourseTreeItem[] {
+	// Group items by their parentId
+	const grouped = new Map<string | null, FlattenedCourseTreeItem[]>();
+
+	for (const item of items) {
+		const group = grouped.get(item.parentId) || [];
+		group.push(item);
+		grouped.set(item.parentId, group);
+	}
+
+	// Assign order within each group
+	const itemsWithOrder: FlattenedCourseTreeItem[] = [];
+
+	for (const [, group] of grouped) {
+		group.forEach((item, index) => {
+			itemsWithOrder.push({
+				...item,
+				order: index,
+			});
+		});
+	}
+
+	return itemsWithOrder;
+}
+
 export function buildTree(
 	flattenedItems: FlattenedCourseTreeItem[]
 ): CourseTreeItem[] {

@@ -41,7 +41,10 @@ import {
 	ModuleSlotDTO,
 	CourseTreeDTO,
 	CourseTreeItem,
+	CourseTreeItemUpsert,
+	EditCourseTreeDTO,
 } from "validators";
+import { compatibilityVersion } from "drizzle-orm/version";
 
 const defaultSchema = createSchema();
 type DefaultSchema = typeof defaultSchema;
@@ -120,6 +123,75 @@ const createCRUD = (
 				await db
 					.update(schema.moduleSlot)
 					.set({ order: slot.order, lessonId: slot.lessonId })
+					.where(eq(schema.moduleSlot.id, slot.id!));
+			}
+		}
+
+		if (toCreate.length) {
+			await db.insert(schema.moduleSlot).values(
+				toCreate.map((slot) => ({
+					moduleId,
+					lessonId: slot.lessonId,
+					order: slot.order,
+				}))
+			);
+		}
+	};
+
+	/**
+	 * Sync the `children` of a module tree item to `moduleSlot` table.
+	 */
+	const syncModuleTree = async (
+		moduleId: number,
+		children: CourseTreeItemUpsert[]
+	) => {
+		// 1) Load existing module slots for this module
+		const existingSlots = await db
+			.select()
+			.from(schema.moduleSlot)
+			.where(eq(schema.moduleSlot.moduleId, moduleId));
+
+		// 2) Build maps for diffing
+		const existingMap = new Map(existingSlots.map((s) => [s.id, s]));
+		const incomingMap = new Map<number, CourseTreeItemUpsert>(
+			children.map((s) => [s.id ?? 0, s])
+		);
+
+		// 3) Determine which slots to delete, update, create
+		const toDelete = existingSlots
+			.filter((s) => !incomingMap.has(s.id))
+			.map((s) => s.id);
+
+		const toCreate = children.filter((s) => !s.id);
+
+		const toUpdate = children.filter((s) => {
+			if (!s.id) return false;
+			const old = existingMap.get(s.id);
+			return (
+				!!old && (old.order !== s.order || old.lessonId !== s.lessonId)
+			);
+		});
+
+		// 4) Perform mutations
+		if (toDelete.length) {
+			await db
+				.delete(schema.moduleSlot)
+				.where(
+					and(
+						eq(schema.moduleSlot.moduleId, moduleId),
+						inArray(schema.moduleSlot.id, toDelete)
+					)
+				);
+		}
+
+		if (toUpdate.length) {
+			for (const slot of toUpdate) {
+				await db
+					.update(schema.moduleSlot)
+					.set({
+						order: slot.order,
+						lessonId: slot.lessonId,
+					})
 					.where(eq(schema.moduleSlot.id, slot.id!));
 			}
 		}
@@ -457,6 +529,91 @@ const createCRUD = (
 			for (const slot of incomingSlots) {
 				if (slot.moduleId && slot.moduleSlots) {
 					await syncModuleSlots(slot.moduleId, slot.moduleSlots);
+				}
+			}
+		};
+
+		const syncCourseTree = async (
+			courseId: number,
+			incomingItems: CourseTreeItemUpsert[]
+		) => {
+			// 1) Flatten top-level course slots
+			const incomingSlots = incomingItems.map((item) => ({
+				id: item.id,
+				order: item.order,
+				moduleId: item.moduleId,
+				lessonId: item.lessonId,
+			}));
+
+			// 2) Load existing slots
+			const existingSlots = await db
+				.select()
+				.from(schema.courseSlot)
+				.where(eq(schema.courseSlot.courseId, courseId));
+
+			const existingMap = new Map(existingSlots.map((s) => [s.id, s]));
+			const incomingMap = new Map<number, (typeof incomingSlots)[0]>(
+				incomingSlots.map((s) => [s.id ?? 0, s])
+			);
+
+			// 3) Diff course slots
+			const toDelete = existingSlots
+				.filter((s) => !incomingMap.has(s.id))
+				.map((s) => s.id);
+			const toCreate = incomingSlots.filter((s) => !s.id);
+			const toUpdate = incomingSlots.filter((s) => {
+				if (!s.id) return false;
+				const old = existingMap.get(s.id);
+				return (
+					!!old &&
+					(old.order !== s.order ||
+						old.lessonId !== s.lessonId ||
+						old.moduleId !== s.moduleId)
+				);
+			});
+
+			// 4) Execute mutations
+			if (toDelete.length) {
+				await db
+					.delete(schema.courseSlot)
+					.where(
+						and(
+							eq(schema.courseSlot.courseId, courseId),
+							inArray(schema.courseSlot.id, toDelete)
+						)
+					);
+			}
+
+			for (const slot of toUpdate) {
+				await db
+					.update(schema.courseSlot)
+					.set({
+						order: slot.order,
+						lessonId: slot.lessonId,
+						moduleId: slot.moduleId,
+					})
+					.where(eq(schema.courseSlot.id, slot.id!));
+			}
+
+			if (toCreate.length) {
+				await db.insert(schema.courseSlot).values(
+					toCreate.map((slot) => ({
+						courseId,
+						order: slot.order,
+						moduleId: slot.moduleId,
+						lessonId: slot.lessonId,
+					}))
+				);
+			}
+
+			// 5) Handle nested module slots
+			for (const item of incomingItems) {
+				if (
+					item.type === "module" &&
+					item.moduleId &&
+					item.children.length
+				) {
+					await syncModuleTree(item.moduleId, item.children);
 				}
 			}
 		};
@@ -1251,6 +1408,30 @@ const createCRUD = (
 			return updated;
 		};
 
+		const updateTree = async (data: EditCourseTreeDTO) => {
+			if (!data.id) {
+				throw new Error("Course ID is required");
+			}
+			// update course details
+			const [course] = await db
+				.update(schema.course)
+				.set(data)
+				.where(eq(schema.course.id, data.id))
+				.returning();
+
+			// update module slots
+			if (data.items) {
+				await syncCourseTree(data.id!, data.items);
+			}
+
+			const updated = await tree(data.id);
+			if (!updated) {
+				throw new Error("Failed to fetch updated course");
+			}
+
+			return updated;
+		};
+
 		const destroy = async (id: number) => {
 			await db.delete(schema.course).where(eq(schema.course.id, id));
 		};
@@ -1281,8 +1462,9 @@ const createCRUD = (
 			destroy,
 			// outline,
 			// deepOutline,
-			// deep,    
+			// deep,
 			tree,
+			updateTree,
 			display,
 			// updateWithSlots,
 		};

@@ -15,7 +15,8 @@ import {
 	EditCourseDTO,
 	CourseDTO,
 	CourseDisplay,
-    CourseTreeDTO,
+	CourseTreeDTO,
+	EditCourseTreeDTO,
 } from "validators";
 
 // // Base interfaces for database models
@@ -159,6 +160,7 @@ export interface CourseCRUD
 		CourseDisplay
 	> {
 	tree: (id: number) => Promise<CourseTreeDTO | null>;
+	updateTree: (data: EditCourseTreeDTO) => Promise<CourseTreeDTO | null>;
 	// deepOutline: (id: number) => Promise<CourseDeepDisplay | null>;
 	// deep: (id: number) => Promise<CourseDeepDisplay | null>;
 	// display: (id: number) => Promise<CourseDisplay | null>;

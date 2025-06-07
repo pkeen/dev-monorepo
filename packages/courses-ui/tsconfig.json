@@ -13,8 +13,10 @@
 		"esModuleInterop": true,
 		"baseUrl": "./src",
 		"skipLibCheck": true,
-		"forceConsistentCasingInFileNames": true
+		"forceConsistentCasingInFileNames": true,
+		"allowSyntheticDefaultImports": true,
+		"resolveJsonModule": true
 	},
-	"include": ["src/**/*"],
+	"include": ["src/**/*", "src/types.d.ts"],
 	"exclude": ["node_modules", "dist", "**/node_modules/*"]
 }

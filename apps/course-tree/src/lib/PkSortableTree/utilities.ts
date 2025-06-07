@@ -1,58 +1,7 @@
 "use client";
 
-import { UiCourseDisplay, CourseDisplay } from "@pete_keen/courses/validators";
 import { CourseTreeItem, FlattenedCourseTreeItem } from "./components/types";
 import { arrayMove } from "@dnd-kit/sortable";
-import { findItem } from "../SortableTree/utilities";
-
-// export function courseDisplayToUi(course: CourseDisplay): UiCourseDisplay {
-// 	return {
-// 		...course,
-// 		slots: course.slots.map((slot, i) => {
-// 			const topLevelClientId = slot.id
-// 				? `slot-${slot.id}`
-// 				: `new-slot-${i}`;
-
-// 			const moduleSlots = slot.moduleSlots?.map((lessonSlot, j) => ({
-// 				...lessonSlot,
-// 				clientId: lessonSlot.id
-// 					? `module-slot-${lessonSlot.id}`
-// 					: `new-module-slot-${j}`,
-// 			}));
-
-// 			return {
-// 				...slot,
-// 				clientId: topLevelClientId,
-// 				moduleSlots,
-// 			};
-// 		}),
-// 	};
-// }
-
-// export function courseDisplayToTree(course: CourseDisplay): CourseTreeItem[] {
-// 	return course.slots.map((slot, i) => {
-// 		return {
-// 			id: slot.id,
-// 			order: slot.order,
-// 			moduleId: slot.moduleId,
-// 			lessonId: slot.lessonId,
-// 			type: slot.moduleId ? "module" : "lesson",
-// 			name: slot.display.name,
-// 			clientId: `${i}`,
-// 			children:
-// 				slot.moduleSlots?.map((lessonSlot, j) => ({
-// 					id: lessonSlot.id,
-// 					order: lessonSlot.order,
-// 					moduleId: lessonSlot.moduleId,
-// 					lessonId: lessonSlot.lessonId,
-// 					type: "lesson",
-// 					name: lessonSlot.display.name,
-// 					clientId: `${i}-${j}`,
-// 					children: [],
-// 				})) || [],
-// 		};
-// 	});
-// }
 
 export function flatten(
 	items: CourseTreeItem[],
@@ -60,7 +9,6 @@ export function flatten(
 	depth = 0
 ): FlattenedCourseTreeItem[] {
 	return items.reduce<FlattenedCourseTreeItem[]>((acc, item, index) => {
-		// const clientId = parentId ? `${parentId}-${index}` : index.toString();
 		return [
 			...acc,
 			{ ...item, parentId, depth, index },
@@ -77,7 +25,6 @@ export function flattenTree(
 
 export const iOS = /iPad|iPhone|iPod/.test(navigator.platform);
 
-// This now makes sense as clientId was hoisted up to treeitem
 export function removeItem(items: CourseTreeItem[], clientId: string) {
 	const newItems: CourseTreeItem[] = [];
 
@@ -346,23 +293,6 @@ export function buildTree(
 	}
 	return root.children;
 }
-
-// const isDescendant = (parentId: string, childId: string): boolean => {
-// 	if (parentId === childId) return true;
-
-// 	const stack = [childId];
-// 	while (stack.length > 0) {
-// 		const currentId = stack.pop();
-// 		const currentItem = flattenedItems.find(
-// 			(item) => item.clientId === currentId
-// 		);
-// 		if (!currentItem || !currentItem.parentId) continue;
-// 		if (currentItem.parentId === parentId) return true;
-// 		stack.push(currentItem.parentId);
-// 	}
-
-// 	return false;
-// };
 
 export function removeChildrenOf(
 	items: FlattenedCourseTreeItem[],

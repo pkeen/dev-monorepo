@@ -1,13 +1,12 @@
-// Component taht would be the form that holds the sortable tree
 "use client";
 import {
 	CourseTreeDTO,
 	EditCourseTreeDTO,
 } from "@pete_keen/courses/validators";
-import { SortableTree } from "../../../../packages/courses-ui/src/SortableTree";
+import { SortableTree } from "@pete_keen/courses-ui";
 import { useForm } from "react-hook-form";
 import { Controller } from "react-hook-form";
-import { updateCourseTree } from "./actions";
+import { updateCourseTree } from "../../lib/actions";
 
 export function CoursesForm({ course }: { course: EditCourseTreeDTO }) {
 	const { register, handleSubmit, control } = useForm<CourseTreeDTO>({
@@ -15,6 +14,7 @@ export function CoursesForm({ course }: { course: EditCourseTreeDTO }) {
 	});
 
 	const onSubmit = (data: EditCourseTreeDTO) => {
+		console.log("🚨 Submitting items:", data.items);
 		updateCourseTree(data);
 	};
 

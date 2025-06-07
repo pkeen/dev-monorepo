@@ -135,7 +135,7 @@ export function SortableTree({
 		};
 	}, [flattenedItems, offsetLeft]);
 
-	console.log("Dragging:", { activeId, overId, projected });
+	// console.log("Dragging:", { activeId, overId, projected });
 	// console.log("Flattened items", flattenedItems);
 	// console.log(
 	// 	"Rendering item:",

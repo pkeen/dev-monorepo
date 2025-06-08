@@ -27,10 +27,10 @@
 		"**/*.ts",
 		"**/*.tsx",
 		".next/types/**/*.ts",
-		"../../packages/courses-ui/src/SortableTree/index.ts",
-		"../../packages/courses-ui/src/SortableTree/server-utilities.ts",
-		"../../packages/courses-ui/src/SortableTree/SortableTree.tsx",
-		"../../packages/courses-ui/src/SortableTree/utilities.ts"
+		"../../packages/courses-ui/src/components/admin/SortableTree/index.ts",
+		"../../packages/courses-ui/src/components/admin/SortableTree/server-utilities.ts",
+		"../../packages/courses-ui/src/components/admin/SortableTree/SortableTree.tsx",
+		"../../packages/courses-ui/src/components/admin/SortableTree/utilities.ts"
 	],
 	"exclude": ["node_modules"]
 }

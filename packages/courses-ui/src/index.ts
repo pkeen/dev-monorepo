@@ -2,4 +2,4 @@ export const helloWorld = () => {
 	console.log("Hello World");
 };
 
-export * from "./SortableTree";
+export * from "./components/admin/SortableTree";

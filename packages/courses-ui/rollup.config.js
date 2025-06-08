@@ -5,7 +5,9 @@ import { defineConfig } from "rollup";
 import preserveDirectives from "rollup-preserve-directives";
 import postcss from "rollup-plugin-postcss";
 import sass from "sass";
-import esbuild from "rollup-plugin-esbuild";
+import tailwindcssPostcss from "@tailwindcss/postcss";
+import autoprefixer from "autoprefixer";
+// import esbuild from "rollup-plugin-esbuild";
 
 export default defineConfig({
 	// input: ["src/index.ts", "src/client/index.ts"],
@@ -31,8 +33,8 @@ export default defineConfig({
 		"clsx",
 		"lucide-react",
 		"rollup-preserve-directives",
-		"tailwind-merge",
-		"tailwindcss-animate",
+		// "tailwind-merge",
+		// "tailwindcss-animate",
 		"typescript",
 		"zod",
 		"react/jsx-runtime",
@@ -50,6 +52,7 @@ export default defineConfig({
 			use: sass,
 			modules: true,
 			extract: true,
+			plugins: [tailwindcssPostcss(), autoprefixer()],
 		}),
 		typescript({
 			tsconfig: "./tsconfig.json",

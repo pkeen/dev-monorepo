@@ -183,6 +183,7 @@ const ModuleSlotList = ({ parentIndex }: { parentIndex: number }) => {
 						key={slot.clientId}
 						moduleSlot={slot}
 						index={index}
+						parentIndex={parentIndex}
 					/>
 				))}
 			</SortableContext>
@@ -193,9 +194,11 @@ const ModuleSlotList = ({ parentIndex }: { parentIndex: number }) => {
 const SortableLesson = ({
 	moduleSlot,
 	index,
+	parentIndex,
 }: {
 	moduleSlot: UiModuleSlotDisplay;
 	index: number;
+	parentIndex: number;
 }) => {
 	const {
 		attributes,
@@ -204,7 +207,7 @@ const SortableLesson = ({
 		transform,
 		transition,
 		isDragging,
-	} = useSortable({ id: moduleSlot.clientId }); // Need to create a clientId for this
+	} = useSortable({ id: `mod-${parentIndex}-${moduleSlot.clientId}` }); // Need to create a clientId for this
 
 	const style = {
 		transform: CSS.Transform.toString(transform),

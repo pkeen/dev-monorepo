@@ -32,6 +32,7 @@ import {
 	DragOverlay,
 	DragStartEvent,
 	DropAnimation,
+	KeyboardSensor,
 	Modifier,
 	PointerSensor,
 	useSensor,
@@ -61,15 +62,12 @@ const dropAnimation: DropAnimation = {
 
 export function SortableTree({
 	collapsible,
-	// initialItems,
 	onChange,
 	items,
 	indicator,
 	indentationWidth = 20,
 	removable,
 }: Props) {
-	// const [items, setItems] = useState<CourseTreeItem[]>(initialItems || []);
-
 	const [activeId, setActiveId] = useState<string | null>(null);
 
 	const flattenedItems = useMemo(() => {
@@ -88,7 +86,6 @@ export function SortableTree({
 
 	const [overId, setOverId] = useState<string | null>(null);
 	const [offsetLeft, setOffsetLeft] = useState(0);
-	// console.log("offsetLeft", offsetLeft);
 	const [currentPosition, setCurrentPosition] = useState<{
 		parentId: string | null;
 		overId: string;
@@ -108,8 +105,6 @@ export function SortableTree({
 		? flattenedItems.find(({ clientId }) => clientId === activeId)
 		: null;
 
-	// console.log({ activeItem });
-
 	const projected =
 		activeId && overId
 			? getProjection(
@@ -124,7 +119,7 @@ export function SortableTree({
 	const sensors = useSensors(
 		useSensor(PointerSensor)
 		// useSensor(KeyboardSensor, {
-		//   coordinateGetter,
+		// 	coordinateGetter,
 		// })
 	);
 
@@ -134,24 +129,6 @@ export function SortableTree({
 			offset: offsetLeft,
 		};
 	}, [flattenedItems, offsetLeft]);
-
-	// console.log("Dragging:", { activeId, overId, projected });
-	// console.log("Flattened items", flattenedItems);
-	// console.log(
-	// 	"Rendering item:",
-	// 	name,
-	// 	"depth:",
-	// 	depth,
-	// 	"parentId:",
-	// 	parentId
-	// );
-
-	// // isClient
-	// const [isClient, setIsClient] = useState(false);
-
-	// useEffect(() => {
-	// 	setIsClient(true);
-	// }, []);
 
 	const [hasMounted, setHasMounted] = useState(false);
 	useEffect(() => {

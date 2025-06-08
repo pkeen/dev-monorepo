@@ -34,50 +34,6 @@ import { SelectExistingModule } from "../utils/select-existing-module";
 import { SelectExistingLesson } from "../utils/select-existing-lesson";
 import { courseDisplayToUi } from "./course-display-to-ui";
 
-// export function withClientIds(course: CourseDeepDisplay): UiCourseDeep {
-// 	return {
-// 		...course,
-// 		slots: course.slots.map((slot, i) => {
-// 			const topLevelClientId = slot.id
-// 				? `slot-${slot.id}`
-// 				: `new-slot-${i}`;
-
-// 			if (slot.content.type === "lesson") {
-// 				// Top-level lesson
-// 				return {
-// 					...slot,
-// 					clientId: topLevelClientId,
-// 					content: {
-// 						...slot.content,
-// 					},
-// 				};
-// 			} else {
-// 				// Module with nested lesson slots
-// 				const enrichedModule = {
-// 					...slot.content,
-// 					moduleSlots: slot.content.moduleSlots.map(
-// 						(lessonSlot, j) => ({
-// 							...lessonSlot,
-// 							clientId: lessonSlot.id
-// 								? `lesson-${lessonSlot.id}`
-// 								: `new-lesson-${i}-${j}`,
-// 							content: {
-// 								...lessonSlot.content,
-// 							},
-// 						})
-// 					),
-// 				};
-
-// 				return {
-// 					...slot,
-// 					clientId: topLevelClientId,
-// 					content: enrichedModule,
-// 				};
-// 			}
-// 		}),
-// 	};
-// }
-
 export function CourseEditForm({
 	course,
 	existingLessons,

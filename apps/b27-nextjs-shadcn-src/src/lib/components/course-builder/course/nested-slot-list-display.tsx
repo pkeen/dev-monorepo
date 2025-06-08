@@ -15,9 +15,15 @@ import {
 } from "@dnd-kit/sortable";
 import { useFormContext } from "react-hook-form";
 import { UiCourseSlotDisplay } from "@pete_keen/courses/validators";
-// import { ModuleSlotOutline } from "@pete_keen/courses/types";
 import { CSS } from "@dnd-kit/utilities";
 import { NestedSlotBlock } from "./nested-slot-block-display";
+
+const parseId = (id: string) => {
+	const [type, ...rest] = id.split("-");
+	return { type, key: rest.join("-") };
+};
+
+
 
 interface SlotListProps {
 	fields: UiCourseSlotDisplay[];
@@ -38,7 +44,7 @@ const NestedSortableSlotBlock = ({
 		transform,
 		transition,
 		isDragging,
-	} = useSortable({ id: field.clientId });
+	} = useSortable({ id: `top-${field.clientId}` });
 
 	const style = {
 		transform: CSS.Transform.toString(transform),
@@ -67,37 +73,54 @@ export const NestedSortableSlotList = ({ fields, move }: SlotListProps) => {
 		useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
 	);
 
+	const sortedFields = [...fields].sort((a, b) => a.order - b.order);
+
 	const handleDragEnd = (event: DragEndEvent) => {
 		const { active, over } = event;
+		if (!active || !over) return;
 
-		if (!over || active.id === over.id) return;
+		const from = parseId(active.id as string);
+		const to = parseId(over.id as string);
 
-		const oldIndex = fields.findIndex((f) => f.clientId === active.id);
-		const newIndex = fields.findIndex((f) => f.clientId === over.id);
-		if (oldIndex === -1 || newIndex === -1) return;
+		if (from.type === "top" && to.type === "mod") {
+			// Find top-level slot and remove it
+			const slots = getValues("slots");
+			const sourceIndex = slots.findIndex(
+				(s: UiCourseSlotDisplay) => s.clientId === from.key
+			);
+			const itemToMove = slots[sourceIndex];
 
-		move(oldIndex, newIndex);
+			const [moduleIndexStr] = to.key.split("-");
+			const moduleIndex = parseInt(moduleIndexStr);
 
-		// Reassign `.order` fields in form state after reordering
-		const updatedSlots = getValues("slots").map(
-			(slot: UiCourseSlotDisplay, index: number) => ({
-				...slot,
-				order: index,
-			})
-		);
+			// Remove from top-level
+			slots.splice(sourceIndex, 1);
 
-		setValue("slots", updatedSlots);
+			// Add to module
+			const moduleSlots = slots[moduleIndex].moduleSlots || [];
+			moduleSlots.push({
+				...itemToMove,
+				order: moduleSlots.length,
+			});
+
+			slots[moduleIndex].moduleSlots = moduleSlots;
+
+			// Update order of all slots
+			const reordered = slots.map(
+				(s: UiCourseSlotDisplay, i: number) => ({ ...s, order: i })
+			);
+			setValue("slots", reordered);
+		}
 	};
 
 	return (
 		<DndContext sensors={sensors} onDragEnd={handleDragEnd}>
 			<SortableContext
-				items={fields.map((f) => f.clientId)}
+				items={sortedFields.map((f) => f.clientId)}
 				strategy={verticalListSortingStrategy}
 			>
 				{/* <div className="space-y-2"> */}
-				{fields
-					.sort((a, b) => a.order - b.order)
+				{sortedFields
 					.map((field, index) => (
 						<NestedSortableSlotBlock
 							key={field.clientId}

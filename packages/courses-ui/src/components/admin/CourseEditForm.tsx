@@ -6,8 +6,10 @@ import {
 	Lesson,
 	ModuleDTO,
 	CourseDisplay,
+	EditCourseTreeDTO,
 	UiCourseDisplay,
 	uiCourseDisplay,
+	editCourseTreeDTO,
 } from "@pete_keen/courses/validators";
 import {
 	Form,
@@ -23,52 +25,58 @@ import { Button } from "../ui/button";
 import { Card, CardHeader } from "../ui/card";
 import { AddSlotDialog } from "./add-slot-dialog";
 import { useMemo, useState } from "react";
-import { NestedSortableSlotList } from "./nested-slot-list-display";
-import { editCourse } from "@/lib/actions/course/editCourse";
+// import { NestedSortableSlotList } from "./nested-slot-list-display";
+// import { editCourse } from "@/lib/actions/course/editCourse";
+// import { deleteCourse } from "@/lib/actions/course/deleteCourse";
 import { toast } from "sonner";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { deleteCourse } from "@/lib/actions/course/deleteCourse";
 import { ConfirmDeleteCourseDialog } from "./confirm-delete-course";
-import { SelectExistingModule } from "../utils/select-existing-module";
-import { SelectExistingLesson } from "../utils/select-existing-lesson";
-import { courseDisplayToUi } from "./course-display-to-ui";
+import { SelectExistingModule } from "./select-existing-module";
+import { SelectExistingLesson } from "./select-existing-lesson";
+import { SortableTree } from "./SortableTree";
+import { Controller } from "react-hook-form";
+// import { courseDisplayToUi } from "./course-display-to-ui";
 
 export function CourseEditForm({
 	course,
 	existingLessons,
 	existingModules,
+	onSubmit,
+	onDelete,
 }: {
-	course: CourseDisplay;
+	course: EditCourseTreeDTO;
 	existingLessons: Lesson[];
 	existingModules: ModuleDTO[];
+	onSubmit: (values: EditCourseTreeDTO) => Promise<EditCourseTreeDTO>;
+	onDelete: (id: number) => Promise<void>;
 }) {
+	const form = useForm({
+		resolver: zodResolver(editCourseTreeDTO),
+		defaultValues: course,
+	});
 	// 🟣 1. Build a *stable* clientId without randomness
-	const defaultValues = useMemo(() => courseDisplayToUi(course), [course]);
-	console.log("Form values:", defaultValues);
+	// const defaultValues = useMemo(() => courseDisplayToUi(course), [course]);
+	console.log("Form values:", form.getValues());
 
 	const [selectLessonOpen, setSelectLessonOpen] = useState(false);
 	const [selectModuleOpen, setSelectModuleOpen] = useState(false);
 	const [isPending, startTransition] = useTransition();
 	const router = useRouter();
 	const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-	const form = useForm<UiCourseDisplay>({
-		resolver: zodResolver(uiCourseDisplay),
-		defaultValues,
-	});
 
 	const { fields, append, move } = useFieldArray({
 		control: form.control,
-		name: "slots",
+		name: "items",
 	});
 
-	const onSubmit = (values: UiCourseDisplay) => {
+	const handleSubmit = (values: EditCourseTreeDTO) => {
 		console.log(values);
 		startTransition(async () => {
 			try {
-				const course = await editCourse(values);
+				const course = await onSubmit(values);
 				toast.success("Course updated!");
-				form.reset(courseDisplayToUi(course));
+				form.reset(course);
 				// router.refresh(); // reload data if you're on the same page
 			} catch (err) {
 				toast.error("Something went wrong updating the course.");
@@ -80,7 +88,7 @@ export function CourseEditForm({
 	const handleDelete = () => {
 		startTransition(async () => {
 			try {
-				await deleteCourse(course.id);
+				await onDelete(course.id);
 				toast.success("Course deleted!");
 				router.push("/admin/courses");
 			} catch (err) {
@@ -97,7 +105,7 @@ export function CourseEditForm({
 			<Form {...form}>
 				<form
 					// onSubmit={form.handleSubmit(onSubmit)}
-					onSubmit={form.handleSubmit(onSubmit, (errors) =>
+					onSubmit={form.handleSubmit(handleSubmit, (errors) =>
 						console.log("❌ validation errors", errors)
 					)}
 					className="space-y-8"
@@ -233,7 +241,21 @@ export function CourseEditForm({
 								}}
 							/>
 						</div>
-						<NestedSortableSlotList fields={fields} move={move} />
+						<Controller
+							control={form.control}
+							name="items"
+							render={({ field }) => (
+								<SortableTree
+									items={field.value ?? []}
+									onChange={field.onChange}
+									indicator={true}
+									removable={true}
+									collapsible={true}
+									indentationWidth={50}
+								/>
+							)}
+						/>
+						{/* <NestedSortableSlotList fields={fields} move={move} /> */}
 					</Card>
 
 					<Button

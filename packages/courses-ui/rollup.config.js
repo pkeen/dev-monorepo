@@ -9,6 +9,19 @@ import tailwindcssPostcss from "@tailwindcss/postcss";
 import autoprefixer from "autoprefixer";
 // import esbuild from "rollup-plugin-esbuild";
 
+/* --- inline PostCSS plugin ------------------------------------ */
+const stripTailwindLayers = () => ({
+	postcssPlugin: "strip-tailwind-layers",
+	AtRule(atRule) {
+		if (atRule.name === "layer") {
+			/* keep the inner rules, drop the wrapper */
+			atRule.replaceWith(atRule.nodes);
+		}
+	},
+});
+stripTailwindLayers.postcss = true;
+/* --------------------------------------------------------------- */
+
 export default defineConfig({
 	// input: ["src/index.ts", "src/client/index.ts"],
 	input: "src/index.ts",
@@ -52,7 +65,17 @@ export default defineConfig({
 			use: sass,
 			modules: true,
 			extract: true,
-			plugins: [tailwindcssPostcss(), autoprefixer()],
+
+			modules: {
+				// treat anything that matches the regex as *global* CSS
+				globalModulePaths: [/lib\/globals\.css$/],
+			},
+
+			plugins: [
+				tailwindcssPostcss(),
+				autoprefixer(),
+				stripTailwindLayers(),
+			],
 		}),
 		typescript({
 			tsconfig: "./tsconfig.json",

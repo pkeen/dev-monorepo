@@ -3,3 +3,5 @@ export const helloWorld = () => {
 };
 
 export * from "./components";
+
+import "./globals.css";

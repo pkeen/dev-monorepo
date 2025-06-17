@@ -662,3 +662,14 @@ export const editCourseTreeDTO = courseTreeDTO.extend({
 	items: z.array(courseTreeItemUpsert).default([]),
 });
 export type EditCourseTreeDTO = z.infer<typeof editCourseTreeDTO>;
+
+/*
+ * Module Tree
+ */
+export const moduleTreeDTO = z.object({
+	id: z.number(),
+	name: z.string(),
+	description: z.string().optional().nullable(),
+	isPublished: z.boolean().optional(),
+	items: z.array(courseTreeItem).default([]),
+});

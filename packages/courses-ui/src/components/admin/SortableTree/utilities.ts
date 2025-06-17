@@ -8,6 +8,7 @@ export function flatten(
 	parentId: string | null = null,
 	depth = 0
 ): FlattenedCourseTreeItem[] {
+	console.log("flatten", items);
 	return items.reduce<FlattenedCourseTreeItem[]>((acc, item, index) => {
 		return [
 			...acc,

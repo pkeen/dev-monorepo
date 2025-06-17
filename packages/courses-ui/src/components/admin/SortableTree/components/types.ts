@@ -18,7 +18,7 @@ import type { RefObject } from "react";
 
 /// New Types
 export interface CourseTreeItem {
-	id: number;
+	id: number | undefined;
 	type: "module" | "lesson";
 	name: string;
 	children: CourseTreeItem[]; // type lesson cannot have children

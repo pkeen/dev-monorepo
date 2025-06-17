@@ -68,6 +68,7 @@ export function CourseEditForm({
 	const { fields, append, move } = useFieldArray({
 		control: form.control,
 		name: "items",
+		keyName: "fieldId", // anything except “id”
 	});
 
 	const handleSubmit = (values: EditCourseTreeDTO) => {
@@ -196,10 +197,10 @@ export function CourseEditForm({
 										moduleId: item.id,
 										lessonId: null,
 										order: fields.length, // <-- Important: add at end
-										display: {
-											name: item.name,
-											isPublished: item.isPublished,
-										},
+										name: item.name,
+										isPublished: item.isPublished,
+										type: "module",
+										children: [], // TODO make this item.children
 									});
 									setSelectModuleOpen(false); // Close the dialog after selection
 								}}
@@ -232,10 +233,10 @@ export function CourseEditForm({
 										order: fields.length, // <-- Important: add at end
 										lessonId: item.id,
 										moduleId: null,
-										display: {
-											name: item.name,
-											isPublished: item.isPublished,
-										},
+										name: item.name,
+										type: "lesson",
+										isPublished: item.isPublished,
+										children: [],
 									});
 									setSelectLessonOpen(false); // Close the dialog after selection
 								}}
@@ -246,7 +247,7 @@ export function CourseEditForm({
 							name="items"
 							render={({ field }) => (
 								<SortableTree
-									items={field.value ?? []}
+									items={fields}
 									onChange={field.onChange}
 									indicator={true}
 									removable={true}

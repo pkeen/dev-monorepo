@@ -2,14 +2,26 @@
 "use client";
 
 import { CourseEditForm } from "@pete_keen/courses-ui";
-import { EditCourseTreeDTO } from "@pete_keen/courses/validators";
+import {
+	EditCourseTreeDTO,
+	Lesson,
+	ModuleDTO,
+} from "@pete_keen/courses/validators";
 
-export function CourseEditWrapper({ course }: { course: EditCourseTreeDTO }) {
+export function CourseEditWrapper({
+	course,
+	existingLessons = [],
+	existingModules = [],
+}: {
+	course: EditCourseTreeDTO;
+	existingLessons?: Lesson[];
+	existingModules?: ModuleDTO[];
+}) {
 	return (
 		<CourseEditForm
 			course={course}
-			existingLessons={[]}
-			existingModules={[]}
+			existingLessons={existingLessons}
+			existingModules={existingModules}
 			onSubmit={async (values) => {
 				console.log(values);
 				return values;

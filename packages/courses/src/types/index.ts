@@ -174,6 +174,7 @@ export interface ModuleCRUD
 		ModuleOutline
 	> {
 	findUsage: (id: number) => Promise<ModuleUsage>;
+    tree: (id: number) => Promise<ModuleTreeDTO | null>;
 }
 
 export interface LessonCRUD

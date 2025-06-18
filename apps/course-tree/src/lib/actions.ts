@@ -12,3 +12,13 @@ export async function updateCourseTree(data: EditCourseTreeDTO) {
 		throw error;
 	}
 }
+
+export async function getModuleTree(moduleId: number) {
+	try {
+		const moduleTree = await courses.module.tree(moduleId);
+		return moduleTree;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+}

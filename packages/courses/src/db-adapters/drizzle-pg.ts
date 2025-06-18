@@ -43,6 +43,8 @@ import {
 	CourseTreeItem,
 	CourseTreeItemUpsert,
 	EditCourseTreeDTO,
+	ModuleTreeDTO,
+    courseTreeItem,
 } from "validators";
 import { compatibilityVersion } from "drizzle-orm/version";
 
@@ -429,6 +431,102 @@ const createCRUD = (
 			};
 		};
 
+		// const tree = async (id: number): Promise<ModuleTreeDTO | null> => {
+		// 	const results = await db
+		// 		.select({
+		// 			module: schema.module,
+		// 			moduleSlotId: schema.moduleSlot.id,
+		// 			order: schema.moduleSlot.order,
+		// 			lessonId: schema.moduleSlot.lessonId,
+		// 			lessonName: schema.lesson.name,
+		// 			lessonIsPublished: schema.lesson.isPublished,
+		// 		})
+		// 		.from(schema.module)
+		// 		.leftJoin(
+		// 			schema.moduleSlot,
+		// 			eq(schema.module.id, schema.moduleSlot.moduleId)
+		// 		)
+		// 		.leftJoin(
+		// 			schema.lesson,
+		// 			eq(schema.lesson.id, schema.moduleSlot.lessonId)
+		// 		)
+		// 		.where(eq(schema.module.id, id))
+		// 		.orderBy(schema.moduleSlot.order);
+
+		// 	if (results.length === 0) return null;
+
+		// 	const { module } = results[0];
+
+		// 	const items: CourseTreeItem[] = results
+		// 		.filter((r) => r.moduleSlotId !== null)
+		// 		.map((row, i) => ({
+		// 			id: row.moduleSlotId!,
+		// 			type: "lesson",
+		// 			name: row.lessonName ?? "",
+		// 			order: row.order ?? 0,
+		// 			moduleId: id,
+		// 			lessonId: row.lessonId ?? undefined,
+		// 			isPublished: row.lessonIsPublished ?? false,
+		// 			clientId: `${i}`,
+		// 			children: [],
+		// 		}));
+
+		// 	return {
+		// 		...module,
+		// 		items,
+		// 	};
+		// };
+
+        const tree = async (
+			id: number
+		): Promise<ModuleTreeDTO | null> => {
+			const results = await db
+				.select({
+					module: schema.module,
+					moduleSlotId: schema.moduleSlot.id,
+					order: schema.moduleSlot.order,
+					lessonId: schema.moduleSlot.lessonId,
+					lessonName: schema.lesson.name,
+					lessonIsPublished: schema.lesson.isPublished,
+				})
+				.from(schema.module)
+				.leftJoin(
+					schema.moduleSlot,
+					eq(schema.module.id, schema.moduleSlot.moduleId)
+				)
+				.leftJoin(
+					schema.lesson,
+					eq(schema.lesson.id, schema.moduleSlot.lessonId)
+				)
+				.where(eq(schema.module.id, id))
+				.orderBy(schema.moduleSlot.order);
+
+			if (results.length === 0) return null;
+
+			const { module } = results[0];
+
+			const items: CourseTreeItem[] = results
+				.filter((r) => r.moduleSlotId !== null)
+				.map((row, i) =>
+					courseTreeItem.parse({
+						id: row.moduleSlotId!,
+						type: "lesson",
+						name: row.lessonName ?? "",
+						order: row.order ?? 0,
+						moduleId: id,
+						lessonId: row.lessonId ?? undefined,
+						isPublished: row.lessonIsPublished ?? false,
+						clientId: `${i}`,
+						// children will be auto-filled as [] via Zod .default([])
+					})
+				);
+
+			return {
+				...module,
+				items,
+			};
+		};
+
 		return {
 			list,
 			get,
@@ -436,6 +534,7 @@ const createCRUD = (
 			destroy,
 			update,
 			outline,
+			tree,
 			// updateWithSlots,
 			findUsage,
 		};
@@ -1285,8 +1384,8 @@ const createCRUD = (
 					type: "lesson",
 					name: row.lessonName ?? "",
 					order: row.order,
-					moduleId: row.moduleId,
-					lessonId: row.lessonId ?? undefined,
+					moduleId: null,
+					lessonId: row.lessonId,
 					isPublished: row.lessonIsPublished ?? false,
 					clientId: "", // to be filled later
 					children: [],

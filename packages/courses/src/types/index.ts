@@ -17,6 +17,7 @@ import {
 	CourseDisplay,
 	CourseTreeDTO,
 	EditCourseTreeDTO,
+    ModuleTreeDTO,
 } from "validators";
 
 // // Base interfaces for database models

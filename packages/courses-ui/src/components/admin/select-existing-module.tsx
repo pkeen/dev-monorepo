@@ -11,7 +11,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { ScrollArea } from "../ui/scroll-area";
 import { useState } from "react";
-import { ModuleDTO } from "@pete_keen/courses/validators";
+import { ModuleDTO, ModuleTreeDTO } from "@pete_keen/courses/validators";
 
 interface SelectExistingModuleProps {
 	title: string;
@@ -19,6 +19,7 @@ interface SelectExistingModuleProps {
 	onOpenChange: (open: boolean) => void;
 	items: ModuleDTO[];
 	onSelect: (item: ModuleDTO) => void;
+    // fetchModuleTree: (moduleId: number) => Promise<ModuleTreeDTO | null>;
 }
 
 export function SelectExistingModule({
@@ -27,6 +28,7 @@ export function SelectExistingModule({
 	onOpenChange,
 	items,
 	onSelect,
+    // fetchModuleTree,
 }: SelectExistingModuleProps) {
 	const [search, setSearch] = useState("");
 

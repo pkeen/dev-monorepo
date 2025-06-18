@@ -10,6 +10,7 @@ import {
 	UiCourseDisplay,
 	uiCourseDisplay,
 	editCourseTreeDTO,
+	ModuleTreeDTO,
 } from "@pete_keen/courses/validators";
 import {
 	Form,
@@ -44,12 +45,14 @@ export function CourseEditForm({
 	existingModules,
 	onSubmit,
 	onDelete,
+	fetchModuleTree,
 }: {
 	course: EditCourseTreeDTO;
 	existingLessons: Lesson[];
 	existingModules: ModuleDTO[];
 	onSubmit: (values: EditCourseTreeDTO) => Promise<EditCourseTreeDTO>;
 	onDelete: (id: number) => Promise<void>;
+	fetchModuleTree: (moduleId: number) => Promise<ModuleTreeDTO | null>;
 }) {
 	const form = useForm({
 		resolver: zodResolver(editCourseTreeDTO),
@@ -189,20 +192,32 @@ export function CourseEditForm({
 								open={selectModuleOpen}
 								onOpenChange={setSelectModuleOpen}
 								items={existingModules}
-								onSelect={(item) => {
+								onSelect={async (item) => {
+									const moduleTree = await fetchModuleTree(
+										item.id
+									);
+									if (!moduleTree) return;
+									// get moduletree action
 									append({
 										id: undefined,
 										clientId: `new-${fields.length}`,
 										courseId: course.id,
-										moduleId: item.id,
+										moduleId: moduleTree.id,
 										lessonId: null,
-										order: fields.length, // <-- Important: add at end
-										name: item.name,
-										isPublished: item.isPublished,
+										order: fields.length,
+										name: moduleTree.name,
+										isPublished:
+											moduleTree.isPublished ?? false,
 										type: "module",
-										children: [], // TODO make this item.children
+										children: moduleTree.items.map(
+											(item, i) => ({
+												...item,
+												clientId: `new-${fields.length}-${i}`,
+											})
+										),
 									});
-									setSelectModuleOpen(false); // Close the dialog after selection
+
+									setSelectModuleOpen(false);
 								}}
 							/>
 							<AddSlotDialog
@@ -247,7 +262,7 @@ export function CourseEditForm({
 							name="items"
 							render={({ field }) => (
 								<SortableTree
-									items={fields}
+									items={field.value ?? []}
 									onChange={field.onChange}
 									indicator={true}
 									removable={true}

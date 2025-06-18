@@ -7,6 +7,7 @@ import {
 	Lesson,
 	ModuleDTO,
 } from "@pete_keen/courses/validators";
+import { getModuleTree } from "@/lib/actions";
 
 export function CourseEditWrapper({
 	course,
@@ -29,6 +30,9 @@ export function CourseEditWrapper({
 			onDelete={async (id) => {
 				console.log(id);
 				return;
+			}}
+			fetchModuleTree={async (moduleId: number) => {
+				return await getModuleTree(moduleId);
 			}}
 		/>
 	);

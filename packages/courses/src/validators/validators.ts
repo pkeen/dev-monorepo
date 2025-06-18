@@ -615,7 +615,45 @@ export type UiCourseDisplay = z.infer<typeof uiCourseDisplay>;
  * Tree Types
  */
 
-export const courseTreeItem: z.ZodType<any> = z.lazy(() =>
+// export const courseTreeItem: z.ZodType<any> = z.lazy(() =>
+// 	z.object({
+// 		id: z.number(),
+// 		type: z.enum(["module", "lesson"]),
+// 		name: z.string(),
+// 		order: z.number(),
+// 		moduleId: z.number().optional(),
+// 		lessonId: z.number().optional(),
+// 		isPublished: z.boolean().optional(),
+// 		clientId: z.string(),
+// 		collapsed: z.boolean().optional(),
+// 		children: z.array(courseTreeItem).default([]),
+// 	})
+// );
+// export type CourseTreeItem = z.infer<typeof courseTreeItem>;
+
+// Step 1: Define the TypeScript interface first for clarity
+// 1. Declare the schema (recursive with z.lazy)
+// First, define the type
+export type CourseTreeItem = {
+	id: number;
+	type: "module" | "lesson";
+	name: string;
+	order: number;
+	moduleId?: number;
+	lessonId?: number;
+	isPublished?: boolean;
+	clientId: string;
+	collapsed?: boolean;
+	children: CourseTreeItem[]; // allow undefined
+};
+
+// 2. Input version allows children to be undefined
+type CourseTreeItemInput = Omit<CourseTreeItem, "children"> & {
+	children?: CourseTreeItemInput[];
+};
+
+// 3. Use z.ZodType<Output, Def, Input> to reconcile
+export const courseTreeItem: z.ZodType<CourseTreeItem, z.ZodTypeDef, CourseTreeItemInput> = z.lazy(() =>
 	z.object({
 		id: z.number(),
 		type: z.enum(["module", "lesson"]),
@@ -626,10 +664,9 @@ export const courseTreeItem: z.ZodType<any> = z.lazy(() =>
 		isPublished: z.boolean().optional(),
 		clientId: z.string(),
 		collapsed: z.boolean().optional(),
-		children: z.array(courseTreeItem).default([]),
+		children: z.array(courseTreeItem).default([]), // optional in input, always defined in output
 	})
 );
-export type CourseTreeItem = z.infer<typeof courseTreeItem>;
 
 export const courseTreeDTO = z.object({
 	id: z.number(),
@@ -673,3 +710,5 @@ export const moduleTreeDTO = z.object({
 	isPublished: z.boolean().optional(),
 	items: z.array(courseTreeItem).default([]),
 });
+
+export type ModuleTreeDTO = z.infer<typeof moduleTreeDTO>;

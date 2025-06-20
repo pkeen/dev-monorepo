@@ -44,7 +44,7 @@ import {
 	CourseTreeItemUpsert,
 	EditCourseTreeDTO,
 	ModuleTreeDTO,
-    courseTreeItem,
+	courseTreeItem,
 } from "validators";
 import { compatibilityVersion } from "drizzle-orm/version";
 
@@ -147,6 +147,7 @@ const createCRUD = (
 		moduleId: number,
 		children: CourseTreeItemUpsert[]
 	) => {
+		console.log("ModuleTreeItemUpsert", children);
 		// 1) Load existing module slots for this module
 		const existingSlots = await db
 			.select()
@@ -164,7 +165,11 @@ const createCRUD = (
 			.filter((s) => !incomingMap.has(s.id))
 			.map((s) => s.id);
 
-		const toCreate = children.filter((s) => !s.id);
+		// this recognises some items may have an id from moduleSlots
+		const toCreate = children.filter((s) => {
+			const notInDb = !s.id || !existingMap.has(s.id);
+			return notInDb;
+		});
 
 		const toUpdate = children.filter((s) => {
 			if (!s.id) return false;
@@ -173,6 +178,10 @@ const createCRUD = (
 				!!old && (old.order !== s.order || old.lessonId !== s.lessonId)
 			);
 		});
+
+		console.log("toUpdate", toUpdate);
+		console.log("toCreate", toCreate);
+		console.log("toDelete", toDelete);
 
 		// 4) Perform mutations
 		if (toDelete.length) {
@@ -477,9 +486,7 @@ const createCRUD = (
 		// 	};
 		// };
 
-        const tree = async (
-			id: number
-		): Promise<ModuleTreeDTO | null> => {
+		const tree = async (id: number): Promise<ModuleTreeDTO | null> => {
 			const results = await db
 				.select({
 					module: schema.module,
@@ -636,6 +643,7 @@ const createCRUD = (
 			courseId: number,
 			incomingItems: CourseTreeItemUpsert[]
 		) => {
+			console.log("CourseTreeItemUpsert", incomingItems);
 			// 1) Flatten top-level course slots
 			const incomingSlots = incomingItems.map((item) => ({
 				id: item.id,
@@ -659,7 +667,12 @@ const createCRUD = (
 			const toDelete = existingSlots
 				.filter((s) => !incomingMap.has(s.id))
 				.map((s) => s.id);
-			const toCreate = incomingSlots.filter((s) => !s.id);
+			// this recognises some items may have an id from moduleSlots
+			const toCreate = incomingSlots.filter((s) => {
+				const notInDb = !s.id || !existingMap.has(s.id);
+				return notInDb;
+			});
+
 			const toUpdate = incomingSlots.filter((s) => {
 				if (!s.id) return false;
 				const old = existingMap.get(s.id);
@@ -670,6 +683,10 @@ const createCRUD = (
 						old.moduleId !== s.moduleId)
 				);
 			});
+
+			console.log("toUpdate", toUpdate);
+			console.log("toCreate", toCreate);
+			console.log("toDelete", toDelete);
 
 			// 4) Execute mutations
 			if (toDelete.length) {

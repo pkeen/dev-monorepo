@@ -60,7 +60,7 @@ export function CourseEditForm({
 	});
 	// 🟣 1. Build a *stable* clientId without randomness
 	// const defaultValues = useMemo(() => courseDisplayToUi(course), [course]);
-	console.log("Form values:", form.getValues());
+	// console.log("Form values:", form.getValues());
 
 	const [selectLessonOpen, setSelectLessonOpen] = useState(false);
 	const [selectModuleOpen, setSelectModuleOpen] = useState(false);
@@ -101,8 +101,6 @@ export function CourseEditForm({
 			}
 		});
 	};
-
-	console.log("Form values:", form.getValues());
 
 	return (
 		<div>

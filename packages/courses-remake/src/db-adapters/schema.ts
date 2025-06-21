@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
 	pgTable,
 	integer,
@@ -12,7 +13,12 @@ import {
 	timestamp,
 	PgEnum,
 } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
+import { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
+import { NeonHttpDatabase } from "drizzle-orm/neon-http";
+
+export type DrizzleDatabase =
+	| PgDatabase<PgQueryResultHKT, any>
+	| NeonHttpDatabase;
 
 export const courses = pgSchema("courses");
 
@@ -121,3 +127,65 @@ export const createSchema = () => {
 		video,
 	};
 };
+
+// TODO: Work this out
+/** Call this exactly once after you create the tables.
+ *  After that the trigger lives in the database.
+ */
+export async function initCourseSchema(db: DrizzleDatabase) {
+	await db.execute(sql`
+    DO $$
+    BEGIN
+      /* install trigger func once per DB */
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_proc WHERE proname = 'trg_course_node_no_cycles'
+      ) THEN
+
+        CREATE OR REPLACE FUNCTION trg_course_node_no_cycles()
+        RETURNS trigger LANGUAGE plpgsql AS $$
+        BEGIN
+          /* root nodes are always fine */
+          IF NEW.parent_id IS NULL THEN
+            RETURN NEW;
+          END IF;
+
+          /* parent must belong to the same course */
+          IF NEW.course_id <> (
+               SELECT course_id FROM course_node WHERE id = NEW.parent_id
+             )
+          THEN
+            RAISE EXCEPTION USING
+              ERRCODE = '23514',          -- check_violation
+              MESSAGE = format(
+                'Parent node % belongs to a different course', NEW.parent_id
+              );
+          END IF;
+
+          /* prevent cycles: is New.parent one of my descendants? */
+          IF EXISTS (
+            WITH RECURSIVE anc(id) AS (
+              SELECT NEW.parent_id
+              UNION ALL
+              SELECT parent_id
+              FROM course_node
+              WHERE id = anc.id
+                AND parent_id IS NOT NULL
+            )
+            SELECT 1 FROM anc WHERE id = NEW.id
+          ) THEN
+            RAISE EXCEPTION USING
+              ERRCODE = '23514',
+              MESSAGE = 'Cycle detected: node cannot be its own ancestor';
+          END IF;
+
+          RETURN NEW;
+        END $$;
+
+        CREATE TRIGGER course_node_no_cycles
+        BEFORE INSERT OR UPDATE ON course_node
+        FOR EACH ROW EXECUTE FUNCTION trg_course_node_no_cycles();
+
+      END IF;
+    END $$;
+  `);
+}

@@ -51,7 +51,7 @@ export const lesson = courses.table("lesson", {
 	content: text("content"),
 });
 
-export const courseSlot = courses.table(
+export const courseSlot = courses.table( 
 	"course_slot",
 	{
 		id: serial("id").primaryKey(),

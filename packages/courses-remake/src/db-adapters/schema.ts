@@ -28,7 +28,7 @@ export const course = courses.table(
 		id: serial("id").primaryKey(),
 		userId: text("user_id").notNull(), // references external foreign key from auth
 		title: varchar("title", { length: 256 }).notNull(),
-		description: text("description").notNull(),
+		excerpt: text("excerpt").notNull(),
 		isPublished: boolean("is_published").notNull().default(false),
 	},
 	(table) => ({
@@ -47,7 +47,7 @@ export const contentItem = courses.table("content_item", {
 	id: serial("id").primaryKey(),
 	type: contentType("type").notNull(),
 	title: text("title").notNull(),
-	description: text("description"),
+	isPublished: boolean("is_published").notNull().default(false),
 	createdAt: timestamp("created_at", { withTimezone: true })
 		.defaultNow()
 		.notNull(),
@@ -94,7 +94,7 @@ export const video = courses.table("video", {
 	title: varchar("title", { length: 256 }).notNull(),
 	thumbnailUrl: text("thumbnail_url").notNull(),
 	isPublished: boolean("is_published").notNull().default(false),
-	order: integer("order").notNull(), // NEW
+	order: integer("order").notNull(), // NEW // WHY??
 	// durationSeconds: integer("duration_seconds").notNull(),
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 	updatedAt: timestamp("updated_at").notNull().defaultNow(),

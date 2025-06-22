@@ -1,6 +1,5 @@
 import {
 	Lesson,
-	Module,
 	ModuleOutline,
 	ModuleSlot,
 	CreateModuleDTO,
@@ -10,11 +9,9 @@ import {
 	Video,
 	CreateVideoDTO,
 	EditVideoDTO,
-	CourseDeepDisplay,
 	NewCourseDTO,
 	EditCourseDTO,
 	CourseDTO,
-	CourseDisplay,
 	CourseTreeDTO,
 	EditCourseTreeDTO,
     ModuleTreeDTO,

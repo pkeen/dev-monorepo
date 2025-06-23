@@ -156,7 +156,7 @@ export const courseTreeItemUpsert: z.ZodType<any> = z.lazy(() =>
 );
 export type CourseTreeItemUpsert = z.infer<typeof courseTreeItemUpsert>;
 
-export const editCourseTreeDTO = courseTree.extend({
+export const editCourseTreeDTO = courseTreeDTO.extend({
 	items: z.array(courseTreeItemUpsert).default([]),
 });
 export type EditCourseTreeDTO = z.infer<typeof editCourseTreeDTO>;

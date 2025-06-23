@@ -4,7 +4,6 @@ import {
 	CourseDTO,
 	CourseTreeDTO,
 	EditCourseTreeDTO,
-	ModuleTreeDTO,
 	CourseNodeDTO,
 	CreateCourseNodeDTO,
 	CreateCourseDTO,
@@ -12,7 +11,6 @@ import {
 	ContentItem,
 	LessonDetail,
 	VideoDTO,
-	CourseTree,
 } from "validators";
 
 export {
@@ -24,6 +22,7 @@ export {
 	ContentItem,
 	LessonDetail,
 	VideoDTO,
+	CourseTreeDTO,
 };
 
 /*
@@ -43,7 +42,7 @@ interface CRUDOperations<G, C, E, L> {
 
 export interface CourseCRUD
 	extends CRUDOperations<
-		CourseTree,
+		CourseTreeDTO,
 		CreateCourseDTO,
 		EditCourseTreeDTO,
 		CourseDTO

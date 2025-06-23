@@ -151,3 +151,26 @@ const createCRUD = (
 		course: createCourseRepo(db, schema),
 	};
 };
+
+export const DrizzlePGAdapter = (
+	db: DrizzleDatabase,
+	schema: DefaultSchema = defaultSchema
+): DBAdapter => {
+	return {
+		...createCRUD(db, schema),
+	};
+};
+
+export interface DBAdapter {
+	course: CourseCRUD;
+	// module: ModuleCRUD;
+	// lesson: LessonCRUD;
+	// video: VideoCRUD;
+}
+
+export const createCoursesDBAdapter = (db: DrizzleDatabase) => {
+	return {
+		adapter: DrizzlePGAdapter(db),
+		schema: defaultSchema,
+	};
+};

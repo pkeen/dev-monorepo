@@ -95,24 +95,24 @@ export interface CourseCRUD
 
 export interface VideoCRUD
 	extends CRUDOperations<VideoDTO, CreateVideoDTO, EditVideoDTO, VideoDTO> {
-	findUsage: (id: number) => Promise<VideoUsage>;
+	// findUsage: (id: number) => Promise<VideoUsage>;
 }
 
-export interface LessonUsage {
-	inCourseSlots: CourseSlot[];
-	inModuleSlots: ModuleSlot[];
-	totalCount: number;
-}
+// export interface LessonUsage {
+// 	inCourseSlots: CourseSlot[];
+// 	inModuleSlots: ModuleSlot[];
+// 	totalCount: number;
+// }
 
-export interface ModuleUsage {
-	inCourseSlots: CourseSlot[];
-	totalCount: number;
-}
+// export interface ModuleUsage {
+// 	inCourseSlots: CourseSlot[];
+// 	totalCount: number;
+// }
 
-export interface VideoUsage {
-	inLessons: Lesson[];
-	totalCount: number;
-}
+// export interface VideoUsage {
+// 	inLessons: Lesson[];
+// 	totalCount: number;
+// }
 
 // export {
 // 	Lesson,

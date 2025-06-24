@@ -5,13 +5,13 @@ import { arrayMove } from "@dnd-kit/sortable";
 
 export function flatten(
 	items: CourseTreeItem[],
-	clientParentId: string | null = null,
+	parentId: string | null = null,
 	depth = 0
 ): FlattenedCourseTreeItem[] {
 	return items.reduce<FlattenedCourseTreeItem[]>((acc, item, index) => {
 		return [
 			...acc,
-			{ ...item, clientParentId, depth, index },
+			{ ...item, parentId, depth, index },
 			...flatten(item.children, item.clientId, depth + 1),
 		];
 	}, []);
@@ -237,9 +237,9 @@ export function assignSiblingOrder(
 	const grouped = new Map<string | null, FlattenedCourseTreeItem[]>();
 
 	for (const item of items) {
-		const group = grouped.get(item.clientParentId) || [];
+		const group = grouped.get(item.parentId) || [];
 		group.push(item);
-		grouped.set(item.clientParentId, group);
+		grouped.set(item.parentId, group);
 	}
 
 	// Assign order within each group
@@ -265,10 +265,10 @@ export function buildTree(
 		children: [],
 		id: 0,
 		type: "module",
-		title: "root",
+		name: "root",
 		order: 0,
-		contentId: 0,
-		parentId: null,
+		moduleId: null,
+		lessonId: null,
 		isPublished: true,
 	};
 	const nodes: Record<string, CourseTreeItem> = { [root.clientId]: root };
@@ -301,10 +301,7 @@ export function removeChildrenOf(
 	const excludeParentIds = [...ids];
 
 	return items.filter((item) => {
-		if (
-			item.clientParentId &&
-			excludeParentIds.includes(item.clientParentId)
-		) {
+		if (item.parentId && excludeParentIds.includes(item.parentId)) {
 			if (item.children.length) {
 				excludeParentIds.push(item.clientId);
 			}
@@ -324,5 +321,5 @@ export function isModule(item: FlattenedCourseTreeItem): boolean {
 }
 
 export function isTopLevel(item: FlattenedCourseTreeItem): boolean {
-	return item.clientParentId === null;
+	return item.parentId === null;
 }

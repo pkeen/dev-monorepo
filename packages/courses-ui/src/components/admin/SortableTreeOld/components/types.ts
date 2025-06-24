@@ -17,22 +17,23 @@ import type { RefObject } from "react";
 // }
 
 /// New Types
-export type CourseTreeItem = {
-	id: number;
-	type: "module" | "lesson" | "quiz" | "file";
-	title: string;
-	order: number;
-	contentId: number;
-	isPublished?: boolean;
+export interface CourseTreeItem {
+	id: number | undefined;
+	type: "module" | "lesson";
+	name: string;
+	children: CourseTreeItem[]; // type lesson cannot have children
+	order: number; // have to see how this works (maybe its just added at saving time
+	moduleId: number | null;
+	lessonId: number | null;
 	clientId: string;
 	collapsed?: boolean;
-	parentId: number | null;
-	children: CourseTreeItem[]; // allow undefined
-};
+	isPublished: boolean;
+	// collapsed?: boolean;
+}
 
 export interface FlattenedCourseTreeItem extends CourseTreeItem {
 	// clientId: string;
-	clientParentId: string | null;
+	parentId: null | string;
 	depth: number;
 	index: number;
 }

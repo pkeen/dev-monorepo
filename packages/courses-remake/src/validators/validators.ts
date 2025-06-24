@@ -101,13 +101,13 @@ export type EditVideoDTO = z.infer<typeof editVideoDTO>;
 export type CourseTreeItem = {
 	id: number;
 	type: "module" | "lesson" | "quiz" | "file";
-	name: string;
+	title: string;
 	order: number;
 	contentId: number;
 	isPublished?: boolean;
 	clientId: string;
 	collapsed?: boolean;
-	parentId?: number;
+	parentId?: number | null;
 	children: CourseTreeItem[]; // allow undefined
 };
 
@@ -125,7 +125,7 @@ export const courseTreeItem: z.ZodType<
 	z.object({
 		id: z.number(),
 		type: contentType,
-		name: z.string(),
+		title: z.string(),
 		order: z.number(),
 		contentId: z.number(),
 		isPublished: z.boolean().optional(),

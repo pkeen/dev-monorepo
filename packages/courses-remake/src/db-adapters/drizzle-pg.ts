@@ -74,14 +74,14 @@ const createCRUD = (
 					return {
 						id: courseNode.id,
 						type: contentItem.type,
-						name: contentItem.title,
+						title: contentItem.title,
 						order: courseNode.order,
 						contentId: courseNode.contentId,
 						isPublished: contentItem.isPublished,
 						clientId: "", // populate this if needed
 						collapsed: false, // or from DB if stored
 						children: [], // will be filled in next step
-						parentId: courseNode.parentId ?? undefined,
+						parentId: courseNode.parentId ?? null,
 					};
 				});
 

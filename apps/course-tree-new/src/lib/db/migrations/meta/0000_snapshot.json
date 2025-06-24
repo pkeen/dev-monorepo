@@ -1,5 +1,5 @@
 {
-  "id": "e00e08a8-68f2-4e9b-8361-11977a33436d",
+  "id": "80200ddc-77df-4a81-b5a9-45780a593fff",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -91,6 +91,20 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {
@@ -285,9 +299,9 @@
           "primaryKey": true,
           "notNull": true
         },
-        "provider": {
-          "name": "provider",
-          "type": "provider",
+        "video_provider": {
+          "name": "video_provider",
+          "type": "video_provider",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
@@ -358,8 +372,8 @@
         "module"
       ]
     },
-    "public.provider": {
-      "name": "provider",
+    "public.video_provider": {
+      "name": "video_provider",
       "schema": "public",
       "values": [
         "r2",

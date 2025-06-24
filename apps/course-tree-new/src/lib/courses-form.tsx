@@ -4,7 +4,7 @@ import {
 	CourseTreeDTO,
 	EditCourseTreeDTO,
 } from "@pete_keen/courses/validators";
-import { SortableTree } from "../../../../packages/courses-ui/src/components/admin/SortableTree";
+import { SortableTree } from "../../../../packages/courses-ui/src/components/admin/SortableTreeOld";
 import { useForm } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import { updateCourseTree } from "./actions";

@@ -16,7 +16,12 @@ const animateLayoutChanges: AnimateLayoutChanges = ({
 	wasDragging,
 }) => (isSorting || wasDragging ? false : true);
 
-export function SortableTreeItem({ id, depth, title, ...props }: Props) {
+export function SortableTreeItem({
+	id,
+	depth,
+	name,
+	...props
+}: Props) {
 	const {
 		attributes,
 		isDragging,
@@ -52,7 +57,7 @@ export function SortableTreeItem({ id, depth, title, ...props }: Props) {
 				...attributes,
 				...listeners,
 			}}
-			title={title}
+			name={name}
 			{...props}
 		/>
 	);

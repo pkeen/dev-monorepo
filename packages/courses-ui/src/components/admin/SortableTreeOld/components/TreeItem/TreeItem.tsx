@@ -24,7 +24,7 @@ export interface Props extends HTMLAttributes<HTMLLIElement> {
 	onCollapse?(): void;
 	onRemove?(): void;
 	wrapperRef?(node: HTMLLIElement): void;
-	title: string;
+	name: string;
 	// ref: Ref<HTMLDivElement>;
 }
 
@@ -49,7 +49,7 @@ export const TreeItem = ({
 	value,
 	wrapperRef,
 	ref,
-	title,
+	name,
 	...props
 }: PropsWithRef) => {
 	return (
@@ -73,20 +73,20 @@ export const TreeItem = ({
 			{/* <Card> */}
 			<div className={styles.TreeItem} ref={ref} style={style}>
 				<Handle {...handleProps} />
-
-				{/* Hide this for now as not working anyway */}
-				{onCollapse && (
-					<Action
-						onClick={onCollapse}
-						className={classNames(
-							styles.Collapse,
-							collapsed && styles.collapsed
-						)}
-					>
-						{collapseIcon}
-					</Action>
-				)}
-				<span className={styles.Text}>{title}</span>
+				
+                    {/* Hide this for now as not working anyway */}
+                    {onCollapse && (
+						<Action
+							onClick={onCollapse}
+							className={classNames(
+								styles.Collapse,
+								collapsed && styles.collapsed
+							)}
+						>
+							{collapseIcon}
+						</Action>
+					)}
+				<span className={styles.Text}>{name}</span>
 				{!clone && onRemove && <Remove onClick={onRemove} />}
 				{clone && childCount && childCount > 1 ? (
 					<span className={styles.Count}>{childCount}</span>

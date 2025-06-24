@@ -87,7 +87,7 @@ export function SortableTree({
 	const [overId, setOverId] = useState<string | null>(null);
 	const [offsetLeft, setOffsetLeft] = useState(0);
 	const [currentPosition, setCurrentPosition] = useState<{
-		clientParentId: string | null;
+		parentId: string | null;
 		overId: string;
 	} | null>(null);
 
@@ -152,12 +152,12 @@ export function SortableTree({
 				strategy={verticalListSortingStrategy}
 			>
 				{flattenedItems.map(
-					({ clientId, title, depth, collapsed, children }) => (
+					({ clientId, name, depth, collapsed, children }) => (
 						<SortableTreeItem
 							key={clientId}
 							id={clientId}
 							value={clientId}
-							title={title}
+							name={name}
 							// ref={setDroppableNodeRef}
 							depth={
 								clientId === activeId && projected
@@ -190,7 +190,7 @@ export function SortableTree({
 						>
 							{activeId && activeItem ? (
 								<SortableTreeItem
-									title={activeItem.title}
+									name={activeItem.name}
 									id={activeItem.clientId}
 									depth={activeItem.depth}
 									clone
@@ -225,7 +225,7 @@ export function SortableTree({
 
 		if (activeItem) {
 			setCurrentPosition({
-				clientParentId: activeItem.clientParentId,
+				parentId: activeItem.parentId,
 				overId: activeId.toString(),
 			});
 		}
@@ -295,7 +295,7 @@ export function SortableTree({
 		clonedItems[activeIndex] = {
 			...clonedItems[activeIndex],
 			depth,
-			clientParentId: clientParentId.toString() ?? null,
+			parentId: parentId?.toString() ?? null,
 		};
 
 		const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);

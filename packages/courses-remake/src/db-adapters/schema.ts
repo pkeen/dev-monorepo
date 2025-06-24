@@ -30,6 +30,12 @@ export const course = courses.table(
 		title: varchar("title", { length: 256 }).notNull(),
 		excerpt: text("excerpt").notNull(),
 		isPublished: boolean("is_published").notNull().default(false),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.defaultNow()
+			.notNull(),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.defaultNow()
+			.notNull(),
 	},
 	(table) => ({
 		userIdIdx: index("course_user_id_idx").on(table.userId),
@@ -79,7 +85,7 @@ export const courseNode = courses.table(
 	})
 );
 
-export const videoProviderEnum = pgEnum("provider", [
+export const videoProviderEnum = pgEnum("video_provider", [
 	"r2",
 	"youtube",
 	"vimeo",
@@ -89,7 +95,7 @@ export const videoProviderEnum = pgEnum("provider", [
 
 export const video = courses.table("video", {
 	id: serial("id").primaryKey(),
-	provider: videoProviderEnum("provider").notNull(),
+	provider: videoProviderEnum("video_provider").notNull(),
 	url: text("url").notNull(),
 	title: varchar("title", { length: 256 }).notNull(),
 	thumbnailUrl: text("thumbnail_url").notNull(),

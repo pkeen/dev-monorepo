@@ -1,2 +1,2 @@
-export * from "./SortableTree";
+export * from "./SortableTreeOld";
 export * from "./CourseEditForm";

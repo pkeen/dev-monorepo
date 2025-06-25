@@ -1,7 +1,7 @@
 import {
 	Folder,
 	Book,
-	FileText,
+	FileDown,
 	FileQuestion,
 	Presentation,
 } from "lucide-react";
@@ -19,6 +19,6 @@ export const TypeIcon = ({
 		case "quiz":
 			return <FileQuestion />;
 		case "file":
-			return <FileText />;
+			return <FileDown />;
 	}
 };

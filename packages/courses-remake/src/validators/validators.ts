@@ -131,7 +131,7 @@ export const courseTreeItem: z.ZodType<
 		isPublished: z.boolean().optional(),
 		clientId: z.string(),
 		collapsed: z.boolean().optional(),
-		parentId: z.number().optional(),
+		parentId: z.number().nullable(),
 		children: z.array(courseTreeItem).default([]), // optional in input, always defined in output
 	})
 );
@@ -150,7 +150,7 @@ export const courseTreeItemUpsert: z.ZodType<any> = z.lazy(() =>
 		isPublished: z.boolean().optional(),
 		clientId: z.string(),
 		collapsed: z.boolean().optional(),
-		parentId: z.number().optional(),
+		parentId: z.number().nullable(),
 		children: z.array(courseTreeItemUpsert).default([]),
 	})
 );

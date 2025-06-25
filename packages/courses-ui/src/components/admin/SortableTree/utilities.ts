@@ -118,7 +118,7 @@ export function getProjection(
 		depth = minDepth;
 	}
 
-	return { depth, maxDepth, minDepth, parentId: getParentId() };
+	return { depth, maxDepth, minDepth, clientParentId: getParentId() };
 
 	function getParentId() {
 		if (depth === 0 || !previousItem) {
@@ -126,7 +126,7 @@ export function getProjection(
 		}
 
 		if (depth === previousItem.depth) {
-			return previousItem.parentId;
+			return previousItem.clientParentId;
 		}
 
 		if (depth > previousItem.depth) {
@@ -136,7 +136,7 @@ export function getProjection(
 		const newParent = newItems
 			.slice(0, overItemIndex)
 			.reverse()
-			.find((item) => item.depth === depth)?.parentId;
+			.find((item) => item.depth === depth)?.clientParentId;
 
 		return newParent ?? null;
 	}
@@ -146,6 +146,41 @@ export function getDragDepth(offset: number, indentationWidth: number) {
 	return Math.round(offset / indentationWidth);
 }
 
+// export function getMaxDepth({
+// 	activeItem,
+// 	previousItem,
+// }: {
+// 	activeItem: FlattenedCourseTreeItem;
+// 	previousItem: FlattenedCourseTreeItem;
+// }) {
+// 	// May need to add rules in here
+// 	if (previousItem) {
+// 		if (isModule(activeItem)) {
+// 			return previousItem.depth;
+// 		}
+// 		if (isModule(previousItem) && isLesson(activeItem)) {
+// 			return previousItem.depth + 1;
+// 		}
+// 		if (isLesson(previousItem) && isLesson(activeItem)) {
+// 			return previousItem.depth;
+// 		}
+// 	}
+
+// 	return 0;
+// }
+
+// export function getMaxDepth({
+// 	activeItem,
+// 	previousItem,
+// }: {
+// 	activeItem: FlattenedCourseTreeItem;
+// 	previousItem: FlattenedCourseTreeItem;
+// }) {
+// 	if (isModule(activeItem)) return 0;
+// 	if (previousItem && isModule(previousItem)) return 1;
+// 	return 0;
+// }
+
 export function getMaxDepth({
 	activeItem,
 	previousItem,
@@ -153,17 +188,16 @@ export function getMaxDepth({
 	activeItem: FlattenedCourseTreeItem;
 	previousItem: FlattenedCourseTreeItem;
 }) {
-	// May need to add rules in here
-	if (previousItem) {
-		if (isModule(activeItem)) {
-			return previousItem.depth;
-		}
-		if (isModule(previousItem) && isLesson(activeItem)) {
-			return previousItem.depth + 1;
-		}
-		if (isLesson(previousItem) && isLesson(activeItem)) {
-			return previousItem.depth;
-		}
+	const MAX_MODULE_DEPTH = 2;
+
+	if (isModule(activeItem)) {
+		// Prevent nesting beyond max module depth
+		const max = previousItem ? previousItem.depth + 1 : 1;
+		return Math.min(max, MAX_MODULE_DEPTH);
+	}
+
+	if (previousItem && isModule(previousItem)) {
+		return previousItem.depth + 1;
 	}
 
 	return 0;
@@ -257,6 +291,8 @@ export function assignSiblingOrder(
 	return itemsWithOrder;
 }
 
+// type RootItem = CourseTreeItem & { type: "root" };
+
 export function buildTree(
 	flattenedItems: FlattenedCourseTreeItem[]
 ): CourseTreeItem[] {
@@ -282,7 +318,7 @@ export function buildTree(
 
 	// Build hierarchy
 	for (const item of flattenedItems) {
-		const parentId = item.parentId ?? root.clientId;
+		const parentId = item.clientParentId ?? root.clientId;
 		const parent = nodes[parentId];
 
 		if (parent) {

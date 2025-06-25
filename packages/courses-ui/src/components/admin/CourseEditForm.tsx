@@ -35,7 +35,7 @@ import { useRouter } from "next/navigation";
 import { ConfirmDeleteCourseDialog } from "./confirm-delete-course";
 import { SelectExistingModule } from "./select-existing-module";
 import { SelectExistingLesson } from "./select-existing-lesson";
-import { SortableTree } from "./SortableTreeOld";
+import { SortableTree } from "./SortableTree";
 import { Controller } from "react-hook-form";
 // import { courseDisplayToUi } from "./course-display-to-ui";
 

@@ -8,6 +8,7 @@ import { Handle } from "./Handle";
 import { Remove } from "./Remove";
 import styles from "./TreeItem.module.css";
 import { Action } from "./Action";
+import { TypeIcon } from "./TypeIcon";
 
 export interface Props extends HTMLAttributes<HTMLLIElement> {
 	childCount?: number;
@@ -25,6 +26,7 @@ export interface Props extends HTMLAttributes<HTMLLIElement> {
 	onRemove?(): void;
 	wrapperRef?(node: HTMLLIElement): void;
 	title: string;
+	type: "module" | "lesson" | "quiz" | "file";
 	// ref: Ref<HTMLDivElement>;
 }
 
@@ -50,6 +52,7 @@ export const TreeItem = ({
 	wrapperRef,
 	ref,
 	title,
+	type,
 	...props
 }: PropsWithRef) => {
 	return (
@@ -86,6 +89,9 @@ export const TreeItem = ({
 						{collapseIcon}
 					</Action>
 				)}
+				<span>
+					<TypeIcon type={type} />
+				</span>
 				<span className={styles.Text}>{title}</span>
 				{!clone && onRemove && <Remove onClick={onRemove} />}
 				{clone && childCount && childCount > 1 ? (

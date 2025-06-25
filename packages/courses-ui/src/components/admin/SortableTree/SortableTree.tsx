@@ -152,12 +152,13 @@ export function SortableTree({
 				strategy={verticalListSortingStrategy}
 			>
 				{flattenedItems.map(
-					({ clientId, title, depth, collapsed, children }) => (
+					({ clientId, title, depth, collapsed, children, type }) => (
 						<SortableTreeItem
 							key={clientId}
 							id={clientId}
 							value={clientId}
 							title={title}
+							type={type}
 							// ref={setDroppableNodeRef}
 							depth={
 								clientId === activeId && projected
@@ -192,6 +193,7 @@ export function SortableTree({
 								<SortableTreeItem
 									title={activeItem.title}
 									id={activeItem.clientId}
+									type={activeItem.type}
 									depth={activeItem.depth}
 									clone
 									childCount={
@@ -249,7 +251,7 @@ export function SortableTree({
 		if (!over) return;
 
 		const clonedItems = flattenTree(items); // or deep clone if needed
-		console.log("clonedItems", clonedItems);
+		// console.log("clonedItems", clonedItems);
 		const activeId = active.id.toString();
 		const overId = over.id.toString();
 
@@ -270,19 +272,31 @@ export function SortableTree({
 		);
 		if (!projection) return;
 
-		const { depth, parentId } = projection;
+		const { depth, clientParentId } = projection;
 
 		// Enforce nesting rules
 		if (isModule(activeItem)) {
-			// Modules can't be nested
-			// if (!isTopLevel(overItem)) return; // Modules can only be 2nd level
-			if (parentId !== null) return; // Modules can only be top level
-		} else if (isLesson(activeItem)) {
-			// Lessons can only be nested under modules or be top-level
-			const parentItem = clonedItems.find(
-				(item) => item.clientId === parentId
-			);
-			if (parentItem && !isModule(parentItem!)) return;
+			// Limit nesting depth of modules
+			const MAX_MODULE_DEPTH = 2; // 👈 set your limit here
+			if (depth > MAX_MODULE_DEPTH) return;
+
+			// Optionally ensure it's only under other modules or root
+			if (clientParentId !== null) {
+				const parentItem = clonedItems.find(
+					(item) => item.clientId === clientParentId
+				);
+				if (!parentItem || !isModule(parentItem)) return;
+			} // Modules can only be top level
+		} else {
+			// Non-module items can be top-level or under modules
+			if (clientParentId === null) {
+				// it's going to root — allow it
+			} else {
+				const parentItem = clonedItems.find(
+					(item) => item.clientId === clientParentId
+				);
+				if (!parentItem || !isModule(parentItem)) return;
+			}
 		}
 
 		const activeIndex = clonedItems.findIndex(
@@ -295,7 +309,7 @@ export function SortableTree({
 		clonedItems[activeIndex] = {
 			...clonedItems[activeIndex],
 			depth,
-			clientParentId: clientParentId.toString() ?? null,
+			clientParentId: clientParentId?.toString() ?? null,
 		};
 
 		const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);

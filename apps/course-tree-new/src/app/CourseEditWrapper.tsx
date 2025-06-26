@@ -2,33 +2,29 @@
 "use client";
 
 import { CourseEditForm } from "@pete_keen/courses-ui";
+// import { EditCourseTreeDTO } from "@pete_keen/courses/validators";
+import { updateCourseTree } from "@/lib/actions";
 import {
+	ContentItemDTO,
 	EditCourseTreeDTO,
-	Lesson,
-	ModuleDTO,
-} from "@pete_keen/courses/validators";
-import { getModuleTree, updateCourseTree } from "@/lib/actions";
+} from "@pete_keen/courses-remake/validators";
 
 export function CourseEditWrapper({
 	course,
-	existingLessons = [],
-	existingModules = [],
+	existingContent = [],
 }: {
 	course: EditCourseTreeDTO;
-	existingLessons?: Lesson[];
-	existingModules?: ModuleDTO[];
+	existingContent?: ContentItemDTO[];
 }) {
 	return (
 		<CourseEditForm
 			course={course}
-			existingLessons={existingLessons}
-			existingModules={existingModules}
+			existingContent={existingContent}
 			onSubmit={updateCourseTree}
 			onDelete={async (id) => {
 				console.log(id);
 				return;
 			}}
-			fetchModuleTree={getModuleTree}
 		/>
 	);
 }

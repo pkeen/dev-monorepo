@@ -44,7 +44,11 @@ export const contentItemDTO = z.object({
 	createdAt: z.date().optional(),
 	updatedAt: z.date().optional(),
 });
-export type ContentItem = z.infer<typeof contentItemDTO>;
+export type ContentItemDTO = z.infer<typeof contentItemDTO>;
+export const createContentItemDTO = contentItemDTO.omit({ id: true });
+export type CreateContentItemDTO = z.infer<typeof createContentItemDTO>;
+export const editContentItemDTO = contentItemDTO;
+export type EditContentItemDTO = z.infer<typeof editContentItemDTO>;
 
 export const lessonDetail = z.object({
 	id: z.number(),

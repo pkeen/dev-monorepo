@@ -4,7 +4,7 @@
 // import * as schema from "~/lib/courses/db/schema";
 
 import { DBAdapter } from "db-adapters/drizzle-pg";
-import { CourseCRUD } from "types";
+import { CourseCRUD, ContentItemCRUD } from "types";
 
 export interface CourseManager {
 	// create: (input: CourseInput) => Promise<Course>;
@@ -15,6 +15,7 @@ export interface CourseManager {
 	// module: ModuleCRUD;
 	// lesson: LessonCRUD;
 	course: CourseCRUD;
+	content: ContentItemCRUD;
 }
 
 // const dbAdapter = DrizzlePGAdapter(db);
@@ -39,6 +40,7 @@ export const CourseManager = (dbAdapter: DBAdapter) => {
 		// module: dbAdapter.module,
 		// lesson: dbAdapter.lesson,
 		course: dbAdapter.course,
+		content: dbAdapter.content,
 		// video: dbAdapter.video,
 	};
 };

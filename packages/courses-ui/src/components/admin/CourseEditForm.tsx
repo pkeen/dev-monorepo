@@ -6,11 +6,11 @@ import {
 	Lesson,
 	ModuleDTO,
 	CourseDisplay,
-	EditCourseTreeDTO,
+	// EditCourseTreeDTO,
 	UiCourseDisplay,
 	uiCourseDisplay,
-	editCourseTreeDTO,
-	ModuleTreeDTO,
+	// editCourseTreeDTO,
+	// ModuleTreeDTO,
 } from "@pete_keen/courses/validators";
 import {
 	Form,
@@ -37,22 +37,27 @@ import { SelectExistingModule } from "./select-existing-module";
 import { SelectExistingLesson } from "./select-existing-lesson";
 import { SortableTree } from "./SortableTree";
 import { Controller } from "react-hook-form";
+import { AddContentDialog } from "./AddContentDialog";
+import { SelectExistingContentDialog } from "./SelectExistingContentDialog";
+import {
+	ContentItemDTO,
+	EditCourseTreeDTO,
+	editCourseTreeDTO,
+} from "@pete_keen/courses-remake/validators";
+import { Textarea } from "components/ui/textarea";
 // import { courseDisplayToUi } from "./course-display-to-ui";
 
 export function CourseEditForm({
 	course,
-	existingLessons,
-	existingModules,
+	existingContent,
 	onSubmit,
 	onDelete,
-	fetchModuleTree,
 }: {
 	course: EditCourseTreeDTO;
-	existingLessons: Lesson[];
-	existingModules: ModuleDTO[];
+	existingContent: ContentItemDTO[];
 	onSubmit: (values: EditCourseTreeDTO) => Promise<EditCourseTreeDTO>;
 	onDelete: (id: number) => Promise<void>;
-	fetchModuleTree: (moduleId: number) => Promise<ModuleTreeDTO | null>;
+	// fetchModuleTree: (moduleId: number) => Promise<ModuleTreeDTO | null>;
 }) {
 	const form = useForm({
 		resolver: zodResolver(editCourseTreeDTO),
@@ -62,8 +67,9 @@ export function CourseEditForm({
 	// const defaultValues = useMemo(() => courseDisplayToUi(course), [course]);
 	// console.log("Form values:", form.getValues());
 
-	const [selectLessonOpen, setSelectLessonOpen] = useState(false);
-	const [selectModuleOpen, setSelectModuleOpen] = useState(false);
+	// const [selectLessonOpen, setSelectLessonOpen] = useState(false);
+	// const [selectModuleOpen, setSelectModuleOpen] = useState(false);
+	const [selectContentOpen, setSelectContentOpen] = useState(false);
 	const [isPending, startTransition] = useTransition();
 	const router = useRouter();
 	const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -134,13 +140,13 @@ export function CourseEditForm({
 						{/* Course Description */}
 						<FormField
 							control={form.control}
-							name="description"
+							name="excerpt"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>Course Description</FormLabel>
+									<FormLabel>Excerpt</FormLabel>
 									<FormControl>
-										<Input
-											placeholder="Enter course description"
+										<Textarea
+											placeholder="Enter course excerpt"
 											{...field}
 										/>
 									</FormControl>
@@ -170,22 +176,48 @@ export function CourseEditForm({
 					<Card className="p-4">
 						<CardHeader>Course Content</CardHeader>
 						<div className="flex gap-4">
-							<AddSlotDialog
+							<AddContentDialog
 								trigger={
 									<Button type="button" variant="outline">
-										+ Add Module
+										+ Add Content
 									</Button>
 								}
-								title="Add Module"
+								title="Add Content"
 								onSelect={(choice) => {
 									if (choice === "new") {
 										console.log("new");
 									} else {
-										setSelectModuleOpen(true);
+										setSelectContentOpen(true);
 									}
 								}}
 							/>
-							<SelectExistingModule
+							<SelectExistingContentDialog
+								title="Select Existing Content"
+								open={selectContentOpen}
+								onOpenChange={setSelectContentOpen}
+								items={existingContent}
+								onSelect={async (item) => {
+									// const moduleTree = await fetchModuleTree(
+									// 	item.id
+									// );
+									// if (!moduleTree) return;
+									// get moduletree action
+									append({
+										id: undefined,
+										clientId: `new-${fields.length}`,
+										contentItemId: item.id,
+										order: fields.length,
+										parentId: null,
+										title: item.title,
+										isPublished: item.isPublished ?? false,
+										type: item.type,
+										children: [],
+									});
+
+									setSelectContentOpen(false); // Close after selecting
+								}}
+							/>
+							{/* <SelectExistingModule
 								title="Select Existing Module"
 								open={selectModuleOpen}
 								onOpenChange={setSelectModuleOpen}
@@ -217,8 +249,8 @@ export function CourseEditForm({
 
 									setSelectModuleOpen(false);
 								}}
-							/>
-							<AddSlotDialog
+							/> */}
+							{/* <AddSlotDialog
 								trigger={
 									<Button type="button" variant="outline">
 										+ Add Lesson
@@ -253,7 +285,7 @@ export function CourseEditForm({
 									});
 									setSelectLessonOpen(false); // Close the dialog after selection
 								}}
-							/>
+							/> */}
 						</div>
 						<Controller
 							control={form.control}

@@ -2,11 +2,11 @@
 import { CourseEditForm } from "@pete_keen/courses-ui";
 import { courses } from "@/courses";
 import { CourseEditWrapper } from "./CourseEditWrapper";
+import { ContentItemDTO } from "@pete_keen/courses-remake/validators";
 
 export default async function Home() {
 	const course = await courses.course.get(1);
-	const existingLessons: LessonDetail[] = [];
-	const existingModules: ModuleDetail[] = [];
+	const existingContent: ContentItemDTO[] = await courses.content.list();
 	// const course = courses.course.display(1);
 	// console.log(course);
 
@@ -14,8 +14,7 @@ export default async function Home() {
 		<>
 			<CourseEditWrapper
 				course={course}
-				existingLessons={existingLessons}
-				existingModules={existingModules}
+				existingContent={existingContent}
 			/>
 		</>
 	);

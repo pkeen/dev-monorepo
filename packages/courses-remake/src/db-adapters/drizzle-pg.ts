@@ -1,6 +1,8 @@
-import { CourseCRUD } from "types";
+import { ContentItemCRUD, CourseCRUD } from "types";
 import { DrizzleDatabase, createSchema } from "./schema";
 import {
+	contentItemDTO,
+	ContentItemDTO,
 	CourseDTO,
 	courseDTO,
 	CourseNodeDTO,
@@ -20,6 +22,7 @@ const createCRUD = (
 	schema: DefaultSchema = defaultSchema
 ): {
 	course: CourseCRUD;
+	content: ContentItemCRUD;
 } => {
 	const createCourseRepo = (db: DrizzleDatabase, schema: DefaultSchema) => {
 		function assignClientIds(
@@ -147,8 +150,37 @@ const createCRUD = (
 		};
 	};
 
+	const contentItemRepo = (db: DrizzleDatabase, schema: DefaultSchema) => {
+		const list = async (): Promise<ContentItemDTO[]> => {
+			const results = await db.select().from(schema.contentItem);
+			const parsed = contentItemDTO.array().safeParse(results);
+			if (!parsed.success) {
+				throw new Error("Invalid content item data");
+			}
+			return parsed.data;
+		};
+
+		const get = async (id: number): Promise<ContentItemDTO | null> => {
+			const results = await db
+				.select()
+				.from(schema.contentItem)
+				.where(eq(schema.contentItem.id, id));
+			const parsed = contentItemDTO.array().safeParse(results);
+			if (!parsed.success) {
+				throw new Error("Invalid content item data");
+			}
+			return parsed.data[0];
+		};
+
+		return {
+			list,
+			get,
+		};
+	};
+
 	return {
 		course: createCourseRepo(db, schema),
+		content: contentItemRepo(db, schema),
 	};
 };
 
@@ -163,6 +195,7 @@ export const DrizzlePGAdapter = (
 
 export interface DBAdapter {
 	course: CourseCRUD;
+	content: ContentItemCRUD;
 	// module: ModuleCRUD;
 	// lesson: LessonCRUD;
 	// video: VideoCRUD;

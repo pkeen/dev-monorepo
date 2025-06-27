@@ -167,6 +167,8 @@ export type EditCourseTreeDTO = z.infer<typeof editCourseTreeDTO>;
 
 export const createCourseTreeDTO = editCourseTreeDTO.omit({
 	id: true,
+	createdAt: true,
+	updatedAt: true,
 });
 export type CreateCourseTreeDTO = z.infer<typeof createCourseTreeDTO>;
 

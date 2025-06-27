@@ -13,6 +13,7 @@ import {
 	VideoDTO,
 	CreateContentItemDTO,
 	EditContentItemDTO,
+    CreateCourseTreeDTO,
 } from "validators";
 
 export {
@@ -36,7 +37,7 @@ export {
 
 interface CRUDOperations<G, C, E, L> {
 	get: (id: number) => Promise<G | null>;
-	create: (input: C) => Promise<G>;
+	create: (data: C) => Promise<G>;
 	update: (data: E) => Promise<G>;
 	destroy: (id: number) => Promise<void>;
 	list: () => Promise<L[]>;
@@ -45,7 +46,7 @@ interface CRUDOperations<G, C, E, L> {
 export interface CourseCRUD
 	extends CRUDOperations<
 		CourseTreeDTO,
-		CreateCourseDTO,
+		CreateCourseTreeDTO,
 		EditCourseTreeDTO,
 		CourseDTO
 	> {}

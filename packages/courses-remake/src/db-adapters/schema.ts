@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/neon-http";
 import {
 	pgTable,
 	integer,
@@ -134,6 +135,21 @@ export const createSchema = () => {
 		video,
 	};
 };
+
+// Flat table-only schema (only tables)
+export const schemaTables = {
+	course,
+	contentItem,
+	courseNode,
+	lessonDetail,
+	video,
+};
+
+export type SchemaTables = typeof schemaTables;
+
+// Simulate the result of calling drizzle() with schema:
+export type DrizzleDbWithSchema = ReturnType<typeof drizzle<SchemaTables>>;
+export type DefaultSchema = ReturnType<typeof createSchema>;
 
 // TODO: Work this out
 /** Call this exactly once after you create the tables.

@@ -20,7 +20,7 @@ export interface CourseManager {
 
 // const dbAdapter = DrizzlePGAdapter(db);
 
-export const CourseManager = (dbAdapter: DBAdapter) => {
+export const CourseManager = (dbAdapter: DBAdapter): CourseManager => {
 	return {
 		// create: async (input: CourseInput) => {
 		// 	return dbAdapter.createCourse(input);

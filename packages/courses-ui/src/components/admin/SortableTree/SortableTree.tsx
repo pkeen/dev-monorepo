@@ -97,7 +97,7 @@ export function SortableTree({
 	});
 
 	const sortedIds = useMemo(
-		() => flattenedItems.map(({ clientId }) => clientId),
+		() => flattenedItems.map(({ clientId }) => clientId), 
 		[flattenedItems]
 	);
 

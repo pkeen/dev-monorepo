@@ -72,9 +72,14 @@ const createCRUD = (
 		) => {
 			const flatIncoming = flattenCourseNodes(incomingItems, null);
 
-			const existing = await db.query.courseNode.findMany({
-				where: eq(schema.courseNode.courseId, courseId),
-			});
+			// const existing = await db.query.courseNode.findMany({
+			// 	where: eq(schema.courseNode.courseId, courseId),
+			// });
+			const existing = await db
+				.select()
+				.from(schema.courseNode)
+				.where(eq(schema.courseNode.courseId, courseId));
+
 			const existingMap = new Map(existing.map((n) => [n.id, n]));
 
 			const incomingMap = new Map(

@@ -1,5 +1,5 @@
 import { drizzle } from "drizzle-orm/neon-http";
-import { initCourseSchema } from "@pete_keen/courses-remake/db-adapters";
+// import { initCourseSchema } from "@pete_keen/courses-remake/db-adapters";
 
 // for scripting
 import { config } from "dotenv";
@@ -15,7 +15,7 @@ const db = drizzle(process.env.DATABASE_URL, {
 	casing: "snake_case",
 });
 
-await initCourseSchema(db);
+// await initCourseSchema(db);
 
 export type db = typeof db;
 

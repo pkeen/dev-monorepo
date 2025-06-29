@@ -212,151 +212,151 @@ export type DefaultSchema = ReturnType<typeof createSchema>;
 //     END $$;
 //   `);
 // }
-export async function initCourseSchema(db: DrizzleDatabase) {
-	// ensure function exists
-	await db.execute(sql`
-    CREATE OR REPLACE FUNCTION trg_course_node_no_cycles()
-    RETURNS trigger LANGUAGE plpgsql AS $$
-    BEGIN
-      IF NEW.parent_id IS NULL THEN
-        RETURN NEW;
-      END IF;
+// export async function initCourseSchema(db: DrizzleDatabase) {
+// 	// ensure function exists
+// 	await db.execute(sql`
+//     CREATE OR REPLACE FUNCTION trg_course_node_no_cycles()
+//     RETURNS trigger LANGUAGE plpgsql AS $$
+//     BEGIN
+//       IF NEW.parent_id IS NULL THEN
+//         RETURN NEW;
+//       END IF;
 
-      IF NEW.course_id <> (
-        SELECT course_id FROM courses.course_node WHERE id = NEW.parent_id
-      ) THEN
-        RAISE EXCEPTION 'Parent node belongs to another course';
-      END IF;
+//       IF NEW.course_id <> (
+//         SELECT course_id FROM courses.course_node WHERE id = NEW.parent_id
+//       ) THEN
+//         RAISE EXCEPTION 'Parent node belongs to another course';
+//       END IF;
 
-      IF EXISTS (
-        WITH RECURSIVE anc(id) AS (
-          SELECT NEW.parent_id
-          UNION ALL
-          SELECT parent_id
-          FROM courses.course_node
-          WHERE id = anc.id
-            AND parent_id IS NOT NULL
-        )
-        SELECT 1 FROM anc WHERE id = NEW.id
-      ) THEN
-        RAISE EXCEPTION 'Cycle detected';
-      END IF;
+//       IF EXISTS (
+//         WITH RECURSIVE anc(id) AS (
+//           SELECT NEW.parent_id
+//           UNION ALL
+//           SELECT parent_id
+//           FROM courses.course_node
+//           JOIN anc ON cn.id = anc.id
+//           WHERE cn.parent_id IS NOT NULL
+//         )
+//         SELECT 1 FROM anc WHERE id = NEW.id
+//       ) THEN
+//         RAISE EXCEPTION 'Cycle detected';
+//       END IF;
 
-      RETURN NEW;
-    END;
-    $$;
-  `);
+//       RETURN NEW;
+//     END;
+//     $$;
+//   `);
 
-	// try to create trigger; swallow duplicate error
-	try {
-		await db.execute(sql`
-      CREATE TRIGGER course_node_no_cycles
-      BEFORE INSERT OR UPDATE ON courses.course_node
-      FOR EACH ROW EXECUTE FUNCTION trg_course_node_no_cycles();
-    `);
-	} catch (e: any) {
-		if (e.code !== "42710") throw e; // re-throw anything except “already exists”
-	}
-}
+// 	// try to create trigger; swallow duplicate error
+// 	try {
+// 		await db.execute(sql`
+//       CREATE TRIGGER course_node_no_cycles
+//       BEFORE INSERT OR UPDATE ON courses.course_node
+//       FOR EACH ROW EXECUTE FUNCTION trg_course_node_no_cycles();
+//     `);
+// 	} catch (e: any) {
+// 		if (e.code !== "42710") throw e; // re-throw anything except “already exists”
+// 	}
+// }
 
-export const courseNodeNoCyclesTriggerSql = sql`
-  -- creates the function only if it does not exist
-  DO $$
-  BEGIN
-    IF NOT EXISTS (
-      SELECT 1 FROM pg_proc WHERE proname = 'trg_course_node_no_cycles'
-    ) THEN
+// export const courseNodeNoCyclesTriggerSql = sql`
+//   -- creates the function only if it does not exist
+//   DO $$
+//   BEGIN
+//     IF NOT EXISTS (
+//       SELECT 1 FROM pg_proc WHERE proname = 'trg_course_node_no_cycles'
+//     ) THEN
 
-      CREATE OR REPLACE FUNCTION trg_course_node_no_cycles()
-      RETURNS trigger LANGUAGE plpgsql AS $f$
-      BEGIN
-        IF NEW.parent_id IS NULL THEN
-          RETURN NEW;
-        END IF;
+//       CREATE OR REPLACE FUNCTION trg_course_node_no_cycles()
+//       RETURNS trigger LANGUAGE plpgsql AS $f$
+//       BEGIN
+//         IF NEW.parent_id IS NULL THEN
+//           RETURN NEW;
+//         END IF;
 
-        /* same-course check */
-        IF NEW.course_id <> (
-          SELECT course_id FROM course_node WHERE id = NEW.parent_id
-        ) THEN
-          RAISE EXCEPTION
-            'Parent node % belongs to another course', NEW.parent_id;
-        END IF;
+//         /* same-course check */
+//         IF NEW.course_id <> (
+//           SELECT course_id FROM course_node WHERE id = NEW.parent_id
+//         ) THEN
+//           RAISE EXCEPTION
+//             'Parent node % belongs to another course', NEW.parent_id;
+//         END IF;
 
-        /* cycle check */
-        IF EXISTS (
-          WITH RECURSIVE anc(id) AS (
-            SELECT NEW.parent_id
-            UNION ALL
-            SELECT parent_id
-            FROM course_node
-            WHERE id = anc.id
-              AND parent_id IS NOT NULL
-          )
-          SELECT 1 FROM anc WHERE id = NEW.id
-        ) THEN
-          RAISE EXCEPTION 'Cycle detected';
-        END IF;
+//         /* cycle check */
+//         IF EXISTS (
+//           WITH RECURSIVE anc(id) AS (
+//             SELECT NEW.parent_id
+//             UNION ALL
+//             SELECT parent_id
+//             FROM course_node
+//             JOIN anc ON cn.id = anc.id
+//             WHERE cn.parent_id IS NOT NULL
+//           )
+//           SELECT 1 FROM anc WHERE id = NEW.id
+//         ) THEN
+//           RAISE EXCEPTION 'Cycle detected';
+//         END IF;
 
-        RETURN NEW;
-      END;
-      $f$;
+//         RETURN NEW;
+//       END;
+//       $f$;
 
-      CREATE TRIGGER course_node_no_cycles
-      BEFORE INSERT OR UPDATE ON course_node
-      FOR EACH ROW EXECUTE FUNCTION trg_course_node_no_cycles();
-    END IF;
-  END $$;
-`;
+//       CREATE TRIGGER course_node_no_cycles
+//       BEFORE INSERT OR UPDATE ON course_node
+//       FOR EACH ROW EXECUTE FUNCTION trg_course_node_no_cycles();
+//     END IF;
+//   END $$;
+// `;
 
-export const courseNodeNoCyclesTriggerSqlString = `
-  DO $$
-  BEGIN
-    IF NOT EXISTS (
-      SELECT 1 FROM pg_proc WHERE proname = 'trg_course_node_no_cycles'
-    ) THEN
+// export const courseNodeNoCyclesTriggerSqlString = `
+//   DO $$
+//   BEGIN
+//     IF NOT EXISTS (
+//       SELECT 1 FROM pg_proc WHERE proname = 'trg_course_node_no_cycles'
+//     ) THEN
 
-      CREATE OR REPLACE FUNCTION trg_course_node_no_cycles()
-      RETURNS trigger LANGUAGE plpgsql AS $f$
-      BEGIN
-        IF NEW.parent_id IS NULL THEN
-          RETURN NEW;
-        END IF;
+//       CREATE OR REPLACE FUNCTION trg_course_node_no_cycles()
+//       RETURNS trigger LANGUAGE plpgsql AS $f$
+//       BEGIN
+//         IF NEW.parent_id IS NULL THEN
+//           RETURN NEW;
+//         END IF;
 
-        /* same-course check */
-        IF NEW.course_id <> (
-          SELECT course_id FROM course_node WHERE id = NEW.parent_id
-        ) THEN
-          RAISE EXCEPTION
-            'Parent node % belongs to another course', NEW.parent_id;
-        END IF;
+//         /* same-course check */
+//         IF NEW.course_id <> (
+//           SELECT course_id FROM course_node WHERE id = NEW.parent_id
+//         ) THEN
+//           RAISE EXCEPTION
+//             'Parent node % belongs to another course', NEW.parent_id;
+//         END IF;
 
-        /* cycle check */
-        IF EXISTS (
-          WITH RECURSIVE anc(id) AS (
-            SELECT NEW.parent_id
-            UNION ALL
-            SELECT parent_id
-            FROM course_node
-            WHERE id = anc.id
-              AND parent_id IS NOT NULL
-          )
-          SELECT 1 FROM anc WHERE id = NEW.id
-        ) THEN
-          RAISE EXCEPTION 'Cycle detected';
-        END IF;
+//         /* cycle check */
+//         IF EXISTS (
+//           WITH RECURSIVE anc(id) AS (
+//             SELECT NEW.parent_id
+//             UNION ALL
+//             SELECT parent_id
+//             FROM course_node
+//             JOIN anc ON cn.id = anc.id
+//             WHERE cn.parent_id IS NOT NULL
+//           )
+//           SELECT 1 FROM anc WHERE id = NEW.id
+//         ) THEN
+//           RAISE EXCEPTION 'Cycle detected';
+//         END IF;
 
-        RETURN NEW;
-      END;
-      $f$;
+//         RETURN NEW;
+//       END;
+//       $f$;
 
-      CREATE TRIGGER course_node_no_cycles
-      BEFORE INSERT OR UPDATE ON course_node
-      FOR EACH ROW EXECUTE FUNCTION trg_course_node_no_cycles();
-    END IF;
-  END $$;
-`;
+//       CREATE TRIGGER course_node_no_cycles
+//       BEFORE INSERT OR UPDATE ON course_node
+//       FOR EACH ROW EXECUTE FUNCTION trg_course_node_no_cycles();
+//     END IF;
+//   END $$;
+// `;
 
-export const courseNodeNoCyclesTriggerDown = sql`
-  DROP TRIGGER IF EXISTS course_node_no_cycles ON course_node;
-  DROP FUNCTION IF EXISTS trg_course_node_no_cycles;
-`;
+// export const courseNodeNoCyclesTriggerDown = sql`
+//   DROP TRIGGER IF EXISTS course_node_no_cycles ON course_node;
+//   DROP FUNCTION IF EXISTS trg_course_node_no_cycles;
+// `;

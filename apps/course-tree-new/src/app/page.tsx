@@ -3,6 +3,7 @@ import { CourseEditForm } from "@pete_keen/courses-ui";
 import { courses } from "@/courses";
 import { CourseEditWrapper } from "./CourseEditWrapper";
 import { ContentItemDTO } from "@pete_keen/courses-remake/validators";
+import { updateCourseTree, deleteCourse } from "@/lib/actions";
 
 export default async function Home() {
 	const course = await courses.course.get(1);
@@ -15,6 +16,8 @@ export default async function Home() {
 			<CourseEditWrapper
 				course={course}
 				existingContent={existingContent}
+				onSubmit={updateCourseTree}
+				onDelete={deleteCourse}
 			/>
 		</>
 	);

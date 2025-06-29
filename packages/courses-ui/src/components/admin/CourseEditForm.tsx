@@ -9,6 +9,7 @@ import {
 	// EditCourseTreeDTO,
 	UiCourseDisplay,
 	uiCourseDisplay,
+	CourseTreeItemUpsert,
 	// editCourseTreeDTO,
 	// ModuleTreeDTO,
 } from "@pete_keen/courses/validators";
@@ -24,7 +25,6 @@ import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
 import { Button } from "../ui/button";
 import { Card, CardHeader } from "../ui/card";
-import { AddSlotDialog } from "./add-slot-dialog";
 import { useMemo, useState } from "react";
 // import { NestedSortableSlotList } from "./nested-slot-list-display";
 // import { editCourse } from "@/lib/actions/course/editCourse";
@@ -45,6 +45,7 @@ import {
 	editCourseTreeDTO,
 } from "@pete_keen/courses-remake/validators";
 import { Textarea } from "components/ui/textarea";
+import { CourseTreeItem } from "@pete_keen/courses-remake/validators";
 // import { courseDisplayToUi } from "./course-display-to-ui";
 
 export function CourseEditForm({
@@ -202,17 +203,21 @@ export function CourseEditForm({
 									// );
 									// if (!moduleTree) return;
 									// get moduletree action
-									append({
-										id: undefined,
-										clientId: `new-${fields.length}`,
-										contentItemId: item.id,
-										order: fields.length,
-										parentId: null,
-										title: item.title,
-										isPublished: item.isPublished ?? false,
-										type: item.type,
-										children: [],
-									});
+									const courseTreeItem: CourseTreeItemUpsert =
+										{
+											id: undefined,
+											clientId: `new-${fields.length}`,
+											contentId: item.id,
+											order: fields.length,
+											parentId: null,
+											title: item.title,
+											isPublished:
+												item.isPublished ?? false,
+											type: item.type,
+											children: [],
+										};
+
+									append(courseTreeItem);
 
 									setSelectContentOpen(false); // Close after selecting
 								}}

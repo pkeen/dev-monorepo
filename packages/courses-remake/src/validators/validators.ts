@@ -148,7 +148,7 @@ export const courseTreeItemUpsert: z.ZodType<any> = z.lazy(() =>
 	z.object({
 		id: z.number().optional(),
 		type: contentType,
-		name: z.string(),
+		title: z.string(),
 		order: z.number(),
 		contentId: z.number(),
 		isPublished: z.boolean().optional(),

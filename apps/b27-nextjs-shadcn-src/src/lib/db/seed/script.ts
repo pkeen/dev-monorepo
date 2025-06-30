@@ -1,4 +1,4 @@
-import courseSeed from "./coursesSeed";
+import courseSeed from "./coursesRemakeSeed";
 import rolesSeed from "./roles";
 import { config } from "dotenv";
 

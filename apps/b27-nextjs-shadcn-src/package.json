@@ -22,6 +22,8 @@
 		"@pete_keen/authentication-core": "workspace:*",
 		"@pete_keen/authz": "workspace:*",
 		"@pete_keen/courses": "workspace:*",
+		"@pete_keen/courses-ui": "workspace:*",
+		"@pete_keen/courses-remake": "workspace:*",
 		"@pete_keen/logger": "workspace:*",
 		"@pete_keen/thia-next": "workspace:*",
 		"@radix-ui/react-accordion": "^1.2.8",

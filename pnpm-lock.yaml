@@ -41,6 +41,12 @@ importers:
       '@pete_keen/courses':
         specifier: workspace:*
         version: link:../../packages/courses
+      '@pete_keen/courses-remake':
+        specifier: workspace:*
+        version: link:../../packages/courses-remake
+      '@pete_keen/courses-ui':
+        specifier: workspace:*
+        version: link:../../packages/courses-ui
       '@pete_keen/logger':
         specifier: workspace:*
         version: link:../../packages/logger

@@ -1,4 +1,4 @@
-import { ConfirmActionDialog } from "./confirm-action-dialog";
+import { ConfirmActionDialog } from "../confirm-action-dialog";
 
 export function ConfirmDeleteCourseDialog({
 	onConfirm,

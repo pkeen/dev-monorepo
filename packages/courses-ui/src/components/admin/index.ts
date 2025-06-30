@@ -1,2 +1,1 @@
-
-export * from "./CourseEditForm";
+export * from "./course";

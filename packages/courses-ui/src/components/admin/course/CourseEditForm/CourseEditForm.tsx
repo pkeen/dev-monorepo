@@ -3,38 +3,22 @@
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-	Lesson,
-	ModuleDTO,
-	CourseDisplay,
-	// EditCourseTreeDTO,
-	UiCourseDisplay,
-	uiCourseDisplay,
-	CourseTreeItemUpsert,
-	// editCourseTreeDTO,
-	// ModuleTreeDTO,
-} from "@pete_keen/courses/validators";
-import {
 	Form,
 	FormField,
 	FormItem,
 	FormLabel,
 	FormControl,
 	FormMessage,
-} from "../ui/form";
-import { Input } from "../ui/input";
-import { Switch } from "../ui/switch";
-import { Button } from "../ui/button";
-import { Card, CardHeader } from "../ui/card";
-import { useMemo, useState } from "react";
-// import { NestedSortableSlotList } from "./nested-slot-list-display";
-// import { editCourse } from "@/lib/actions/course/editCourse";
-// import { deleteCourse } from "@/lib/actions/course/deleteCourse";
+} from "../../../ui/form";
+import { Input } from "../../../ui/input";
+import { Switch } from "../../../ui/switch";
+import { Button } from "../../../ui/button";
+import { Card, CardHeader } from "../../../ui/card";
+import { useState } from "react";
 import { toast } from "sonner";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ConfirmDeleteCourseDialog } from "./confirm-delete-course";
-import { SelectExistingModule } from "./select-existing-module";
-import { SelectExistingLesson } from "./select-existing-lesson";
+import { ConfirmDeleteCourseDialog } from "../ConfirmDeleteCourseDialog";
 import { SortableTree } from "./SortableTree";
 import { Controller } from "react-hook-form";
 import { AddContentDialog } from "./AddContentDialog";
@@ -43,9 +27,9 @@ import {
 	ContentItemDTO,
 	EditCourseTreeDTO,
 	editCourseTreeDTO,
+	CourseTreeItemUpsert,
 } from "@pete_keen/courses-remake/validators";
 import { Textarea } from "components/ui/textarea";
-import { CourseTreeItem } from "@pete_keen/courses-remake/validators";
 // import { courseDisplayToUi } from "./course-display-to-ui";
 
 export function CourseEditForm({
@@ -198,11 +182,6 @@ export function CourseEditForm({
 								onOpenChange={setSelectContentOpen}
 								items={existingContent}
 								onSelect={async (item) => {
-									// const moduleTree = await fetchModuleTree(
-									// 	item.id
-									// );
-									// if (!moduleTree) return;
-									// get moduletree action
 									const courseTreeItem: CourseTreeItemUpsert =
 										{
 											id: undefined,

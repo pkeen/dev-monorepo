@@ -1,24 +1,17 @@
 import { courses } from "@/courses";
-import { CoursesTable } from "@/lib/components/course-builder/course/courses-table";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { Plus } from "lucide-react";
+import { CoursesAdminView } from "@pete_keen/courses-ui";
 
 export default async function CoursesPage() {
 	const coursesList = await courses.course.list();
 
 	return (
-		<div className="space-y-4">
-			<Button variant="default" size="sm" asChild>
-				<Link
-					href="/admin/courses/new"
-					className="flex items-center gap-2"
-				>
-					<Plus className="h-4 w-4" />
-					Add Course
-				</Link>
-			</Button>
-			<CoursesTable courses={coursesList} />
-		</div>
+		<CoursesAdminView
+			courses={coursesList}
+			onAddCourseHref="/admin/courses/new"
+			handleDelete={async (id) => {
+				"use server";
+				await courses.course.destroy(id);
+			}}
+		/>
 	);
 }

@@ -1,7 +1,4 @@
-export const helloWorld = () => {
-	console.log("Hello World");
-};
-
 export * from "./components";
+export * from "./actions";
 
 import "./globals.css";

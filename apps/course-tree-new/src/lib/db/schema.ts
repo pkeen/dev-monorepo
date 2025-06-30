@@ -1,8 +1,8 @@
 import {
 	createSchema,
-	courseNodeNoCyclesTriggerSqlString,
+	// courseNodeNoCyclesTriggerSqlString,
 } from "@pete_keen/courses-remake/db-adapters";
-import { sql } from "drizzle-orm";
+// import { sql } from "drizzle-orm";
 
 export const {
 	courses,

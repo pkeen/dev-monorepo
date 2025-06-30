@@ -6,42 +6,38 @@ import {
 	DialogHeader,
 	DialogTitle,
 	DialogFooter,
-} from "../ui/dialog";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { ScrollArea } from "../ui/scroll-area";
+} from "../../../ui/dialog";
+import { Input } from "../../../ui/input";
+import { Button } from "../../../ui/button";
+import { ScrollArea } from "../../../ui/scroll-area";
 import { useState } from "react";
-import { ModuleDTO, ModuleTreeDTO } from "@pete_keen/courses/validators";
+import { ContentItemDTO } from "@pete_keen/courses-remake/validators";
 
-interface SelectExistingModuleProps {
+interface SelectExistingContentProps {
 	title: string;
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	items: ModuleDTO[];
-	onSelect: (item: ModuleDTO) => void;
-    // fetchModuleTree: (moduleId: number) => Promise<ModuleTreeDTO | null>;
+	items: ContentItemDTO[];
+	onSelect: (item: ContentItemDTO) => void;
 }
 
-export function SelectExistingModule({
+export function SelectExistingContentDialog({
 	title,
 	open,
 	onOpenChange,
 	items,
 	onSelect,
-    // fetchModuleTree,
-}: SelectExistingModuleProps) {
+}: SelectExistingContentProps) {
 	const [search, setSearch] = useState("");
 
 	const filteredItems = items.filter((item) =>
-		item.name.toLowerCase().includes(search.toLowerCase())
+		item.title.toLowerCase().includes(search.toLowerCase())
 	);
 
-	const handleSelect = (item: ModuleDTO) => {
+	const handleSelect = (item: ContentItemDTO) => {
 		onSelect(item);
 		onOpenChange(false); // Close after selecting
 	};
-
-	console.log("SelectExistingModule open:", open);
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -51,7 +47,7 @@ export function SelectExistingModule({
 				</DialogHeader>
 
 				<Input
-					placeholder="Search modules..."
+					placeholder="Search Content..."
 					value={search}
 					onChange={(e) => setSearch(e.target.value)}
 				/>
@@ -65,13 +61,13 @@ export function SelectExistingModule({
 								className="justify-start"
 								onClick={() => handleSelect(item)}
 							>
-								<div>
+								<div className="flex flex-row gap-2">
 									<div className="font-medium">
-										{item.name}
+										{item.title}
 									</div>
-									{/* <div className="text-sm text-muted-foreground">
-										{item.description}
-									</div> */}
+									<div className="text-sm text-muted-foreground">
+										{item.type}
+									</div>
 								</div>
 							</Button>
 						))}

@@ -8,6 +8,13 @@
       "when": 1747144478572,
       "tag": "0000_bumpy_speed_demon",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1751292316089,
+      "tag": "0001_giant_sumo",
+      "breakpoints": true
     }
   ]
 }

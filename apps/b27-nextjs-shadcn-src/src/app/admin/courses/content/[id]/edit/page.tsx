@@ -1,5 +1,5 @@
 import { courses } from "@/courses";
-import { ModuleEditForm } from "@/lib/components/course-builder/modules/module-edit-form";
+import { ContentEditForm } from "@pete_keen/courses-ui";
 
 export default async function ContentEditPage({
 	params,
@@ -11,7 +11,7 @@ export default async function ContentEditPage({
 	// const lessons = await courses.lesson.list();
 	// const moduleUsage = await courses.module.findUsage(parseInt(id));
 	return contentItem ? (
-		<div>{contentItem.title}</div>
+		<ContentEditForm contentItem={contentItem} />
 	) : (
 		<div>Content item not found</div>
 	);

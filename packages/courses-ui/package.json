@@ -27,7 +27,10 @@
 		"classnames": "^2.5.1",
 		"clsx": "^2.1.1",
 		"lucide-react": "^0.488.0",
-		"rollup-preserve-directives": "^1.1.3"
+		"rollup-preserve-directives": "^1.1.3",
+		"markdown-it": "^14.1.0",
+		"react-markdown": "^10.1.0",
+		"react-markdown-editor-lite": "^1.3.4"
 	},
 	"peerDependencies": {
 		"@dnd-kit/core": "^6.3.1",
@@ -87,6 +90,7 @@
 		"sass": "^1.89.0",
 		"sonner": "^2.0.3",
 		"tailwindcss": "^4.0.0",
-		"zod": "^3.24.3"
+		"zod": "^3.24.3",
+		"@types/markdown-it": "^14.1.2"
 	}
 }

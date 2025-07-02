@@ -125,7 +125,7 @@ export const editContentItemDTO = contentItemDTO;
 export type EditContentItemDTO = z.infer<typeof editContentItemDTO>;
 
 export const lessonDetail = z.object({
-	id: z.number(),
+	id: z.number(), 
 	contentId: z.number(),
 	// title: z.string(),
 	videoId: z.number(),

@@ -383,6 +383,20 @@ const createCRUD = (
 						details: {},
 					});
 				}
+				case "file": {
+					// TODO
+					return fullContentItem.parse({
+						...base[0],
+						details: {},
+					});
+				}
+				case "quiz": {
+					// TODO
+					return fullContentItem.parse({
+						...base[0],
+						details: {},
+					});
+				}
 				// case "quiz": {
 				// 	const detail = await db.select().from(schema.quizDetail).where(eq(schema.quizDetail.contentId, id));
 				// 	if (!detail) return null;

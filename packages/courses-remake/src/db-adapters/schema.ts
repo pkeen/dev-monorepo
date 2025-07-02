@@ -53,8 +53,8 @@ export const contentType = pgEnum("content_type", [
 export const contentItem = courses.table("content_item", {
 	id: serial("id").primaryKey(),
 	type: contentType("type").notNull(),
-	title: text("title").notNull(),
-	isPublished: boolean("is_published").notNull().default(false),
+	title: varchar("title", { length: 256 }).notNull(),
+	isPublished: boolean("is_published").notNull().default(false), // TODO: maybe lift this to course_node
 	createdAt: timestamp("created_at", { withTimezone: true })
 		.defaultNow()
 		.notNull(),
@@ -74,7 +74,9 @@ export const courseNode = courses.table(
 		order: integer("order").notNull(),
 
 		contentId: integer("content_id")
-			.references(() => contentItem.id)
+			.references(() => contentItem.id, {
+				onDelete: "cascade",
+			})
 			.notNull(),
 	},
 	(table) => ({
@@ -98,7 +100,7 @@ export const video = courses.table("video", {
 	id: serial("id").primaryKey(),
 	provider: videoProviderEnum("video_provider").notNull(),
 	url: text("url").notNull(),
-	title: varchar("title", { length: 256 }).notNull(),
+	// title: varchar("title", { length: 256 }).notNull(),
 	thumbnailUrl: text("thumbnail_url").notNull(),
 	isPublished: boolean("is_published").notNull().default(false),
 	order: integer("order").notNull(), // NEW // WHY??
@@ -109,7 +111,12 @@ export const video = courses.table("video", {
 
 export const lessonDetail = courses.table("lesson_detail", {
 	id: serial("id").primaryKey(),
-	contentItemId: integer("content_item_id").notNull(),
+	contentId: integer("content_id")
+		.references(() => contentItem.id, {
+			onDelete: "cascade",
+		})
+		.notNull(),
+	// title: varchar("title", { length: 256 }).notNull(),
 	videoId: integer("video_id").references(() => video.id, {
 		onDelete: "cascade",
 	}),

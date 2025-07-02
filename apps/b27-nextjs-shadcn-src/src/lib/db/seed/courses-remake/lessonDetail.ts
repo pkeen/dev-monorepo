@@ -1,5 +1,5 @@
 import type { db } from "@/db";
-import { schema } from "@/courses";
+import { schema, courses } from "@/courses";
 import { faker } from "@faker-js/faker";
 
 const markdownSamples = [
@@ -15,28 +15,43 @@ const getVideoIds = async (db: db) => {
 	return videos.map((video) => video.id);
 };
 
+const getLessonContentIds = async (db: db) => {
+	const contentItems = await courses.content.list({ type: "lesson" });
+	return contentItems.map((contentItem) => contentItem.id);
+};
+
 const seed = async (db: db) => {
 	const videoIds = await getVideoIds(db);
 	if (videoIds.length === 0) {
 		console.error("No videos found in the database.");
 		process.exit(1);
 	}
-	const spoofArray = [];
-
-	for (let i = 0; i < 60; i++) {
-		const spoofData = {
-			userId: Math.floor(Math.random() * 10) + 1,
-			name: faker.company.buzzPhrase(),
-			excerpt: faker.lorem.sentences(),
-			content: `# ${faker.company.catchPhrase()}\n\n${faker.lorem.paragraph()}\n\n![Image](https://placehold.co/600x400?text=Lesson+Image)`,
-			isPublished: faker.datatype.boolean(0.75),
-			videoId: faker.helpers.arrayElement(videoIds),
-		};
-		spoofArray.push(spoofData);
+	const lessonContentIds = await getLessonContentIds(db);
+	if (lessonContentIds.length === 0) {
+		console.error("No lesson content found in the database.");
+		process.exit(1);
 	}
+	const spoofArray = lessonContentIds.map((lessonContentId) => {
+		return {
+			contentId: lessonContentId,
+			videoId: faker.helpers.arrayElement(videoIds),
+			excerpt: faker.lorem.sentences(),
+			bodyContent: faker.lorem.paragraphs(),
+			createdAt: faker.date.past(),
+			updatedAt: faker.date.past(),
+		};
+	});
+
+	// for (let i = 0; i < 60; i++) {
+	// 	const spoofData = {
+	// 		contentId: Math.floor(Math.random() * 10) + 1,
+	// 		videoId: faker.helpers.arrayElement(videoIds),
+	// 	};
+	// 	spoofArray.push(spoofData);
+	// }
 
 	try {
-		await db.insert(schema.lesson).values(spoofArray);
+		await db.insert(schema.lessonDetail).values(spoofArray);
 		console.log("lessons succesfully seeded...");
 	} catch (error) {
 		console.error("Error inserting lessons:", error);

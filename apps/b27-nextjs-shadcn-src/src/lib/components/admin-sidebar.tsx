@@ -22,7 +22,7 @@ const navItems = [
 		icon: BookOpen,
 		children: [
 			{ href: "/admin/courses", label: "Courses" },
-			{ href: "/admin/courses/modules", label: "Modules" },
+			{ href: "/admin/courses/content", label: "Content" },
 			{ href: "/admin/courses/lessons", label: "Lessons" },
 			{ href: "/admin/courses/videos", label: "Videos" },
 		],

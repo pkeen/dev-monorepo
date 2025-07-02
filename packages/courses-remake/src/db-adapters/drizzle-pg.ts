@@ -8,6 +8,7 @@ import {
 import {
 	contentItemDTO,
 	ContentItemDTO,
+	ContentType,
 	CourseDTO,
 	courseDTO,
 	CourseTreeDTO,
@@ -16,6 +17,8 @@ import {
 	CourseTreeItemUpsert,
 	CreateCourseTreeDTO,
 	EditCourseTreeDTO,
+	fullContentItem,
+	FullContentItem,
 } from "validators";
 import { eq, inArray } from "drizzle-orm";
 
@@ -333,25 +336,64 @@ const createCRUD = (
 	};
 
 	const contentItemRepo = (db: DrizzleDbWithSchema) => {
-		const list = async (): Promise<ContentItemDTO[]> => {
-			const results = await db.select().from(schema.contentItem);
+		const list = async ({ type }: { type?: ContentType } = {}): Promise<
+			ContentItemDTO[]
+		> => {
+			const query = db.select().from(schema.contentItem);
+
+			// Conditionally apply `.where()` only if type is defined
+			const results = type
+				? await query.where(eq(schema.contentItem.type, type))
+				: await query;
+
 			const parsed = contentItemDTO.array().safeParse(results);
 			if (!parsed.success) {
+				console.error(parsed.error.format()); // helpful for debugging
 				throw new Error("Invalid content item data");
 			}
+
 			return parsed.data;
 		};
 
-		const get = async (id: number): Promise<ContentItemDTO | null> => {
-			const results = await db
+		const get = async (id: number): Promise<FullContentItem | null> => {
+			const base = await db
 				.select()
 				.from(schema.contentItem)
 				.where(eq(schema.contentItem.id, id));
-			const parsed = contentItemDTO.array().safeParse(results);
-			if (!parsed.success) {
-				throw new Error("Invalid content item data");
+
+			if (!base[0]) return null;
+
+			switch (base[0].type) {
+				case "lesson": {
+					const detail = await db
+						.select()
+						.from(schema.lessonDetail)
+						.where(eq(schema.lessonDetail.contentId, base[0].id));
+					console.log("ContentItem Id", base[0].id);
+					console.log({ ...base[0], details: detail[0] });
+					if (!detail[0]) return null;
+					return fullContentItem.parse({
+						...base[0],
+						details: detail[0],
+					});
+				}
+				case "module": {
+					return fullContentItem.parse({
+						...base[0],
+						details: {},
+					});
+				}
+				// case "quiz": {
+				// 	const detail = await db.select().from(schema.quizDetail).where(eq(schema.quizDetail.contentId, id));
+				// 	if (!detail) return null;
+				// 	return fullContentItem.parse({ ...base, details: detail });
+				// }
+				// Add other types...
+				default:
+					throw new Error(
+						`Unsupported content type: ${base[0].type}`
+					);
 			}
-			return parsed.data[0];
 		};
 
 		return {

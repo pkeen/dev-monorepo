@@ -31,74 +31,6 @@ export const createCourseDTO = courseDTO.omit({ id: true });
 export type CreateCourseDTO = z.infer<typeof createCourseDTO>;
 
 /*
- * ************* Content Item *************
- */
-export const contentType = z.enum(["lesson", "quiz", "file", "module"]);
-export type ContentType = z.infer<typeof contentType>;
-
-export const contentItemDTO = z.object({
-	id: z.number(),
-	type: contentType,
-	title: z.string(),
-	isPublished: z.boolean().optional(),
-	createdAt: z.date().optional(),
-	updatedAt: z.date().optional(),
-});
-export type ContentItemDTO = z.infer<typeof contentItemDTO>;
-export const createContentItemDTO = contentItemDTO.omit({ id: true });
-export type CreateContentItemDTO = z.infer<typeof createContentItemDTO>;
-export const editContentItemDTO = contentItemDTO;
-export type EditContentItemDTO = z.infer<typeof editContentItemDTO>;
-
-export const lessonDetail = z.object({
-	id: z.number(),
-	contentItemId: z.number(),
-	videoId: z.number(),
-	excerpt: z.string(), // short summary for previews
-	bodyContent: z.string(), // raw markdown or HTML
-	createdAt: z.date().optional(),
-	updatedAt: z.date().optional(),
-});
-export type LessonDetail = z.infer<typeof lessonDetail>;
-export const createLessonDetail = lessonDetail.omit({ id: true });
-export type CreateLessonDetail = z.infer<typeof createLessonDetail>;
-
-/*
- * ************* Video *************
- */
-export const videoProviderSchema = z.enum([
-	"r2",
-	"youtube",
-	"vimeo",
-	"mux",
-	"bunny",
-]);
-export type VideoProvider = z.infer<typeof videoProviderSchema>;
-export const videoProviderLabels: Record<VideoProvider, string> = {
-	r2: "R2",
-	youtube: "YouTube",
-	vimeo: "Vimeo",
-	mux: "Mux",
-	bunny: "Bunny",
-};
-
-export const videoDTO = z.object({
-	id: z.number(),
-	provider: videoProviderSchema,
-	url: z.string(),
-	title: z.string(),
-	thumbnailUrl: z.string(),
-	order: z.number(),
-	createdAt: z.date().optional(),
-	updatedAt: z.date().optional(),
-});
-export type VideoDTO = z.infer<typeof videoDTO>;
-export const createVideoDTO = videoDTO.omit({ id: true });
-export type CreateVideoDTO = z.infer<typeof createVideoDTO>;
-export const editVideoDTO = videoDTO;
-export type EditVideoDTO = z.infer<typeof editVideoDTO>;
-
-/*
  * ************* Course Tree *************
  */
 
@@ -171,6 +103,107 @@ export const createCourseTreeDTO = editCourseTreeDTO.omit({
 	updatedAt: true,
 });
 export type CreateCourseTreeDTO = z.infer<typeof createCourseTreeDTO>;
+
+/*
+ * ************* Content Item *************
+ */
+export const contentType = z.enum(["lesson", "quiz", "file", "module"]);
+export type ContentType = z.infer<typeof contentType>;
+
+export const contentItemDTO = z.object({
+	id: z.number(),
+	type: contentType,
+	title: z.string(),
+	isPublished: z.boolean().optional(),
+	createdAt: z.date().optional(),
+	updatedAt: z.date().optional(),
+});
+export type ContentItemDTO = z.infer<typeof contentItemDTO>;
+export const createContentItemDTO = contentItemDTO.omit({ id: true });
+export type CreateContentItemDTO = z.infer<typeof createContentItemDTO>;
+export const editContentItemDTO = contentItemDTO;
+export type EditContentItemDTO = z.infer<typeof editContentItemDTO>;
+
+export const lessonDetail = z.object({
+	id: z.number(),
+	contentId: z.number(),
+	// title: z.string(),
+	videoId: z.number(),
+	excerpt: z.string(), // short summary for previews
+	bodyContent: z.string(), // raw markdown or HTML
+	createdAt: z.date().optional(),
+	updatedAt: z.date().optional(),
+});
+export type LessonDetail = z.infer<typeof lessonDetail>;
+// export const createLessonDetail = lessonDetail.omit({ id: true });
+// export type CreateLessonDetail = z.infer<typeof createLessonDetail>;
+
+// Lesson Combo
+export const lessonContentItem = contentItemDTO.extend({
+	type: z.literal("lesson"),
+	details: lessonDetail,
+});
+export type LessonContentItem = z.infer<typeof lessonContentItem>;
+
+export const quizContentItem = contentItemDTO.extend({
+	type: z.literal("quiz"),
+	details: z.any(), // TODO
+});
+export type QuizContentItem = z.infer<typeof quizContentItem>;
+
+export const moduleContentItem = contentItemDTO.extend({
+	type: z.literal("module"),
+});
+export type ModuleContentItem = z.infer<typeof moduleContentItem>;
+
+export const fileContentItem = contentItemDTO.extend({
+	type: z.literal("file"),
+	details: z.any(), // TODO
+});
+export type FileContentItem = z.infer<typeof fileContentItem>;
+
+export const fullContentItem = z.discriminatedUnion("type", [
+	lessonContentItem,
+	quizContentItem,
+	fileContentItem,
+	moduleContentItem,
+]);
+export type FullContentItem = z.infer<typeof fullContentItem>;
+
+/*
+ * ************* Video *************
+ */
+export const videoProviderSchema = z.enum([
+	"r2",
+	"youtube",
+	"vimeo",
+	"mux",
+	"bunny",
+]);
+export type VideoProvider = z.infer<typeof videoProviderSchema>;
+export const videoProviderLabels: Record<VideoProvider, string> = {
+	r2: "R2",
+	youtube: "YouTube",
+	vimeo: "Vimeo",
+	mux: "Mux",
+	bunny: "Bunny",
+};
+
+export const videoDTO = z.object({
+	id: z.number(),
+	provider: videoProviderSchema,
+	url: z.string(),
+	title: z.string(),
+	thumbnailUrl: z.string(),
+	order: z.number(),
+	createdAt: z.date().optional(),
+	updatedAt: z.date().optional(),
+});
+export type VideoDTO = z.infer<typeof videoDTO>;
+export const createVideoDTO = videoDTO.omit({ id: true });
+export type CreateVideoDTO = z.infer<typeof createVideoDTO>;
+export const editVideoDTO = videoDTO;
+export type EditVideoDTO = z.infer<typeof editVideoDTO>;
 
 // /*
 //  * NEW COURSE TYPES

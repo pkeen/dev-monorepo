@@ -10,7 +10,7 @@ export default async () => {
 		coursesSchema.course,
 		coursesSchema.contentItem,
 		coursesSchema.courseNode,
-		// coursesSchema.lessonDetail,
+		coursesSchema.lessonDetail,
 		// coursesSchema.video,
 		// coursesSchema.contentType,
 	]) {
@@ -24,6 +24,7 @@ export default async () => {
 			await courseSeed.course(db);
 			await courseSeed.contentItem(db);
 			await courseSeed.courseNode(db);
+			await courseSeed.lessonDetail(db);
 
 			// await seeds.user(db););
 			// logBreak();

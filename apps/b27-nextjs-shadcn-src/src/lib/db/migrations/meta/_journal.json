@@ -5,36 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1747144478572,
-      "tag": "0000_bumpy_speed_demon",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1751292316089,
-      "tag": "0001_giant_sumo",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1751365238873,
-      "tag": "0002_unusual_randall_flagg",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1751365485309,
-      "tag": "0003_productive_firelord",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1751366011697,
-      "tag": "0004_early_azazel",
+      "when": 1751540835168,
+      "tag": "0000_last_titanium_man",
       "breakpoints": true
     }
   ]

@@ -11,7 +11,7 @@ const markdownSamples = [
 ];
 
 const getVideoIds = async (db: db) => {
-	const videos = await db.select({ id: schema.video.id }).from(schema.video);
+	const videos = await courses.content.list({ type: "video" });
 	return videos.map((video) => video.id);
 };
 
@@ -31,12 +31,17 @@ const seed = async (db: db) => {
 		console.error("No lesson content found in the database.");
 		process.exit(1);
 	}
+
 	const spoofArray = lessonContentIds.map((lessonContentId) => {
+		const bodyContent = `${faker.helpers.arrayElement(
+			markdownSamples
+		)}\n\n ${faker.lorem.paragraphs()}`;
+
 		return {
 			contentId: lessonContentId,
-			videoId: faker.helpers.arrayElement(videoIds),
+			videoContentId: faker.helpers.arrayElement(videoIds),
 			excerpt: faker.lorem.sentences(),
-			bodyContent: faker.lorem.paragraphs(),
+			bodyContent,
 			createdAt: faker.date.past(),
 			updatedAt: faker.date.past(),
 		};

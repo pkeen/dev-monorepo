@@ -48,6 +48,7 @@ export const contentType = pgEnum("content_type", [
 	"quiz",
 	"file",
 	"module",
+	"video",
 ]);
 
 export const contentItem = courses.table("content_item", {
@@ -96,17 +97,16 @@ export const videoProviderEnum = pgEnum("video_provider", [
 	"bunny",
 ]);
 
-export const video = courses.table("video", {
+export const videoDetail = courses.table("video_detail", {
 	id: serial("id").primaryKey(),
+	contentId: integer("content_id")
+		.references(() => contentItem.id, {
+			onDelete: "cascade",
+		})
+		.notNull(),
 	provider: videoProviderEnum("video_provider").notNull(),
 	url: text("url").notNull(),
-	// title: varchar("title", { length: 256 }).notNull(),
 	thumbnailUrl: text("thumbnail_url").notNull(),
-	isPublished: boolean("is_published").notNull().default(false),
-	order: integer("order").notNull(), // NEW // WHY??
-	// durationSeconds: integer("duration_seconds").notNull(),
-	createdAt: timestamp("created_at").notNull().defaultNow(),
-	updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const lessonDetail = courses.table("lesson_detail", {
@@ -116,18 +116,14 @@ export const lessonDetail = courses.table("lesson_detail", {
 			onDelete: "cascade",
 		})
 		.notNull(),
-	// title: varchar("title", { length: 256 }).notNull(),
-	videoId: integer("video_id").references(() => video.id, {
-		onDelete: "cascade",
-	}),
+	videoContentId: integer("video_content_id").references(
+		() => contentItem.id,
+		{
+			onDelete: "cascade",
+		}
+	),
 	excerpt: text("excerpt"), // short summary for previews
 	bodyContent: text("body_content"), // raw markdown or HTML
-	createdAt: timestamp("created_at", { withTimezone: true })
-		.defaultNow()
-		.notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true })
-		.defaultNow()
-		.notNull(),
 });
 
 export const createSchema = () => {
@@ -139,7 +135,7 @@ export const createSchema = () => {
 		courseNode,
 		lessonDetail,
 		videoProviderEnum,
-		video,
+		videoDetail,
 	};
 };
 
@@ -149,7 +145,7 @@ export const schemaTables = {
 	contentItem,
 	courseNode,
 	lessonDetail,
-	video,
+	videoDetail,
 };
 
 export type SchemaTables = typeof schemaTables;

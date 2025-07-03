@@ -1,5 +1,5 @@
 {
-  "id": "979ba2cb-e34d-42a6-acb1-b1614a7bc7af",
+  "id": "676d70c7-101d-47e3-af79-2ed269ce2695",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -106,6 +106,59 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "courses.content_item": {
+      "name": "content_item",
+      "schema": "courses",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "content_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_published": {
+          "name": "is_published",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "courses.course": {
       "name": "course",
       "schema": "courses",
@@ -118,7 +171,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -128,8 +181,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "description": {
-          "name": "description",
+        "excerpt": {
+          "name": "excerpt",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -140,6 +193,20 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {
@@ -166,8 +233,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "courses.course_slot": {
-      "name": "course_slot",
+    "courses.course_node": {
+      "name": "course_node",
       "schema": "courses",
       "columns": {
         "id": {
@@ -182,14 +249,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "module_id": {
-          "name": "module_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "lesson_id": {
-          "name": "lesson_id",
+        "parent_id": {
+          "name": "parent_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
@@ -199,44 +260,32 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true
+        },
+        "content_id": {
+          "name": "content_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {
-        "course_slot_course_id_idx": {
-          "name": "course_slot_course_id_idx",
+        "course_parent_idx": {
+          "name": "course_parent_idx",
           "columns": [
             {
               "expression": "course_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "course_slot_module_id_idx": {
-          "name": "course_slot_module_id_idx",
-          "columns": [
+            },
             {
-              "expression": "module_id",
+              "expression": "parent_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "course_slot_lesson_id_idx": {
-          "name": "course_slot_lesson_id_idx",
-          "columns": [
+            },
             {
-              "expression": "lesson_id",
+              "expression": "order",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -249,41 +298,13 @@
         }
       },
       "foreignKeys": {
-        "course_slot_course_id_course_id_fk": {
-          "name": "course_slot_course_id_course_id_fk",
-          "tableFrom": "course_slot",
-          "tableTo": "course",
+        "course_node_content_id_content_item_id_fk": {
+          "name": "course_node_content_id_content_item_id_fk",
+          "tableFrom": "course_node",
+          "tableTo": "content_item",
           "schemaTo": "courses",
           "columnsFrom": [
-            "course_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "course_slot_module_id_module_id_fk": {
-          "name": "course_slot_module_id_module_id_fk",
-          "tableFrom": "course_slot",
-          "tableTo": "module",
-          "schemaTo": "courses",
-          "columnsFrom": [
-            "module_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "course_slot_lesson_id_lesson_id_fk": {
-          "name": "course_slot_lesson_id_lesson_id_fk",
-          "tableFrom": "course_slot",
-          "tableTo": "lesson",
-          "schemaTo": "courses",
-          "columnsFrom": [
-            "lesson_id"
+            "content_id"
           ],
           "columnsTo": [
             "id"
@@ -298,8 +319,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "courses.lesson": {
-      "name": "lesson",
+    "courses.lesson_detail": {
+      "name": "lesson_detail",
       "schema": "courses",
       "columns": {
         "id": {
@@ -308,11 +329,17 @@
           "primaryKey": true,
           "notNull": true
         },
-        "name": {
-          "name": "name",
-          "type": "varchar(256)",
+        "content_id": {
+          "name": "content_id",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
+        },
+        "video_content_id": {
+          "name": "video_content_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
         },
         "excerpt": {
           "name": "excerpt",
@@ -320,125 +347,22 @@
           "primaryKey": false,
           "notNull": false
         },
-        "content": {
-          "name": "content",
+        "body_content": {
+          "name": "body_content",
           "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "is_published": {
-          "name": "is_published",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "video_id": {
-          "name": "video_id",
-          "type": "integer",
           "primaryKey": false,
           "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "lesson_video_id_video_id_fk": {
-          "name": "lesson_video_id_video_id_fk",
-          "tableFrom": "lesson",
-          "tableTo": "video",
+        "lesson_detail_content_id_content_item_id_fk": {
+          "name": "lesson_detail_content_id_content_item_id_fk",
+          "tableFrom": "lesson_detail",
+          "tableTo": "content_item",
           "schemaTo": "courses",
           "columnsFrom": [
-            "video_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "courses.module": {
-      "name": "module",
-      "schema": "courses",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "is_published": {
-          "name": "is_published",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "courses.module_slot": {
-      "name": "module_slot",
-      "schema": "courses",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "module_id": {
-          "name": "module_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "lesson_id": {
-          "name": "lesson_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "order": {
-          "name": "order",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "module_slot_module_id_module_id_fk": {
-          "name": "module_slot_module_id_module_id_fk",
-          "tableFrom": "module_slot",
-          "tableTo": "module",
-          "schemaTo": "courses",
-          "columnsFrom": [
-            "module_id"
+            "content_id"
           ],
           "columnsTo": [
             "id"
@@ -446,13 +370,13 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "module_slot_lesson_id_lesson_id_fk": {
-          "name": "module_slot_lesson_id_lesson_id_fk",
-          "tableFrom": "module_slot",
-          "tableTo": "lesson",
+        "lesson_detail_video_content_id_content_item_id_fk": {
+          "name": "lesson_detail_video_content_id_content_item_id_fk",
+          "tableFrom": "lesson_detail",
+          "tableTo": "content_item",
           "schemaTo": "courses",
           "columnsFrom": [
-            "lesson_id"
+            "video_content_id"
           ],
           "columnsTo": [
             "id"
@@ -699,8 +623,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "courses.video": {
-      "name": "video",
+    "courses.video_detail": {
+      "name": "video_detail",
       "schema": "courses",
       "columns": {
         "id": {
@@ -709,9 +633,15 @@
           "primaryKey": true,
           "notNull": true
         },
-        "provider": {
-          "name": "provider",
-          "type": "provider",
+        "content_id": {
+          "name": "content_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "video_provider": {
+          "name": "video_provider",
+          "type": "video_provider",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
@@ -722,48 +652,30 @@
           "primaryKey": false,
           "notNull": true
         },
-        "title": {
-          "name": "title",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": true
-        },
         "thumbnail_url": {
           "name": "thumbnail_url",
           "type": "text",
           "primaryKey": false,
           "notNull": true
-        },
-        "is_published": {
-          "name": "is_published",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "order": {
-          "name": "order",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "video_detail_content_id_content_item_id_fk": {
+          "name": "video_detail_content_id_content_item_id_fk",
+          "tableFrom": "video_detail",
+          "tableTo": "content_item",
+          "schemaTo": "courses",
+          "columnsFrom": [
+            "content_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -772,8 +684,19 @@
     }
   },
   "enums": {
-    "public.provider": {
-      "name": "provider",
+    "public.content_type": {
+      "name": "content_type",
+      "schema": "public",
+      "values": [
+        "lesson",
+        "quiz",
+        "file",
+        "module",
+        "video"
+      ]
+    },
+    "public.video_provider": {
+      "name": "video_provider",
       "schema": "public",
       "values": [
         "r2",

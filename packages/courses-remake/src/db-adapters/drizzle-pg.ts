@@ -397,12 +397,17 @@ const createCRUD = (
 						details: {},
 					});
 				}
-				// case "quiz": {
-				// 	const detail = await db.select().from(schema.quizDetail).where(eq(schema.quizDetail.contentId, id));
-				// 	if (!detail) return null;
-				// 	return fullContentItem.parse({ ...base, details: detail });
-				// }
-				// Add other types...
+				case "video": {
+					const detail = await db
+						.select()
+						.from(schema.videoDetail)
+						.where(eq(schema.videoDetail.contentId, base[0].id));
+					if (!detail[0]) return null;
+					return fullContentItem.parse({
+						...base[0],
+						details: detail[0],
+					});
+				}
 				default:
 					throw new Error(
 						`Unsupported content type: ${base[0].type}`

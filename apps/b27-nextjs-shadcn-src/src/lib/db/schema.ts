@@ -13,6 +13,6 @@ export const {
 	courseNode,
 	lessonDetail,
 	videoProviderEnum,
-	video,
+	videoDetail,
 	contentType,
 } = coursesSchema;

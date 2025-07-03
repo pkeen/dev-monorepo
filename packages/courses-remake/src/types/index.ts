@@ -1,6 +1,6 @@
 import {
-	CreateVideoDTO,
-	EditVideoDTO,
+	// CreateVideoDTO,
+	// EditVideoDTO,
 	CourseDTO,
 	CourseTreeDTO,
 	EditCourseTreeDTO,
@@ -10,10 +10,10 @@ import {
 	ContentType,
 	ContentItemDTO,
 	LessonDetail,
-	VideoDTO,
+	VideoDetailDTO,
 	CreateContentItemDTO,
 	EditContentItemDTO,
-    CreateCourseTreeDTO,
+	CreateCourseTreeDTO,
 } from "validators";
 
 export {
@@ -24,7 +24,7 @@ export {
 	ContentType,
 	ContentItemDTO,
 	LessonDetail,
-	VideoDTO,
+	VideoDetailDTO,
 	CourseTreeDTO,
 };
 
@@ -56,10 +56,10 @@ export interface CourseCRUD
 // 	findUsage: (id: number) => Promise<LessonUsage>;
 // }
 
-export interface VideoCRUD
-	extends CRUDOperations<VideoDTO, CreateVideoDTO, EditVideoDTO, VideoDTO> {
-	// findUsage: (id: number) => Promise<VideoUsage>;
-}
+// export interface VideoCRUD
+// 	extends CRUDOperations<VideoDTO, CreateVideoDTO, EditVideoDTO, VideoDTO> {
+// 	// findUsage: (id: number) => Promise<VideoUsage>;
+// }
 
 export interface ContentItemCRUD
 	extends CRUDOperations<

@@ -369,8 +369,6 @@ const createCRUD = (
 						.select()
 						.from(schema.lessonDetail)
 						.where(eq(schema.lessonDetail.contentId, base[0].id));
-					console.log("ContentItem Id", base[0].id);
-					console.log({ ...base[0], details: detail[0] });
 					if (!detail[0]) return null;
 					return fullContentItem.parse({
 						...base[0],
@@ -415,9 +413,55 @@ const createCRUD = (
 			}
 		};
 
+		const destroy = async (id: number) => {
+			await db
+				.delete(schema.contentItem)
+				.where(eq(schema.contentItem.id, id));
+		};
+
+		const update = async (data: FullContentItem) => {
+			const base = {
+				id: data.id,
+				title: data.title,
+				type: data.type,
+				isPublished: data.isPublished,
+				updatedAt: new Date(),
+			};
+
+			const detail = data.details;
+
+			await db
+				.update(schema.contentItem)
+				.set(base)
+				.where(eq(schema.contentItem.id, data.id));
+
+			switch (data.type) {
+				case "lesson": {
+					await db
+						.update(schema.lessonDetail)
+						.set(detail)
+						.where(eq(schema.lessonDetail.contentId, data.id));
+					break;
+				}
+				case "video": {
+					await db
+						.update(schema.videoDetail)
+						.set(detail)
+						.where(eq(schema.videoDetail.contentId, data.id));
+					break;
+				}
+				default: {
+					console.log("data type not supported yet", data.type);
+					break;
+				}
+			}
+		};
+
 		return {
 			list,
 			get,
+			destroy,
+			update,
 		};
 	};
 

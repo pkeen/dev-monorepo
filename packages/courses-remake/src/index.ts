@@ -3,7 +3,7 @@
 // import db from "~/lib/db/index.server";
 // import * as schema from "~/lib/courses/db/schema";
 
-import { DBAdapter } from "db-adapters/drizzle-pg";
+import type { DBAdapter } from "./db-adapters";
 import { CourseCRUD, ContentItemCRUD } from "types";
 
 export interface CourseManager {

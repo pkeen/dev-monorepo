@@ -11,9 +11,10 @@ import {
 	ContentItemDTO,
 	LessonDetail,
 	VideoDetailDTO,
-	CreateContentItemDTO,
-	EditContentItemDTO,
 	CreateCourseTreeDTO,
+	FullContentItem,
+	EditFullContentItem,
+	CreateFullContentItem,
 } from "validators";
 
 export {
@@ -63,9 +64,9 @@ export interface CourseCRUD
 
 export interface ContentItemCRUD
 	extends CRUDOperations<
-		ContentItemDTO,
-		CreateContentItemDTO,
-		EditContentItemDTO,
+		FullContentItem,
+		CreateFullContentItem,
+		EditFullContentItem,
 		ContentItemDTO
 	> {}
 

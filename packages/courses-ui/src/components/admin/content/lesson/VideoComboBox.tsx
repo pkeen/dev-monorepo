@@ -14,12 +14,12 @@ import {
 	CommandList,
 } from "../../../ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "../../../ui/popover";
-import { VideoDTO } from "@pete_keen/courses-remake/validators";
+import { VideoContentItem } from "@pete_keen/courses-remake/validators";
 
 interface VideoComboBoxProps {
 	value: number | null;
 	setValue: (value: number | null) => void;
-	videos: VideoDTO[];
+	videos: VideoContentItem[];
 }
 
 export function VideoComboBox({ value, setValue, videos }: VideoComboBoxProps) {

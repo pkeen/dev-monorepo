@@ -4,13 +4,11 @@ import {
 	FileDown,
 	FileQuestion,
 	Presentation,
+	SquarePlay,
 } from "lucide-react";
+import { ContentType } from "@pete_keen/courses-remake/validators";
 
-export const TypeIcon = ({
-	type,
-}: {
-	type: "module" | "lesson" | "quiz" | "file";
-}) => {
+export const TypeIcon = ({ type }: { type: ContentType }) => {
 	switch (type) {
 		case "module":
 			return <Folder />;
@@ -20,5 +18,9 @@ export const TypeIcon = ({
 			return <FileQuestion />;
 		case "file":
 			return <FileDown />;
+		case "video":
+			return <SquarePlay />;
+		default:
+			return null;
 	}
 };

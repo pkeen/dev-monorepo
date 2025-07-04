@@ -126,16 +126,16 @@ export const contentItemDTO = z.object({
 	updatedAt: z.date().optional(),
 });
 export type ContentItemDTO = z.infer<typeof contentItemDTO>;
-export const createContentItemDTO = contentItemDTO.omit({ id: true });
-export type CreateContentItemDTO = z.infer<typeof createContentItemDTO>;
-export const editContentItemDTO = contentItemDTO;
-export type EditContentItemDTO = z.infer<typeof editContentItemDTO>;
+// export const createContentItemDTO = contentItemDTO.omit({ id: true });
+// export type CreateContentItemDTO = z.infer<typeof createContentItemDTO>;
+// export const editContentItemDTO = contentItemDTO;
+// export type EditContentItemDTO = z.infer<typeof editContentItemDTO>;
 
 export const lessonDetail = z.object({
 	id: z.number(),
 	contentId: z.number(),
 	// title: z.string(),
-	videoId: z.number(),
+	videoContentId: z.number(),
 	excerpt: z.string(), // short summary for previews
 	bodyContent: z.string(), // raw markdown or HTML
 	createdAt: z.date().optional(),
@@ -192,6 +192,7 @@ export type QuizContentItem = z.infer<typeof quizContentItem>;
 
 export const moduleContentItem = contentItemDTO.extend({
 	type: z.literal("module"),
+	details: z.any(), // TODO
 });
 export type ModuleContentItem = z.infer<typeof moduleContentItem>;
 
@@ -215,6 +216,19 @@ export const fullContentItem = z.discriminatedUnion("type", [
 	videoContentItem,
 ]);
 export type FullContentItem = z.infer<typeof fullContentItem>;
+export const editFullContentItem = fullContentItem;
+export type EditFullContentItem = z.infer<typeof editFullContentItem>;
+const commonOmissions = { id: true } as const;
+
+const createFullContentItem = z.discriminatedUnion("type", [
+	lessonContentItem.omit(commonOmissions),
+	quizContentItem.omit(commonOmissions),
+	fileContentItem.omit(commonOmissions),
+	moduleContentItem.omit(commonOmissions),
+	videoContentItem.omit(commonOmissions),
+]);
+
+export type CreateFullContentItem = z.infer<typeof createFullContentItem>;
 
 // export const createVideoDetailDTO = videoDetailDTO.omit({ id: true });
 // export type CreateVideoDetailDTO = z.infer<typeof createVideoDetailDTO>;

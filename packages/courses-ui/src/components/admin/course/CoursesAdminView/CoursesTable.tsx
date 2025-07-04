@@ -74,7 +74,7 @@ export function CoursesTable({
 				<TableHeader>
 					<TableRow>
 						<TableHead className="text-left">Title</TableHead>
-						<TableHead className="text-left">Description</TableHead>
+						<TableHead className="text-left">Excerpt</TableHead>
 						<TableHead className="text-left">Published</TableHead>
 						<TableHead className="text-right">Actions</TableHead>
 					</TableRow>
@@ -84,7 +84,7 @@ export function CoursesTable({
 						<TableRow key={course.id}>
 							<TableCell>{course.title}</TableCell>
 							<TableCell>
-								{course.description?.substring(0, 50) + "..."}
+								{course.excerpt?.substring(0, 50) + "..."}
 							</TableCell>
 							<TableCell>
 								{course.isPublished ? "Yes ✅" : "No ❌"}

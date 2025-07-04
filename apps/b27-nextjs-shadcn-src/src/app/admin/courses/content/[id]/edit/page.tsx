@@ -8,10 +8,20 @@ export default async function ContentEditPage({
 }) {
 	const { id } = await params;
 	const contentItem = await courses.content.get(parseInt(id));
-	// const lessons = await courses.lesson.list();
-	// const moduleUsage = await courses.module.findUsage(parseInt(id));
+	const videos = await courses.content.list({ type: "video" });
 	return contentItem ? (
-		<ContentEditForm contentItem={contentItem} />
+		<ContentEditForm
+			contentItem={contentItem}
+			videos={videos}
+			updateContent={async (values) => {
+				"use server";
+				await courses.content.update(values);
+			}}
+			deleteContent={async (id) => {
+				"use server";
+				await courses.content.destroy(id);
+			}}
+		/>
 	) : (
 		<div>Content item not found</div>
 	);

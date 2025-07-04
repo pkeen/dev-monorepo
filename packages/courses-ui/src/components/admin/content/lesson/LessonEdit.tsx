@@ -18,32 +18,28 @@ import { CardHeader, CardTitle } from "../../../ui/card";
 import {
 	lessonContentItem,
 	LessonContentItem,
-	// editLessonDTO,
-	// Video,
+	VideoContentItem,
 } from "@pete_keen/courses-remake/validators";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useState } from "react";
-// import { editLesson } from "@/lib/actions/lesson/editLesson";
-// import { deleteLesson } from "@/lib/actions/lesson/deleteLesson";
-// import { ConfirmDeleteLessonDialog } from "./confirm-delete-lesson-dialog";
-// import { LessonUsage } from "@pete_keen/courses/types";
 import LessonEditor from "./LessonContentEditor";
 import { VideoComboBox } from "./VideoComboBox";
-
-// const lessonEditFormSchema = lessonDTO.extend({
-// 	description: z.string().optional(),
-// });
+import { ConfirmDeleteContentDialog } from "../ConfirmDeleteContentDialog";
 
 type Props = {
 	lesson: LessonContentItem;
 	updateLesson: (data: LessonContentItem) => Promise<void>;
 	deleteContent: (id: number) => Promise<void>;
-	// lessonUsage?: LessonUsage;
-	// videos: Video[];
+	videos: VideoContentItem[];
 };
 
-export const LessonEdit = ({ lesson, updateLesson, deleteContent }: Props) => {
+export const LessonEdit = ({
+	lesson,
+	videos,
+	updateLesson,
+	deleteContent,
+}: Props) => {
 	const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 	const router = useRouter();
 	const form = useForm<z.infer<typeof lessonContentItem>>({
@@ -56,7 +52,7 @@ export const LessonEdit = ({ lesson, updateLesson, deleteContent }: Props) => {
 			details: {
 				id: lesson.details.id,
 				contentId: lesson.id,
-				videoId: lesson.details.videoId,
+				videoContentId: lesson.details.videoContentId,
 				excerpt: lesson.details.excerpt,
 				bodyContent: lesson.details.bodyContent ?? "",
 			},
@@ -79,7 +75,7 @@ export const LessonEdit = ({ lesson, updateLesson, deleteContent }: Props) => {
 		try {
 			await deleteContent(lesson.id);
 			toast.success("Lesson deleted!");
-			router.push("/admin/courses");
+			router.push("/admin/content");
 		} catch (err) {
 			toast.error("Something went wrong deleting the lesson.");
 			console.error(err);
@@ -97,7 +93,7 @@ export const LessonEdit = ({ lesson, updateLesson, deleteContent }: Props) => {
 					name="title"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Name</FormLabel>
+							<FormLabel>Title</FormLabel>
 							<FormControl>
 								<Input {...field} />
 							</FormControl>
@@ -123,7 +119,7 @@ export const LessonEdit = ({ lesson, updateLesson, deleteContent }: Props) => {
 				/>
 				<FormField
 					control={form.control}
-					name="details.videoId"
+					name="details.videoContentId"
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel>Featured Video</FormLabel>
@@ -189,15 +185,13 @@ export const LessonEdit = ({ lesson, updateLesson, deleteContent }: Props) => {
 				>
 					Delete
 				</Button>
-				{/* <ConfirmDeleteLessonDialog
+				<ConfirmDeleteContentDialog
 					open={openDeleteDialog}
 					setOpen={setOpenDeleteDialog}
 					onConfirm={() => {
 						handleDelete();
 					}}
-					actionVerb="Delete"
-					lessonUsage={lessonUsage}
-				/> */}
+				/>
 			</form>
 		</Form>
 	);

@@ -169,7 +169,7 @@ export type DefaultSchema = ReturnType<typeof createSchema>;
 
 //         CREATE OR REPLACE FUNCTION trg_course_node_no_cycles()
 //         RETURNS trigger LANGUAGE plpgsql AS $$
-//         BEGIN
+//         BEGIN`
 //           /* root nodes are always fine */
 //           IF NEW.parent_id IS NULL THEN
 //             RETURN NEW;

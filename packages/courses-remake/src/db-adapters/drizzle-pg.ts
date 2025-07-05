@@ -400,6 +400,10 @@ const createCRUD = (
 						.select()
 						.from(schema.videoDetail)
 						.where(eq(schema.videoDetail.contentId, base[0].id));
+					console.log("ContentItem", {
+						...base[0],
+						details: detail[0],
+					});
 					if (!detail[0]) return null;
 					return fullContentItem.parse({
 						...base[0],

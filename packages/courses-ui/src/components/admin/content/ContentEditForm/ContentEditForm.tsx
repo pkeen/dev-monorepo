@@ -5,6 +5,7 @@ import {
 } from "@pete_keen/courses-remake/validators";
 import { LessonEdit } from "../lesson/LessonEdit";
 import { ModuleEdit } from "../module/ModuleEditForm";
+import { VideoEdit } from "../video/VideoEdit";
 
 export const ContentEditForm = ({
 	contentItem,
@@ -42,6 +43,18 @@ export const ContentEditForm = ({
 		}
 		case "quiz": {
 			return <div>Quiz</div>;
+		}
+		case "video": {
+			return (
+				<VideoEdit
+					video={contentItem}
+					updateVideo={updateContent}
+					deleteContent={deleteContent}
+				/>
+			);
+		}
+		default: {
+			return <div>Unknown content type</div>;
 		}
 	}
 };

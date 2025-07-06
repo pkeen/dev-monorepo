@@ -8,6 +8,13 @@
       "when": 1751540835168,
       "tag": "0000_last_titanium_man",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1751798074251,
+      "tag": "0001_acoustic_talisman",
+      "breakpoints": true
     }
   ]
 }

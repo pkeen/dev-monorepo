@@ -6,6 +6,7 @@ import {
 import { LessonEdit } from "../lesson/LessonEdit";
 import { ModuleEdit } from "../module/ModuleEditForm";
 import { VideoEdit } from "../video/VideoEdit";
+import { FileEdit } from "../file/FileEdit";
 
 export const ContentEditForm = ({
 	contentItem,
@@ -39,7 +40,13 @@ export const ContentEditForm = ({
 			);
 		}
 		case "file": {
-			return <div>File</div>;
+			return (
+				<FileEdit
+					fileContent={contentItem}
+					updateFile={updateContent}
+					deleteFile={deleteContent}
+				/>
+			);
 		}
 		case "quiz": {
 			return <div>Quiz</div>;

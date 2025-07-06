@@ -14,5 +14,6 @@ export const {
 	lessonDetail,
 	videoProviderEnum,
 	videoDetail,
+	fileDetail,
 	contentType,
 } = coursesSchema;

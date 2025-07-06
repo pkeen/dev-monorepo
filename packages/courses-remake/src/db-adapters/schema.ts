@@ -126,6 +126,19 @@ export const lessonDetail = courses.table("lesson_detail", {
 	bodyContent: text("body_content"), // raw markdown or HTML
 });
 
+export const fileDetail = courses.table("file_detail", {
+	id: serial("id").primaryKey(),
+	contentId: integer("content_id")
+		.references(() => contentItem.id, {
+			onDelete: "cascade",
+		})
+		.notNull(),
+	fileName: text("file_name").notNull(),
+	fileUrl: text("file_url").notNull(),
+	mimeType: text("mime_type").notNull(),
+	size: integer("size").notNull(),
+});
+
 export const createSchema = () => {
 	return {
 		courses,
@@ -136,6 +149,7 @@ export const createSchema = () => {
 		lessonDetail,
 		videoProviderEnum,
 		videoDetail,
+		fileDetail,
 	};
 };
 

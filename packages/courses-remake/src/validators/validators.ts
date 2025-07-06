@@ -173,17 +173,15 @@ export type VideoDetailDTO = z.infer<typeof videoDetailDTO>;
 // export const createLessonDetail = lessonDetail.omit({ id: true });
 // export type CreateLessonDetail = z.infer<typeof createLessonDetail>;
 
-export const fileContentItemDTO = z.object({
+export const fileDetailDTO = z.object({
 	id: z.number(),
-	type: z.literal("file"),
+	contentId: z.number(),
 	fileName: z.string(),
 	fileUrl: z.string(),
 	mimeType: z.string(), // e.g., "application/pdf"
 	size: z.number().optional(),
-	uploadedBy: z.string(),
-	createdAt: z.date(),
 });
-export type FileContentItemDTO = z.infer<typeof fileContentItemDTO>;
+export type FileDetailDTO = z.infer<typeof fileDetailDTO>;
 
 // Lesson Combo
 export const lessonContentItem = contentItemDTO.extend({
@@ -206,7 +204,7 @@ export type ModuleContentItem = z.infer<typeof moduleContentItem>;
 
 export const fileContentItem = contentItemDTO.extend({
 	type: z.literal("file"),
-	details: fileContentItemDTO,
+	details: fileDetailDTO,
 });
 export type FileContentItem = z.infer<typeof fileContentItem>;
 

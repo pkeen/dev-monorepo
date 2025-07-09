@@ -4,7 +4,7 @@ import * as path from "path";
 import { config } from "dotenv";
 // import "dotenv/config";
 
-config();
+config({ path: path.resolve(process.cwd(), ".env") });
 console.log("Bucket:", process.env.R2_BUCKET_NAME);
 // WE HAVE A ENV PROBLEM CURRENTLY
 

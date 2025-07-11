@@ -51,4 +51,6 @@ out/
 .react-router/
 
 
+
+# Contained git repos
 packages/test-repo/

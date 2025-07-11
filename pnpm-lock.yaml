@@ -596,6 +596,9 @@ importers:
 
   apps/hono-app:
     dependencies:
+      '@pete_keen/test-repo':
+        specifier: workspace:*
+        version: link:../../packages/test-repo
       hono:
         specifier: ^4.6.16
         version: 4.7.1

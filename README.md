@@ -1,4 +1,6 @@
-# PK Monorepo
+# DEV Monorepo
+
+This is an integration monorepo workspace for my hacking which may later turn into projects in seperate repos
 
 Currently contains the following packages:
 
@@ -10,6 +12,7 @@ Currently contains the following packages:
 -   @pete_keen/thia-next
 -   @pete_keen/react-router-auth
 -   @pete_keen/courses
+-   @pete_keen/file-storage
 
 ## THIA
 

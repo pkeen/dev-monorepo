@@ -7,7 +7,9 @@
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"north:dev": "pnpm --filter @pete_keen/north dev",
 		"ui:dev": "pnpm --filter @pete_keen/ui dev",
-		"starter:dev": "pnpm --filter nextjs-starter dev"
+		"starter:dev": "pnpm --filter nextjs-starter dev",
+		"packages:status": "./scripts/git-status-all.sh",
+		"packages:pull": "./scripts/git-pull-all.sh"
 	},
 	"devDependencies": {
 		"typescript": "^5.0.0",

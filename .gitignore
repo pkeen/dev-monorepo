@@ -54,3 +54,4 @@ out/
 
 # Contained git repos
 packages/test-repo/
+packages/file-storage/

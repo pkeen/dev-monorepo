@@ -1,12 +1,11 @@
-#!/usr/bin/env bash
+
 for dir in packages/*; do
   if [ -d "$dir/.git" ]; then
     changes=$(git -C "$dir" status -s)
     if [ -n "$changes" ]; then
-      echo "=== $dir ==="
+      printf "\e[1;33m=== %s ===\e[0m\n" "$dir"   # bold yellow header
       echo "$changes"
-      echo               # blank line for readability
+      echo
     fi
   fi
 done
-

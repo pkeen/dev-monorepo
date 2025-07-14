@@ -382,10 +382,14 @@ const createCRUD = (
 					});
 				}
 				case "file": {
-					// TODO
+					const detail = await db
+						.select()
+						.from(schema.fileDetail)
+						.where(eq(schema.fileDetail.contentId, base[0].id));
+					if (!detail[0]) return null;
 					return fullContentItem.parse({
 						...base[0],
-						details: {},
+						details: detail[0],
 					});
 				}
 				case "quiz": {

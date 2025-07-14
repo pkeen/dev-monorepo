@@ -1,8 +1,18 @@
 // app/api/upload/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { createLocalAdapter, generateFileKey } from "@pete_keen/file-storage";
+import {
+	createLocalAdapter,
+	createR2Adapter,
+	generateFileKey,
+} from "@pete_keen/file-storage";
 
-const fileStorage = createLocalAdapter();
+const storage = createR2Adapter({
+	accessKeyId: process.env.R2_ACCESS_KEY!,
+	secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+	bucketName: process.env.R2_BUCKET_NAME!,
+	endpoint: process.env.R2_ENDPOINT!,
+	publicBaseUrl: process.env.R2_PUBLIC_BASE_URL!,
+});
 
 export async function POST(req: NextRequest) {
 	const formData = await req.formData();
@@ -19,7 +29,7 @@ export async function POST(req: NextRequest) {
 		filename: (file as File).name,
 	});
 
-	const metadata = await fileStorage.upload(buffer, {
+	const metadata = await storage.upload(buffer, {
 		key,
 		contentType: file.type,
 		name: (file as File).name,

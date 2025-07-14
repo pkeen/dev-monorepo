@@ -12,6 +12,7 @@ export default async () => {
 		coursesSchema.courseNode,
 		coursesSchema.lessonDetail,
 		coursesSchema.videoDetail,
+		coursesSchema.fileDetail,
 		// coursesSchema.contentType,
 	]) {
 		// await db.delete(table); // clear tables without truncating / resetting ids
@@ -26,6 +27,7 @@ export default async () => {
 			await courseSeed.courseNode(db);
 			await courseSeed.videoDetail(db);
 			await courseSeed.lessonDetail(db);
+			await courseSeed.fileDetail(db);
 
 			// await seeds.user(db););
 			// logBreak();

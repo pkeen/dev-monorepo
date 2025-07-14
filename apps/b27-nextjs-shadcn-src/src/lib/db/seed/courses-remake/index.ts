@@ -7,3 +7,4 @@ export { default as lessonDetail } from "./lessonDetail";
 // export { default as moduleSlot } from "./moduleSlot";
 // export { default as courseSlot } from "./courseSlot";
 export { default as videoDetail } from "./videoDetail";
+export { default as fileDetail } from "./fileDetail";

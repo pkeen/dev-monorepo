@@ -6,7 +6,8 @@
 	},
 	"dependencies": {
 		"hono": "^4.6.16",
-		"@pete_keen/test-repo": "workspace:*"
+		"@pete_keen/test-repo": "workspace:*",
+		"@pete_keen/courses-test": "workspace:*"
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20250109.0",

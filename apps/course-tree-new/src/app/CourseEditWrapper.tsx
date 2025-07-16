@@ -7,7 +7,7 @@ import { updateCourseTree, deleteCourse } from "@/lib/actions";
 import {
 	ContentItemDTO,
 	EditCourseTreeDTO,
-} from "@pete_keen/courses-remake/validators";
+} from "@pete_keen/courses-core/validators";
 
 export function CourseEditWrapper({
 	course,

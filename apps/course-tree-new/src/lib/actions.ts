@@ -1,6 +1,6 @@
 "use server";
 
-import { EditCourseTreeDTO } from "@pete_keen/courses-remake/validators";
+import { EditCourseTreeDTO } from "@pete_keen/courses-core/validators";
 import { courses } from "@/courses";
 
 export async function updateCourseTree(data: EditCourseTreeDTO) {

@@ -1,7 +1,7 @@
 import {
 	createSchema,
 	// courseNodeNoCyclesTriggerSqlString,
-} from "@pete_keen/courses-remake/db-adapters";
+} from "@pete_keen/courses-core/db-adapters";
 // import { sql } from "drizzle-orm";
 
 export const {
@@ -11,10 +11,8 @@ export const {
 	courseNode,
 	lessonDetail,
 	videoProviderEnum,
-	video,
+	videoDetail,
 	contentType,
 } = createSchema();
 
-export const courseNodeNoCyclesTriggerUp = sql.raw(
-	courseNodeNoCyclesTriggerSqlString
-);
+// export const courseNodeNoCyclesTriggerUp = courseNodeNoCyclesTriggerUp;

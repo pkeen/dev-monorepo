@@ -2,7 +2,7 @@
 import { CourseEditForm } from "@pete_keen/courses-ui";
 import { courses } from "@/courses";
 import { CourseEditWrapper } from "./CourseEditWrapper";
-import { ContentItemDTO } from "@pete_keen/courses-remake/validators";
+import { ContentItemDTO } from "@pete_keen/courses-core/validators";
 import { updateCourseTree, deleteCourse } from "@/lib/actions";
 
 export default async function Home() {

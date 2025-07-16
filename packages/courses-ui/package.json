@@ -27,10 +27,11 @@
 		"classnames": "^2.5.1",
 		"clsx": "^2.1.1",
 		"lucide-react": "^0.488.0",
-		"rollup-preserve-directives": "^1.1.3",
 		"markdown-it": "^14.1.0",
+		"react-dropzone": "^14.3.8",
 		"react-markdown": "^10.1.0",
-		"react-markdown-editor-lite": "^1.3.4"
+		"react-markdown-editor-lite": "^1.3.4",
+		"rollup-preserve-directives": "^1.1.3"
 	},
 	"peerDependencies": {
 		"@dnd-kit/core": "^6.3.1",
@@ -44,14 +45,15 @@
 		"@radix-ui/react-label": "^2.1.4",
 		"@radix-ui/react-navigation-menu": "^1.2.9",
 		"@radix-ui/react-popover": "^1.1.10",
+		"@radix-ui/react-progress": "^1.1.7",
 		"@radix-ui/react-scroll-area": "^1.2.6",
 		"@radix-ui/react-slot": "^1.2.0",
 		"@radix-ui/react-switch": "^1.2.2",
 		"cmdk": "^1.1.1",
+		"next-themes": "^0.4.6",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
 		"react-hook-form": "^7.56.0",
-		"next-themes": "^0.4.6",
 		"sass": "^1.89.0",
 		"sonner": "^2.0.3",
 		"tailwind-merge": "^3.2.0",
@@ -77,6 +79,7 @@
 		"@rollup/plugin-node-resolve": "^15.3.0",
 		"@rollup/plugin-typescript": "^12.1.1",
 		"@tailwindcss/postcss": "^4",
+		"@types/markdown-it": "^14.1.2",
 		"@types/node": "^22.15.30",
 		"@types/react": "^19.0.0",
 		"@types/react-dom": "^19.1.6",
@@ -90,7 +93,6 @@
 		"sass": "^1.89.0",
 		"sonner": "^2.0.3",
 		"tailwindcss": "^4.0.0",
-		"zod": "^3.24.3",
-		"@types/markdown-it": "^14.1.2"
+		"zod": "^3.24.3"
 	}
 }

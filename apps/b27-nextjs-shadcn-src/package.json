@@ -22,6 +22,7 @@
 		"@pete_keen/authentication-core": "workspace:*",
 		"@pete_keen/authz": "workspace:*",
 		"@pete_keen/courses-core": "workspace:*",
+		"@pete_keen/courses-drizzle": "workspace:*",
 		"@pete_keen/courses-ui": "workspace:*",
 		"@pete_keen/logger": "workspace:*",
 		"@pete_keen/thia-next": "workspace:*",

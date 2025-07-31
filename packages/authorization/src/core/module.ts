@@ -31,8 +31,6 @@ export interface HierachicalModule<
 	};
 }
 
-
-
 export const createModule = <
 	Policies extends Record<string, Policy<any>>,
 	EnrichedData extends Record<string, any> = {}

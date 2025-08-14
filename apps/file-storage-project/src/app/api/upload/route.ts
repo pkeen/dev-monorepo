@@ -15,11 +15,17 @@ const storage = createR2Adapter({
 });
 
 export async function POST(req: NextRequest) {
+	console.log("CT:", req.headers.get("content-type"));
+	// Should be auth protected
+	// User Ids to create directories?
 	const formData = await req.formData();
 	const file = formData.get("file");
 
-	if (!(file instanceof Blob)) {
-		return NextResponse.json({ error: "Invalid file" }, { status: 400 });
+	if (!file || !(file instanceof File) || !(file instanceof Blob)) {
+		return NextResponse.json(
+			{ error: "No file uploaded or invalid file type" },
+			{ status: 400 }
+		);
 	}
 
 	const buffer = Buffer.from(await file.arrayBuffer());

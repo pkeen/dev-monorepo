@@ -1,41 +1,48 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useDropzone } from "react-dropzone";
+import { useDropzone, DropzoneOptions } from "react-dropzone";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
 
 export function FileDropzone({
 	uploadUrl,
-	accept,
+	accept = ["image/*", "application/pdf"],
+	maxFiles = 1,
 }: // maxFiles,
 
 {
 	uploadUrl: string;
-	accept: string;
-	// maxFiles: number;
+	accept: string[];
+	maxFiles: number;
 }) {
 	const [uploadPct, setUploadPct] = useState(0);
 	const onDrop = useCallback(async (accepted: File[]) => {
 		if (!accepted.length) return;
 		const file = accepted[0];
 
-		// naive demo upload
-		const res = await fetch(uploadUrl, {
-			method: "POST",
-			body: file,
-		});
+		const formData = new FormData();
+		formData.append("file", file);
+		// formData.append("courseId", courseId);
 
-		// fake progress for demo purposes
-		setUploadPct(100);
-		setTimeout(() => setUploadPct(0), 800);
+		const res = await axios.post(uploadUrl, formData, {
+			onUploadProgress: (event) => {
+				if (!event.total) return;
+				const percent = Math.round((event.loaded * 100) / event.total);
+				setUploadPct(percent);
+			},
+		}); 
+
+		// res.data would include file metadata (key, url, size, etc.)
+		console.log("Uploaded:", res.data);
 	}, []);
 
 	const { getRootProps, getInputProps, isDragActive } = useDropzone({
 		onDrop,
-		accept: { "image/*": [], "application/pdf": [] },
-		maxFiles: 1,
+		accept: { "image/*": [] },
+		maxFiles,
 	});
 
 	return (

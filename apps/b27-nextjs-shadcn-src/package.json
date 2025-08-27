@@ -19,7 +19,7 @@
 		"@dnd-kit/sortable": "^10.0.0",
 		"@dnd-kit/utilities": "^3.2.2",
 		"@hookform/resolvers": "^5.0.1",
-		"@pete_keen/authentication-core": "workspace:*",
+		"@pete_keen/thia-n-core": "workspace:*",
 		"@pete_keen/authz": "workspace:*",
 		"@pete_keen/courses-core": "workspace:*",
 		"@pete_keen/courses-drizzle": "workspace:*",

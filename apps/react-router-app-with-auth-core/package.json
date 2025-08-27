@@ -10,7 +10,7 @@
 		"seed:roles": "tsx lib/db/seed/roles.ts"
 	},
 	"dependencies": {
-		"@pete_keen/authentication-core": "workspace:*",
+		"@pete_keen/thia-n-core": "workspace:*",
 		"@pete_keen/authz": "workspace:*",
 		"@pete_keen/logger": "workspace:*",
 		"@react-router/node": "^7.1.1",

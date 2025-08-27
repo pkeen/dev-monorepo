@@ -18,7 +18,7 @@
 		"@mantine/hooks": "^7.15.3",
 		"@mantine/form": "^7.15.3",
 		"@mantinex/mantine-logo": "^1.1.0",
-		"@pete_keen/authentication-core": "workspace:*",
+		"@pete_keen/thia-n-core": "workspace:*",
 		"@pete_keen/authz": "workspace:*",
 		"@pete_keen/logger": "workspace:*",
 		"@pete_keen/react-router-auth": "workspace:*",

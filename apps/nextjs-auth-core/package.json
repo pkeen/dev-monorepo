@@ -9,7 +9,7 @@
 		"lint": "next lint"
 	},
 	"dependencies": {
-		"@pete_keen/authentication-core": "workspace:*",
+		"@pete_keen/thia-n-core": "workspace:*",
 		"@pete_keen/authz": "workspace:*",
 		"@pete_keen/logger": "workspace:*",
 		"cookie": "^1.0.2",

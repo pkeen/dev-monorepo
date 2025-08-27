@@ -11,7 +11,7 @@
 	"dependencies": {
 		"@emotion/react": "^11.14.0",
 		"@pete_keen/authz": "workspace:*",
-		"@pete_keen/authentication-core": "workspace:*",
+		"@pete_keen/thia-n-core": "workspace:*",
 		"@pete_keen/react-router-auth": "workspace:*",
 		"@react-router/node": "^7.1.5",
 		"@react-router/serve": "^7.1.5",
